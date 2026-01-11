@@ -1,0 +1,14 @@
+In this project we are working on refining a prompt template (or generating variations of prompt templates) for translating Islamic books, or articles to LLMs to translate them accurately.
+
+The content of the books/articles vary in themes. Some are hadith books, some are tafsir, some are fatawa, questions and answers, some are biographies, some are narrator jarh wa ta'dil and many other variations.
+
+We are trying to refine and come up with the best prompt to give us the most accurate and consistent translations of such material. ALA-LC for transliterations is important but ONLY when it is appropriate.
+
+In this project you will find the sample.txt attached where I placed a bunch of sample content (along with their prompts) that I send to LLMs to translate. You will find the exact prompt as well as the Arabic text with their marker IDs used so when the LLM responds we will be able to easily map the translation with the original Arabic. You will see that we send various types of content to translate, including FOOTNOTES (see footnotes.txt) or just chapter headings and table of contents (see tafsir_tabari.txt ) as well as just regular paragraph text that were segmented. 
+
+We exclusively use reasoning/thinking models to do the translations for maximum accuracy and quality. As of lately we have been mainly using OpenAI GPT 5.2 Thinking, Gemini 3.0 Pro and OpenAI ChaptGPT 5 Thinking.
+
+In the reasoning.txt you will find a dump of a lot of the reasoning outputs of these LLMs. The amount the LLM reasoned ranged from 10s to 10 minutes, but I just copied and pasted the dump into 1 large file so it includes the reasoning from various models.
+Use these reasoning data to better understand where the LLMs are struggling, and what it finds very clear so we can refine our prompts.
+
+Finally in the reviews.txt I have a bunch of responses from AI agents who have reviewed my prompt previously and made some suggestions for improvements. You should consult these for inspiration and ideas.  Once you are done I want you to synthesize everything you read and create a report of everything you learned. What are the various types of prompts we deal with, what kind of content we translate, the structure of the data we send, etc.  Write out a synthesized report of where LLMs are struggling the most and where it is very clear.  Synthesize the sggestions made by teh AI agents, what you agree with what you diagree with.
