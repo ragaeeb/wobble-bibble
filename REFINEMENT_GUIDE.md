@@ -42,6 +42,7 @@ In each case folder, save these files (copy/paste exact text):
 `03_run_info.txt`
 - Model name/version, date/time, UI/platform, and settings (thinking on/off, temperature, etc.).
 - Critical: List the prompt versions used (e.g., `prompts/final/master_prompt.md (v4) + prompts/final/hadith.md (v4)`).
+- Prompt Hash (if using version control or hashing tool): The short hash of the prompt stack.
 
 `04_prompt_stack.txt`
 - The exact prompt text you pasted (Master + Specialized Add-on).
@@ -98,7 +99,9 @@ Keep this short and factual:
   - Book/author (if known):
   - Genre add-on used:
   - Segment IDs affected:
+  - Prompt Hash (optional, for tracking versions):
 - Observed failure:
+- Collision Note (if rule conflict):
 - Why it’s wrong (one sentence):
 - What the output should have done instead:
 - Hypothesis (what rule ambiguity triggered it):

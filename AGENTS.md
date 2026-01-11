@@ -32,11 +32,29 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **Typos/Scribal Errors**: Do not correct or emend; translate as written (avoid “best-guess” reconstructions).
 - **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/final/encyclopedia_mixed.md` (do not output any mode tags/labels).
 
-## Lessons Learned (for future Agents)
-1.  **Do Not Sanitize**: Prompt engineering here fights against the RLHF "Safety" training of models. Always uphold the "Safety Override" clauses in the prompts when refining them.
-2.  **Transliteration is a Minefield**: The biggest struggle point is deciding what to transliterate and how. Keep the rules consistent with `prompts/final/master_prompt.md` and avoid ad-hoc exceptions in modules.
-3.  **Token Efficiency Matters**: Avoid adding markdown-like formatting, long examples, or metadata that users will paste into web prompts. Keep prompt templates short and plain.
-4.  **“Inheritance” is not automatic**: LLMs cannot read referenced files in a web UI. Users must paste `master_prompt.md` + one add-on in the same chat input.
+## AI Peer Review & Synthesis
+To ensure the robustness of these prompts, we periodically run a "Peer Review" cycle where other high-intelligence agents (Claude 4.5, GPT-5, Gemini 3, Grok 4) stress-test the templates.
+
+### 1. Generating Review Context
+We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
+**Command:**
+```bash
+code2prompt --path . --output PEER_REVIEW_CONTEXT.txt
+```
+*Note: Ensure `.gitignore` excludes `PEER_REVIEW_CONTEXT.txt` to avoid repository bloat.*
+
+### 2. Synthesis Methodology (The "Agent Stack" Protocol)
+If you are asked to synthesize feedback from new reviews, follow this logic:
+1.  **Identify Instruction Collisions**: Look for where the `master_prompt.md` rules (global) contradict specialized `add-on` rules (local). Example: Master forbids parentheses, but Hadith needs them for dates.
+2.  **Harden via Negations**: Move from "Stay literal" (soft permission) to "DO NOT sanitize or add disclaimers" (hard negation). Negations are more effective at overriding RLHF safety guardrails.
+3.  **Tiered Priority**: In mixed-discipline texts, implement a **Priority Matrix** (e.g., Isnad > Jarh > Fiqh) to resolve ambiguous term usage (e.g., "Sahih" meaning different things in different modes).
+4.  **Regression Check**: Ensure any fix for one failure mode doesn't break a "Golden Rule" (like dropping Segment IDs).
+
+### 3. Recent Lessons Learned (Post-Review Update)
+1.  **Arbitration Trap**: Models "freeze" or dither when rules fight. Always ensure Add-on rules explicitly state they override Master constraints where necessary.
+2.  **Safety Override Persistence**: LLMs will revert to safety-compliant "polite" translations at the first sign of ambiguity. The "CRITICAL NEGATIONS" block in the Master prompt must be maintained as a high-priority guardrail.
+3.  **Mode-Locking**: In long segments, models may get "locked" into the first detected mode (e.g., Hadith mode). Use "Genre Triggers" (transmission verbs vs. legal ruling terms) to force mid-segment switching.
+4.  **Parentheses Governance**: Parentheses are the most common source of formatting failure. Keep their usage extremely restricted and clearly defined (Technical Term vs. Dates vs. Codes).
 
 ## Revision Protocol
 Always follow the **3-Pass Rule** defined in the master prompt:
