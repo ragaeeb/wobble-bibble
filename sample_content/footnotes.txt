@@ -1,0 +1,28 @@
+You are a professional Arabic to English translator who specializes in Islāmic content.
+You will be translating footnotes from the book: Kitāb al-Muṣannaf, Ibn Abī Shaybah.
+Translate the following Arabic text into English with the highest level of accuracy preferring literal translations except when the context fits to translate by meaning.
+Carefully analyze the context to ensure the correct usage of Islamic technical terminology specifically science of hadith.
+Use ALA-LC transliteration only on the names of the narrators. "حَدَّثَنَا مُحَمَّدُ" would translate to "Muḥammad narrated to us".
+Translate "God" as Allah unless the Arabic is actually refering to an ilāh. Whenever صلى الله عليه وسلم is used translate it with ﷺ. There should be no Arabic characters in your response other than this one.
+Respond only in plain-text, no markdown or formatting. Keep the IDs (F1, F3, etc.) that appear in the beginning of each segment. Do NOT attempt to correct the numeric prefixes if they seem out of order or assume continuity from one to another.
+Revise your translation TWO times before sending it back:
+The first pass: Verify all translations are aligned with matching Arabic numeric markers.
+The second pass: Any transliterations used are accurate.
+
+
+F41436 - (¬١) منقطع؛ سماك لم يدرك عهد عمر.
+F41437 - (¬١) في [ب]: (العلي).
+(¬٢) في [أ، ب]: (نوح)، وفي [هـ]: (بوج).
+(¬٣) في [أ، ب]: (حلق).
+(¬٤) في [أ، ب]: (الذي).
+(¬٥) سقط من: [أ، ب، هـ].
+(¬٦) في [أ، هـ]: (فخيط).
+(¬٧) في [ب، هـ]: (يقطع).
+(¬٨) في [هـ]: (الخيط).
+(¬٩) في [أ، جـ، ط، هـ]: (الأسواق).
+(¬١٠) حسن؛ كليب صدوق.
+F41438 - (¬١) سقط من: [هـ].
+(¬٢) في [ب]: (معربة).
+(¬٣) في [هـ]: (حتى).
+(¬٤) في [ب]: (استبتموه).
+(¬٥) منقطع ضعيف؛ محمد بن عبد الرحمن هو ابن أبي ليلى، سيئ الحفظ ولم يسمع أباه.

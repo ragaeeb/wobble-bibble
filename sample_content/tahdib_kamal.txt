@@ -1,0 +1,35 @@
+You are a professional Arabic to English translator who specializes in Islāmic content.
+You will be translating from the book: Tahḏīb al-Kamāl of al-Mizzī.
+Translate the following Arabic text into English with the highest level of accuracy preferring literal translations except when the context fits to translate by meaning.
+Carefully analyze the context to ensure the correct usage of Islamic technical terminology specifically jarh wa ta'dil (narrator accreditation and criticism).
+You may find single Arabic letters in brackets which represent codes of which books the narrators are found in such as (س) or (د ت ق) or (دل). Leave these with equivalent codes in ALA-LC (s) (d t q) or (dl). Ensure the spaces between these codes remain as they are.
+Preserve full chains of narration and use ALA-LC transliteration only on the names of the narrators in the chain but not the textual content. "حَدَّثَنَا مُحَمَّدُ" would translate to "Muḥammad narrated to us". Translate chapter headings, poetry and verses as well.
+Translate "God" as Allah unless the Arabic is actually refering to an ilāh. Whenever صلى الله عليه وسلم is used translate it with ﷺ. There should be no Arabic characters in your response other than this one.
+Respond only in plain-text, no markdown or formatting. Keep the IDs (B1, C2, T33, P44, P44a, etc.) that appear in the beginning of each segment. Do NOT attempt to correct the numeric prefixes if they seem out of order or assume continuity from one to another.
+Revise your translation THREE times before sending it back:
+The first pass: Verify all translations are aligned with matching Arabic numeric markers.
+The second pass: The translations are accurate based on the overall context.
+The third pass: Any transliterations and codes used are accurate.
+CRITICAL: Never format chapter headings into all uppercase.
+
+
+C18595 - س: ابن موسى.
+
+P18595 - أبيه، عن الحارث وهو ابن عُمَير، عن أيوب، عن عَبد اللَّه بْن سَعِيد بْن جبير، عَن أبيه، عن ابن عباس فِي صوم عاشوراء.
+وعَنه: إِسْمَاعِيل بْن يعقوب الصبيحي.
+
+P18595a - مُحَمَّد بْن عيسى بْن موسى بْن أعين.
+
+C18595a - ابْن موهب: جماعة، منهم: عَبد الله بْن موهب الهمداني، وعُبَيد الله بْن عَبد الله بن موهب أبو يحيى التَّيْمِيّ، وابن أخيه عُبَيد اللَّه بْن عَبْد الرَّحْمَنِ بْن عَبد اللَّه بْن موهب، ويزيد بْن خالد بْن موهب الرملي.
+
+C2964 - الْحَسَن بن عيسى القومسي.
+رَوَى عَن: عفان بْن مسلم.
+رَوَى عَنه: النَّسَائي. هكذا قال، وإنما هو: الحسين بْن عيسى، وسيأتي في موضعه على الصوب إن شاء اللَّه.
+
+P2965 - الْحَسَن بن غليب بن سَعِيد بن مهران الأزدي، مولاهم، أَبُو عَلِيّ بْن أَبي الْحَسَن المِصْرِي البزاز، وأبوه من أهل حران.
+رَوَى عَن: حرملة بْن يحيى التجيبي، وسَعِيد بْن الحكم بْن أَبي مريم، وسَعِيد بْن كثير بْن عفير، وسفيان بْن بشر الكوفي، وعبد اللَّه بْن مُحَمَّد الفهمي المعروف بالبيطاري، وعِمْران بْن هارون الرملي، ومهدي بْن جعفر الرملي، ويحيى بْن سُلَيْمان الجعفي، ويحيى بْن عَبد اللَّهِ بْن بُكَيْر المِصْرِي،
+رَوَى عَنه: النَّسَائي، وأحمد بن إِبْرَاهِيم بن مُحَمَّد بن جامع السكري، وأبو العباس أَحْمَد بْن الْحَسَن بْن إسحاق بْن عتبة الرازي، وأبو جعفر أَحْمَد بْن مُحَمَّد بْن إِسْمَاعِيل بْن النحاس المقرئ، وأبو جعفر أَحْمَد بْن مُحَمَّد بْن سلامة الطحاوي، وأبو بكر أَحْمَد بْن مروان الدينوري المالكي، وأبو عَلِيّ الْحَسَن بن مُحَمَّد بن عَبد اللَّهِ بْن عَبْد السلام بْن مكحول البيروتي، وأبو الْقَاسِم سُلَيْمان بْن أحمد
+الطبراني، وعبد اللَّه بْن جعفر بْن مُحَمَّد بْن الورد البغدادي، وعلي بْن مُحَمَّد بْن أَحْمَد المِصْرِي الواعظ، وعلي بْن مُحَمَّد بْن عامر النهاوندي، ومحمد بْن عُمَير بْن إِسْمَاعِيل، وأبو عَلِيّ مُحَمَّد بْن هارون بْن شعيب الأَنْصارِيّ الدمشقي، وأبو يوسف يعقوب بْن المبارك المِصْرِي.
+قال النَّسَائي: ثقة.
+وَقَال فِي موضع آخر: ليس به بأس.
+وَقَال أبو جعفر الطحاوي: مات في ذي الحجة سنة تسعين ومئتين وله اثنتان وثمانون سنة.

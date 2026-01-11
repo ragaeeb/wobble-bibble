@@ -1,0 +1,22 @@
+You are a professional Arabic to English translator who specializes in Islāmic content.
+You will be translating from the book: Siyar Alam al-Nubala of al-Dhahabi.
+Translate the following Arabic text into English with the highest level of accuracy preferring literal translations except when the context fits to translate by meaning.
+Carefully analyze the context to ensure the correct usage of Islamic technical terminology specifically history, hadith sciences, and jarh wa ta'dil (narrator criticism and accreditation).
+Preserve full chains of narration and use ALA-LC transliteration only on the names of the narrators in the chain but not the textual content. "حَدَّثَنَا مُحَمَّدُ" would translate to "Muḥammad narrated to us". Translate chapter headings, poetry and verses as well.
+Translate "God" as Allah unless the Arabic is actually refering to an ilāh. Whenever صلى الله عليه وسلم is used translate it with ﷺ. There should be no Arabic characters in your response other than this one.
+Respond only in plain-text, no markdown or formatting. Keep the IDs (B1, C2, T33, P44, P44a, etc.) that appear in the beginning of each segment. Do NOT attempt to correct the numeric prefixes if they seem out of order or assume continuity from one to another.
+Revise your translation THREE times before sending it back:
+The first pass: Verify all translations are aligned with matching Arabic numeric markers.
+The second pass: The translations are accurate based on the overall context.
+The third pass: Any transliterations used are accurate.
+CRITICAL: Never format chapter headings into all uppercase.
+
+
+P9543a - الكردري:
+العلامة فقيه المشرق شمس الأئمة أبو الوحدة محمد بن عبد الستار ابن محمد العمادي، الكردري، الحنفي، البراتقيني. وبراتقين: من أعمال كردر، وكردر: ناحية كبيرة من بلاد خوارزم.
+أنبأني بترجمته أبو العلاء الفرضي، فقال: هو أستاذ الأئمة على الإطلاق، والموفود عليه من الآفاق، قرأ بخوارزم على برهان الدين ناصر بن عبد السيد المطرزي، مؤلف "شرح المقامات "، وتفقه بسمرقند على شيخ الإسلام بران الدين علي بن أبي بكر بن عبد الجليل المرغيناني وسمع منه، وتفقه ببخارى على العلامة بدر الدين عمر بن عبد الكريم الورسكي، وأبي المحاسن حسن بن منصور قاضي خان، وجماعة. وبرع في المذهب وأصوله، وتفقه على خلق، ورحلوا غليه إلى بخارى، منهم: ابن أخيه العلامة محمد بن محمود الفقيهي، والشيخ سيف الدين الباخرزي، والعلامة حافظ الدين محمد بن محمد بن نصر البخاري، وظهير الدين محمد بن عمر النوجاباذي، وطائفة، سماهم الفرضي، ثم قال: ولد سنة تسع وخمسين وخمس مائة، وتوفي ببخارى في محرم سنة اثنتين وأربعين وست مائة، ودفن عند الإمام عبد الله بن محمد بن يعقوب الحارثي.
+وفيها توفي: المولى تاج الدين أحمد ابن القاضي أبي نصر ابن الشيرازي في رمضان، والوزير الكبير نصير الدين أبو الأزهر أحمد بن محمد بن علي ابن الناقد البغدادي، ونجم الدين الحسن بن سالم بن سلام الدمشقي الكاتب، والد المحدث الذكي محمد، وأبو طالب خاطب بن عبد الكريم الحارثي المزي، والمقرئ سليمان بن عبد الكريم الأنصاري، والد شيختنا فاطمة، وأبو المنصور ظافر بن طاهر المطرز ابن شحم بالإسكندرية، وشيخ الشيوخ تاج الدين عبد الله بن عمر بن علي بن حمويه الجويني ثم الدمشقي، والمغيث جلال الدين عمر ابن السلطان نجم الدين أيوب ابن الكامل، والحافظ أبو القاسم بن محمد بن أحمد ابن الطيلسان الأنصاري القرطبي، وأبو الضوء قمر بن هلال بن بطاح القطيعي البقال، والنفيس أبو البركات محمد بن الحسين بن رواحة الحموي الضرير، والأديب مهذب الدين محمد بن علي بن علي بن علي ابن القامغار الحلي الشاعر بمصر في عشر المائة، وصاحب حماة المظفر تقي الدين محمود بن المنصور محمد بن عمر الأيوبي، والنجيب ناصر بن منصور العرضي، وجمال الدين يوسف ابن المخيلي.
+
+P9545 - ابن الطيلسان:
+الحافظ المفيد محدث الأندلس أبو القاسم القاسم بن محمد بن أحمد الأنصاري، القرطبي.
+ولد سنة خمس وسبعين وخمس مائة تقريبًا.

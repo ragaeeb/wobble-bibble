@@ -1,0 +1,17 @@
+You are a professional Arabic to English translator who specializes in Islāmic content.
+You will be translating from the fatawa of Shaykh al-Albanī.
+Translate the following Arabic text into English with the highest level of accuracy preferring literal translations except when the context fits to translate by meaning.
+Carefully analyze the context to ensure the correct usage of Islamic technical terminology specifically manhaj, aqeedah, hadith sciences, jarh wa ta'dil (narrator criticism) and fiqh.
+Use ALA-LC transliteration where appropriate. "حَدَّثَنَا مُحَمَّدُ" would translate to "Muḥammad narrated to us". Translate chapter headings, poetry and verses as well.
+Translate "God" as Allah unless the Arabic is actually refering to an ilāh. Whenever صلى الله عليه وسلم is used translate it with ﷺ. There should be no Arabic characters in your response other than this one.
+Respond only in plain-text, no markdown or formatting. Keep the IDs (B1, C2, T33, N55, P44, P44a, etc.) that appear in the beginning of each segment. Do NOT attempt to merge the numeric prefixes if they seem to have continuity.
+Revise your translation THREE times before sending it back:
+The first pass: Verify all translations are aligned with matching Arabic numeric markers.
+The second pass: The translations are accurate based on tP156937bhe overall context.
+The third pass: Any transliterations used are accurate.
+CRITICAL: Never format chapter headings into all uppercase.
+
+
+P156396 - السائل: دعاء السفر وهو سبحان الذي سخر لنا هذا وما كنا له مقرنين الشيخ: كذلك. السائل: يعني السفر وركوب السيارة…؟ الشيخ: استحباب. السائل: الخلاء، الرجل إذا دخل الخلاء؟ الشيخ: فليستعذ، أمر. السائل: (فليستعذ، اللهم إني أعوذ بك من الخبث والخبائث)؟ يعني بيكون يا شيخنا اللي تعمد تركها آثم؟ الشيخ: آثم. السائل: دعاء اليوم إذا أوى أحدكم… الشيخ: كذلك للوجوب السائل: دعاء الخروج من المنزل، (بسم الله توكلت على الله…)؟ الشيخ: ما أظن… إما حض وإما… من الرسول… السائل: دعاء لباس الثوب (اللهم إني أسألك…)؟ الشيخ: كذلك الاستحباب. السائل: دعاء السوق، (لا إله إلا الله…)؟ الشيخ: كذلك. السائل: خاتمة المجلس؟ الشيخ: كذلك.
+
+P156397 - السائل: معروف بخصوص… يعني واضحة على الجدران أو هذا ما فيها أصل يعني، لكن مثلا فيه عندي في المحل ممكن يكون هذا مثلًا بيجوز من باب الذكرى للنساء، أذكر آية الجلباب أو الخمار أو بعض الأحاديث في هذا مثلًا على لوحة بلاستيك أو شيء؟ الشيخ: ممكن لكن لا تُزخرف، تُكتب بخط يُقرأ. هذا وسيلة من وسائل التعليم. السائل: لكن فيه بعض من النساء دخلوا عندي أكثر من مرة فأنكروا يقولوا: أنتم بتاجروا في بيعكم وشراكم على هذه الآيات فهذا ما بيجوز؟ الشيخ: إيش لون هذا يعني؟ السائل: أنا فهمت أنك أنت أصلك تشيل هذه… بتاجروا بالآيات على بضاعتهم، بتاجروا ببضاعتهم على هذه الآيات…؟ بيأخذ جزء من سورة الحديد اللي بيتعلق باللباس وبيأخذ الآيات من سورة النور أو من سورة الأحزاب، والطبيب… من سورة كذا، فكل واحد بيقطع بيأخذ الجزء الذي بيستفيد وفيه مصلحة… هذا المنطلق اللي بيقول فيه الناس أنه بيتاجر فيه، أنه بيأخذ كل جزء…؟ الشيخ: ما فيها شيء،… بينشروه هؤلاء اللي بيطبعوا المصحف أو بينسخوه أو إلى آخره… اللي بيطبع وبينسخ… إلى آخره يعني إن شاء الله بيقول مثل ما بيقولوا، هو جهل وتحكيم الآراء الشخصية والأهواء النفسية!
