@@ -1,0 +1,2 @@
+[PASTE THE EXACT STACKED PROMPT HERE]
+This should be: master prompt, then a blank line, then the add-on prompt (exactly what you pasted into the web UI).

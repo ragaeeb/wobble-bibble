@@ -1,0 +1,2 @@
+[PASTE EXACT ADD-ON PROMPT TEXT HERE]
+Example add-ons live in prompts/final/ (hadith/fiqh/tafsir/jarh/usul/encyclopedia_mixed).

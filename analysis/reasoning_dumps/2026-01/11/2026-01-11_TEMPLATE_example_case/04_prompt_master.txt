@@ -1,0 +1,2 @@
+[PASTE EXACT MASTER PROMPT TEXT HERE]
+Tip: if you removed the optional file header lines (--- ... ---), paste the version you actually used.
