@@ -10,9 +10,12 @@ We have developed a **Stacked Prompt System** consisting of a `master_prompt.md`
 Perform a critical peer review of the attached codebase/prompts. Focus on:
 1.  **Instruction Collisions**: Are there rules in the `master` that might contradict specialized add-ons?
 2.  **Safety Override Integrity**: Are the instructions for "Safety Overrides" (maintaining polemical/harsh tone) robust enough to fight against model sanitization?
-3.  **Token Efficiency**: Identify any "prompt bloat." Can instructions be more concise without losing strictness?
-4.  **Edge Case Coverage**: Identify missing protocols for multi-disciplinary texts (though `encyclopedia_mixed.md` exists, what else?).
-5.  **Refinement SOP**: Is the `REFINEMENT_GUIDE.md` practical for an AI agent to follow? Does the metadata capture enough signal for pattern recognition?
+3.  **The "Blobbing" Test**: Does the system effectively prevent "bare transliteration" of common nouns (e.g., mihrab, jihad) while allowing translit-only for proper names?
+4.  **Structural Integrity**: Are the Q&A triggers robust enough to prevent paragraph merging/collapse during complex dialogues?
+5.  **Arabic Leakage Guard**: Assess the conditional logic for Proper vs. Common noun leakage.
+6.  **Meta-Talk Risk**: Identify if "Mode" or "Status" terminology in instructions might cause the AI to narrate its internal process.
+7.  **Token Efficiency**: Identify "prompt bloat" and ensure rules are concise but strictly actionable.
+8.  **Refinement SOP**: Is the `REFINEMENT_GUIDE.md` practical for an AI agent? Are the labels sufficient for capturing current failure shapes?
 
 ## Constraints
 - **Minimalism**: We prioritize plain text and token-lean instructions.
@@ -28,6 +31,7 @@ The following file is provided:
 
 ### Analysis Tasks
 1.  **Score the current system (1-10)** on logic consistency and academic rigor.
-2.  **Highlight the top 3 weaknesses** you find.
+2.  **Highlight the top 3 weaknesses** (e.g., where "blobbing" or "mode-locking" might still occur).
 3.  **Propose 3-5 specific "Negation Rules"** (Do NOT...) that would strengthen the system.
-4.  **Review the `encyclopedia_mixed.md` prompt** for its ability to handle sudden genre-switching without "mode-locking."
+4.  **Review the `encyclopedia_mixed.md` prompt** for its ability to handle sudden genre-switching without "meta-talk" or "mode-locking."
+5.  **Check for "Backtick/Formatting" noise** that might invite the LLM to use markdown in its output.

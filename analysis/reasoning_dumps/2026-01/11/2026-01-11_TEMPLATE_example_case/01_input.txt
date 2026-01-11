@@ -1,2 +1,0 @@
-[PASTE EXACT INPUT HERE]
-Include the segment IDs exactly as sent (e.g., P1234 ...).

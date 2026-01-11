@@ -32,6 +32,16 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **Typos/Scribal Errors**: Do not correct or emend; translate as written (avoid “best-guess” reconstructions).
 - **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/final/encyclopedia_mixed.md` (do not output any mode tags/labels).
 
+## Recent Refinement Lessons (Al-Albani Cycle)
+1.  **Distinguish Proper vs. Common Nouns**:
+    *   **Failure**: "Blobbing" (transliterating *miḥrāb* as just *Miḥrāb*).
+    *   **Fix**: Explicitly split rules: Proper Names = Translit Only; Common Nouns = Must Define (`translit (English)`).
+2.  **Structure Over Mapping**:
+    *   **Failure**: Q&A labels buried in paragraphs.
+    *   **Fix**: Use "Force NEWLINE" commands for structural triggers (`Al-Sāʾil`, `Qāla`), rather than simple `Term=Translation` maps.
+3.  **Sibling Check**:
+    *   **Fix**: If you fix a logic bug in `mixed` (e.g., Q&A format), always audit `fatawa.md` for the same bug.
+
 ## AI Peer Review & Synthesis
 To ensure the robustness of these prompts, we periodically run a "Peer Review" cycle where other high-intelligence agents (Claude 4.5, GPT-5, Gemini 3, Grok 4) stress-test the templates.
 

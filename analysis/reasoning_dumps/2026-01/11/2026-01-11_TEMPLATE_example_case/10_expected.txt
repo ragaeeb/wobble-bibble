@@ -1,3 +1,0 @@
-[OPTIONAL]
-If you have a gold translation for 1–3 segments, paste it here.
-Keep it minimal and focused on the failure.

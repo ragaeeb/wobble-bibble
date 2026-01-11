@@ -91,6 +91,8 @@ Use these labels in `07_labels.txt` (add more only when needed):
 - tafsir_attributes
 - mixed_genre_switch
 - formatting_drift
+- blobbing_common_nouns
+- structure_collapse_qa
 
 ## 6) Notes template (`06_notes.md`)
 Keep this short and factual:
@@ -114,9 +116,10 @@ Keep this short and factual:
 3) Batch similar cases (5–20) by shared labels.
 4) Make one minimal prompt change to fix one failure mode:
    - Prefer negations: “Do NOT …” beats repeating a rule.
-5) Regression check:
+5) **Sibling Check**: If fixing a structural issue (e.g., Q&A format) or term handling in one prompt (e.g., `mixed`), check if the same weakness exists in sibling prompts (e.g., `fatawa`).
+6) Regression check:
    - Re-run 2–3 older cases likely impacted (same genre, different content).
-6) Record outcome in `06_notes.md` (status + prompt version/date).
+7) Record outcome in `06_notes.md` (status + prompt version/date).
 
 ## 8) When to update vs branch (new add-on)
 Update an existing prompt when:
@@ -133,11 +136,10 @@ New add-on requirements:
 - Must not introduce output tags/labels unless explicitly requested by the Arabic
 - Do NOT introduce placeholder tokens like `[Source]` that invite hallucination.
 
-## 9) Optional index (recommended)
-Maintain a small index for searchability:
+## 9) Index (Optional, if high volume)
+Maintain a small index for searchability if desired:
 `analysis/reasoning_dumps/index.tsv`
 
-Columns:
 Columns:
 `date	model	case_id	genre_addon	labels	top_segment_ids	one_line_summary	prompt_stack_hash	status`
 
