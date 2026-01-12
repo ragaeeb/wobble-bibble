@@ -1,0 +1,7 @@
+model: gemini 3.0 pro
+model_version_or_date:
+platform_ui:
+thinking_mode: on
+temperature:
+other_settings:
+run_datetime_local:
