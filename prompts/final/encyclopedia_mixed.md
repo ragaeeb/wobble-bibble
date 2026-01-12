@@ -2,22 +2,15 @@ ENCYCLOPEDIA / MIXED (Polymath works: fiqh + hadith analysis + rijal + usul + hi
 USE: Paste MASTER prompt above this. This add-on is for texts that switch disciplines mid-paragraph.
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
-- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" (or "Questioner:"/"Answer:") appear (start or mid-segment), Each Q&A turn must be exactly one line.
-  - RIGIDITY: Keep the Label and Text on the SAME LINE (e.g., Label: Text). Do NOT insert a newline after the label.
-  - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
+- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
+- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines.
+- OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 DEFINITIONS & CASING:
-- PROPER NAMES (People/Places/Books/Sects): Transliterate ONLY (Full ALA-LC). No parentheses.
-  - Includes: Sects (Rāfiḍah, Jahmiyyah) and Groups. Transliterate literally.
-- GEOPOLITICS: Modern place names/demonyms may use English exonyms: "Filasṭīn (Palestine)".
-- COMMON NOUNS/TERMS (e.g., jihād, miḥrāb): Do NOT output bare transliteration.
-  - Rule: Use "translit (English)" on FIRST occurrence per segment. Later uses in same segment = English only.
-  - Fallback: If unsure whether a token is a proper name or common noun, treat it as a common noun/term (i.e., do not output bare transliteration).
-  - Plurals: Do not pluralize by appending "s" after a term-pair. Output "words (meanings)" or just "words".
-- AL-CASING: Use lowercase "al-" for names/titles mid-sentence (e.g., "said al-Albānī", not "said Al-Albānī").
-- ARABIC LEAKAGE: If Arabic script appears in output:
-  - Proper Name: Replace with Transliteration only.
-  - Common Noun: Replace with "translit (English)".
+- PROPER NAMES: Transliterate ONLY (Full ALA-LC). No parentheses. Includes Sects (Rāfiḍah).
+- GEOPOLITICS: Modern place names may use English exonyms (Filasṭīn -> Palestine).
+- COMMON NOUNS: Use "translit (English)" on FIRST occurrence. Fallback: Treat ambiguous tokens as common nouns.
+- PLURALS: Do not pluralize term-pairs by appending "s" (e.g., "ḥadīth (report)s"). Use the English plural or rephrase.
 
 PRIORITY MATRIX (Resolve Conflicts in Order):
 1. ISNAD/TRANSMISSION (Highest): If transmission verbs (ḥaddathanā, akhbaranā, ʿan) or narrator chains appear, apply HADITH rules (Full ALA-LC names).

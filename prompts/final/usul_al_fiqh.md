@@ -1,9 +1,3 @@
----
-original_filename: usul_al_fiqh.md
-generated_on: 2026-01-11
-model_source: Synthesized Expert Assistant
----
-
 USUL AL-FIQH (Legal theory / uṣūl)
 USE: Paste MASTER prompt above this. The following are add-on rules for uṣūl works (e.g., al-Uṣūl of al-Sarakhsī and similar).
 STRUCTURE: Preserve the argument structure (claims, objections "if it is said...", replies "we say...", evidences, counter-evidences). Preserve explicit labels (faṣl, masʾalah, qāla, qīla, qulna) as plain English equivalents only when the Arabic is explicitly a label.

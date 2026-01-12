@@ -1,9 +1,3 @@
----
-original_filename: hadith.md
-generated_on: 2026-01-11
-model_source: Synthesized Expert Assistant
----
-
 HADITH (Isnad-heavy; occasional rijal notes)
 USE: Paste MASTER prompt above this. The following are add-on rules for hadith-style isnads.
 ISNAD VERBS: Haddathana=Narrated to us; Akhbarana=Informed us; An=From; Sami'tu=I heard; Ana (short for Akhbarana/Anba'ana in isnad)=Informed us (NOT "I").

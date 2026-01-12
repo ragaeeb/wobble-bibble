@@ -1,9 +1,3 @@
----
-original_filename: jarh_wa_tadil.md
-generated_on: 2026-01-11
-model_source: Synthesized Expert Assistant
----
-
 JARH WA TA'DIL (Narrator Criticism)
 USE: Paste MASTER prompt above this. The following are add-on rules for jarh/ta'dil entries.
 GLOSSARY: When a jarh/ta'dil term/phrase appears, output as translit (English) (e.g., thiqah (trustworthy), ṣadūq (truthful), layyin (soft/lenient), ḍaʿīf (weak), matrūk (abandoned), kadhdhāb (liar), dajjāl (imposter), munkar al-ḥadīth (narrates denounced hadith)).
