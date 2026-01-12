@@ -3,18 +3,20 @@ USE: Paste MASTER prompt above this. This add-on is for texts that switch discip
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" (or "Questioner:"/"Answer:") appear (start or mid-segment), force a NEW LINE for the utterance. Do not bury Q&A labels in paragraphs.
-  - OUTPUT LABELS: Al-Sāʾil -> **Questioner:** ; Al-Shaykh -> **The Shaykh:**
+  - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 DEFINITIONS & CASING:
-- PROPER NAMES (People/Places/Books/Sects): Transliterate only (Full ALA-LC). No parentheses unless technical.
-- GEOPOLITICS: Modern place names/demonyms may utilize English exonyms once: "Filasṭīn (Palestine)", "Miṣr (Egypt)".
-- COMMON NOUNS/TERMS (e.g., jihād, miḥrāb, karāmāt): Do NOT output bare transliteration.
-  - Rule: Use `translit (English)` on first occurrence per segment. Later uses can be English-only.
+- PROPER NAMES (People/Places/Books/Sects): Transliterate ONLY (Full ALA-LC). No parentheses.
+  - Includes: Sects (Rāfiḍah, Jahmiyyah) and Groups. Transliterate literally.
+- GEOPOLITICS: Modern place names/demonyms may use English exonyms: "Filasṭīn (Palestine)".
+- COMMON NOUNS/TERMS (e.g., jihād, miḥrāb): Do NOT output bare transliteration.
+  - Rule: Use "translit (English)" on FIRST occurrence per segment. Later uses in same segment = English only.
+  - Fallback: If unsure whether a token is a proper name or common noun, treat it as a common noun/term (i.e., do not output bare transliteration).
   - Plurals: Do not pluralize by appending "s" after a term-pair. Output "words (meanings)" or just "words".
 - AL-CASING: Use lowercase "al-" for names/titles mid-sentence (e.g., "said al-Albānī", not "said Al-Albānī").
 - ARABIC LEAKAGE: If Arabic script appears in output:
   - Proper Name: Replace with Transliteration only.
-  - Common Noun: Replace with `translit (English)`.
+  - Common Noun: Replace with "translit (English)".
 
 PRIORITY MATRIX (Resolve Conflicts in Order):
 1. ISNAD/TRANSMISSION (Highest): If transmission verbs (ḥaddathanā, akhbaranā, ʿan) or narrator chains appear, apply HADITH rules (Full ALA-LC names).
@@ -27,7 +29,9 @@ GENRE TRIGGERS (Look Ahead):
 - "qāla al-muṣannif" / "qāla al-shāfiʿī" -> Start Quote Rules.
 - "yuqālu" / "zuiʿma" -> Start Weak-Form Rules.
 
-SEGMENTATION: Do not merge genres. If a segment contains both isnad and fiqh, translate them sequentially observing the rule switch at the boundary.
+RULE RESET: After the trigger phrase ends (e.g., Isnad chain ends at "qāla"), STOP applying Isnad rules. Do NOT carry Full ALA-LC into the speech content/matn. Return to Narrative/Base state.
+
+SEGMENTATION: Do not merge genres. Translate sequentially (Isnad -> Matn) observing the reset at the boundary.
 DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣaḥīḥ in fiqh validity = ṣaḥīḥ (valid). sunnah as hadith/legal source = sunnah (Prophetic practice). sunnah as legal status = sunnah/mustaḥabb (recommended) when context is a ruling.
 HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/Ana/Anba'ana=Informed us; An=From; Sami'tu=I heard) and keep FULL ALA-LC for Arabic-script narrator names; do not invent grading or missing links.
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.

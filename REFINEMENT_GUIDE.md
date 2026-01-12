@@ -93,6 +93,9 @@ Use these labels in `07_labels.txt` (add more only when needed):
 - formatting_drift
 - blobbing_common_nouns
 - structure_collapse_qa
+- markdown_leak
+- parentheses_collision
+- mode_locking
 
 ## 6) Notes template (`06_notes.md`)
 Keep this short and factual:

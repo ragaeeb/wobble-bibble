@@ -32,6 +32,11 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **Typos/Scribal Errors**: Do not correct or emend; translate as written (avoid “best-guess” reconstructions).
 - **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/final/encyclopedia_mixed.md` (do not output any mode tags/labels).
 
+## Recent Refinement Lessons (Jan 11 Hardening)
+1.  **Markdown "Leakage"**: Models instructed to use bold output labels (e.g., `**Label:**`) often interpret this as permission to use Markdown elsewhere. **Fix**: Use Plain Text labels (`Label:`) and forbid markdown globally.
+2.  **Parentheses "Paradox"**: If Master forbids parentheses but Add-ons imply them (without explicit authorization), models freeze/dither. **Fix**: Explicitly enumerate allowed parentheses formats (dates, codes) in the Master Prompt.
+3.  **Mode-Locking in Mixed Texts**: Models get stuck in "Isnad Mode" (Full ALA-LC) if a segment switches to Fiqh without a clear reset. **Fix**: Add "Mode Reset" triggers to return to Narrative base state after a chain ends.
+
 ## Recent Refinement Lessons (Al-Albani Cycle)
 1.  **Distinguish Proper vs. Common Nouns**:
     *   **Failure**: "Blobbing" (transliterating *miḥrāb* as just *Miḥrāb*).
@@ -49,9 +54,9 @@ To ensure the robustness of these prompts, we periodically run a "Peer Review" c
 We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
 **Command:**
 ```bash
-code2prompt --path . --output PEER_REVIEW_CONTEXT.txt
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/final/*.md" .
 ```
-*Note: Ensure `.gitignore` excludes `PEER_REVIEW_CONTEXT.txt` to avoid repository bloat.*
+*Note: This command excludes the heavy `analysis/reasoning_dumps/` and `reviews/` folders to keep context concise (~10-15k tokens).*
 
 ### 2. Synthesis Methodology (The "Agent Stack" Protocol)
 If you are asked to synthesize feedback from new reviews, follow this logic:
