@@ -226,7 +226,7 @@ The SOP is clear and reproducible. Two small upgrades:
 
 ---
 
-## Review of `prompts/final/encyclopedia_mixed.md`
+## Review of `prompts/encyclopedia_mixed.md`
 **Strengths**
 - Clear priority matrix for mixed genres and explicit safety override.
 - Strong anti‑blobbing rule for common nouns.
@@ -258,26 +258,26 @@ The system is academically strong, but it needs small, high‑impact cleanups to
 **Academic rigor:** 8/10
 
 ## Top 3 Weaknesses
-1. **Markdown leakage in output labels**: The mixed prompt mandates bold output labels (`**Questioner:**`, `**The Shaykh:**`), which conflicts with the Master’s plain-text-only rule and risks Markdown output. This also creates instruction collisions between add-on and master. 【F:prompts/final/encyclopedia_mixed.md†L6-L8】【F:prompts/final/master_prompt.md†L12-L14】
-2. **Parentheses scope conflict (exonyms vs. master constraints)**: The mixed prompt allows place-name pairs like `Filasṭīn (Palestine)`, but the Master only allows parentheses for technical-term pairs or explicit add-on authorization for dates/codes. This can cause a rule collision and encourage non-technical parenthetical usage. 【F:prompts/final/encyclopedia_mixed.md†L11-L12】【F:prompts/final/master_prompt.md†L12-L14】
-3. **Ambiguity in Q&A segmentation vs. “No restructuring”**: The add-on requires forced newlines for Q&A markers, which could be interpreted as restructuring if segments are not already line-broken. The Master says “Do NOT merge, split, or reorder segments,” but does not clarify that line breaks inside a segment are allowed for structure, increasing collision risk. 【F:prompts/final/encyclopedia_mixed.md†L6-L7】【F:prompts/final/master_prompt.md†L10-L11】
+1. **Markdown leakage in output labels**: The mixed prompt mandates bold output labels (`**Questioner:**`, `**The Shaykh:**`), which conflicts with the Master’s plain-text-only rule and risks Markdown output. This also creates instruction collisions between add-on and master. 【F:prompts/encyclopedia_mixed.md†L6-L8】【F:prompts/master_prompt.md†L12-L14】
+2. **Parentheses scope conflict (exonyms vs. master constraints)**: The mixed prompt allows place-name pairs like `Filasṭīn (Palestine)`, but the Master only allows parentheses for technical-term pairs or explicit add-on authorization for dates/codes. This can cause a rule collision and encourage non-technical parenthetical usage. 【F:prompts/encyclopedia_mixed.md†L11-L12】【F:prompts/master_prompt.md†L12-L14】
+3. **Ambiguity in Q&A segmentation vs. “No restructuring”**: The add-on requires forced newlines for Q&A markers, which could be interpreted as restructuring if segments are not already line-broken. The Master says “Do NOT merge, split, or reorder segments,” but does not clarify that line breaks inside a segment are allowed for structure, increasing collision risk. 【F:prompts/encyclopedia_mixed.md†L6-L7】【F:prompts/master_prompt.md†L10-L11】
 
 ## Proposed Negation Rules (3–5)
-1. **Do NOT use Markdown formatting in output** (no bold, italics, bullet prefixes, or backticks), even for Q&A labels. 【F:prompts/final/master_prompt.md†L12-L14】
-2. **Do NOT use parentheses for exonyms or clarifying glosses unless explicitly declared as a technical-term pair or authorized date/code rule.** 【F:prompts/final/master_prompt.md†L12-L14】
-3. **Do NOT alter segment boundaries**: line breaks are permitted only within the same segment and only to surface explicit labels (Q/A), never to split or merge segment IDs. 【F:prompts/final/master_prompt.md†L10-L11】【F:prompts/final/encyclopedia_mixed.md†L6-L7】
-4. **Do NOT output mode names, priority labels, or genre tags** (e.g., “Hadith mode,” “Rijal rules”), even if a rule switch occurs mid-segment. 【F:prompts/final/encyclopedia_mixed.md†L3-L4】
-5. **Do NOT replace a proper-name transliteration with an English exonym unless the input already uses that exonym.** This avoids unintended normalization or “helpful” substitution. 【F:prompts/final/master_prompt.md†L13-L15】
+1. **Do NOT use Markdown formatting in output** (no bold, italics, bullet prefixes, or backticks), even for Q&A labels. 【F:prompts/master_prompt.md†L12-L14】
+2. **Do NOT use parentheses for exonyms or clarifying glosses unless explicitly declared as a technical-term pair or authorized date/code rule.** 【F:prompts/master_prompt.md†L12-L14】
+3. **Do NOT alter segment boundaries**: line breaks are permitted only within the same segment and only to surface explicit labels (Q/A), never to split or merge segment IDs. 【F:prompts/master_prompt.md†L10-L11】【F:prompts/encyclopedia_mixed.md†L6-L7】
+4. **Do NOT output mode names, priority labels, or genre tags** (e.g., “Hadith mode,” “Rijal rules”), even if a rule switch occurs mid-segment. 【F:prompts/encyclopedia_mixed.md†L3-L4】
+5. **Do NOT replace a proper-name transliteration with an English exonym unless the input already uses that exonym.** This avoids unintended normalization or “helpful” substitution. 【F:prompts/master_prompt.md†L13-L15】
 
 ## Encyclopedia Mixed Prompt Review (Genre Switching + Meta-talk Risk)
-- **Strengths**: The explicit Priority Matrix and trigger list are good for reducing mode-locking by making rule-switches explicit and ordered. The “NO MODE TAGS” line is a solid guard against meta-talk. 【F:prompts/final/encyclopedia_mixed.md†L3-L4】【F:prompts/final/encyclopedia_mixed.md†L20-L31】
+- **Strengths**: The explicit Priority Matrix and trigger list are good for reducing mode-locking by making rule-switches explicit and ordered. The “NO MODE TAGS” line is a solid guard against meta-talk. 【F:prompts/encyclopedia_mixed.md†L3-L4】【F:prompts/encyclopedia_mixed.md†L20-L31】
 - **Weak points**:
-  - The Q&A output labels currently require bold Markdown, which can cause markdown leakage and encourage meta-formatting rather than plain text. 【F:prompts/final/encyclopedia_mixed.md†L6-L8】
-  - The “SEGMENTATION: Do not merge genres” + forced Q&A new lines could be read as “split segments,” so it would benefit from explicit clarification that the segment ID remains single and only line breaks may be inserted within it. 【F:prompts/final/encyclopedia_mixed.md†L33-L33】【F:prompts/final/master_prompt.md†L10-L11】
-  - The “GEOPOLITICS” exonym rule conflicts with the Master’s parentheses constraints and can invite parenthetical glossing beyond technical terms. 【F:prompts/final/encyclopedia_mixed.md†L11-L12】【F:prompts/final/master_prompt.md†L12-L14】
+  - The Q&A output labels currently require bold Markdown, which can cause markdown leakage and encourage meta-formatting rather than plain text. 【F:prompts/encyclopedia_mixed.md†L6-L8】
+  - The “SEGMENTATION: Do not merge genres” + forced Q&A new lines could be read as “split segments,” so it would benefit from explicit clarification that the segment ID remains single and only line breaks may be inserted within it. 【F:prompts/encyclopedia_mixed.md†L33-L33】【F:prompts/master_prompt.md†L10-L11】
+  - The “GEOPOLITICS” exonym rule conflicts with the Master’s parentheses constraints and can invite parenthetical glossing beyond technical terms. 【F:prompts/encyclopedia_mixed.md†L11-L12】【F:prompts/master_prompt.md†L12-L14】
 
 ## Backtick / Formatting Noise Check
-- Backticks around `translit (English)` and Markdown bold (`**Questioner:**`) are present in the add-on. These increase the chance of markdown output, which conflicts with the Master’s “plain text only” rule. Consider removing backticks and bold markers or rephrasing as plain text instructions. 【F:prompts/final/encyclopedia_mixed.md†L7-L14】【F:prompts/final/master_prompt.md†L12-L14】
+- Backticks around `translit (English)` and Markdown bold (`**Questioner:**`) are present in the add-on. These increase the chance of markdown output, which conflicts with the Master’s “plain text only” rule. Consider removing backticks and bold markers or rephrasing as plain text instructions. 【F:prompts/encyclopedia_mixed.md†L7-L14】【F:prompts/master_prompt.md†L12-L14】
 
 ## Refinement SOP Assessment
 - The SOP is practical and well-scoped for agent use: it enforces artifact capture, controlled labeling, and minimal fixes. Labels cover current failure shapes (blobbing, structure collapse, mixed-genre switch), and the “sibling check” and regression rules are solid. One gap: there is no label for “markdown leakage” or “formatting meta,” which is a recurring risk given the prompt’s emphasis on “no markdown.” 【F:REFINEMENT_GUIDE.md†L55-L79】【F:REFINEMENT_GUIDE.md†L99-L117】

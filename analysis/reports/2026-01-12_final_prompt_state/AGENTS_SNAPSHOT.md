@@ -17,8 +17,8 @@ If you are asked to understand *why* a certain rule exists, look here:
 ### 2. Prompt Templates
 If you are asked to generate a translation or refine a prompt, use these as your base.
 **Note**: These files are "Zero-Waste" and contain **only** the raw rule blocks (no titles, no usage instructions, no YAML).
-- **`prompts/final/master_prompt.md`**: The universal grounding prompt.
-- **`prompts/final/`**: specialized variants (add-ons) for Fiqh, Hadith, Tafsir, etc.
+- **`prompts/master_prompt.md`**: The universal grounding prompt.
+- **`prompts/`**: specialized variants (add-ons) for Fiqh, Hadith, Tafsir, etc.
 
 ### 3. Standards
 - **Transliteration definition (Critical)**: Transliteration = Latin letters only (ALA-LC with diacritics). Arabic script is forbidden everywhere in output (including inside parentheses/quotes) except `ﷺ`.
@@ -32,7 +32,7 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **Safety Overrides**: We prioritize **Fidelity** over "Safety" sanitization for academic purposes. If a model hesitates to translate a polemical term (like Rafidah), the prompts explicitly instruct a literal translation.
 - **Inference**: Models are instructed **NOT** to infer missing text in truncated segments.
 - **Typos/Scribal Errors**: Do not correct or emend; translate as written (avoid “best-guess” reconstructions).
-- **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/final/encyclopedia_mixed.md` (do not output any mode tags/labels).
+- **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/encyclopedia_mixed.md` (do not output any mode tags/labels).
 
 ## Recent Refinement Lessons (Jan 11 Round 2 Hardening)
 1.  **Fidelity vs. Negation**: Models prioritize "fidelity constraint" (quote original logic) over generic "No Arabic" bans.
@@ -70,7 +70,7 @@ To ensure the robustness of these prompts, we periodically run a "Peer Review" c
 We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
 **Command:**
 ```bash
-code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/final/*.md" .
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/*.md" .
 ```
 *Note: This command excludes the heavy `analysis/reasoning_dumps/` and `reviews/` folders to keep context concise (~10-15k tokens).*
 

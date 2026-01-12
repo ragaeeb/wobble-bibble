@@ -25,7 +25,7 @@ Perform a critical peer review of the attached codebase/prompts. Focus on:
 
 ### Attachment Information
 The following file is provided:
-- **`PEER_REVIEW_CONTEXT.txt`**: Contains `README.md`, `AGENTS.md`, `REFINEMENT_GUIDE.md`, the synthesis/research reports, and all `prompts/final/` templates.
+- **`PEER_REVIEW_CONTEXT.txt`**: Contains `README.md`, `AGENTS.md`, `REFINEMENT_GUIDE.md`, the synthesis/research reports, and all `prompts/` templates.
 
 ---
 

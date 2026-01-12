@@ -164,7 +164,7 @@ These rules are **token-lean**, **enforce strictness**, and directly address wea
 
 ## 4. **Review of `encyclopedia_mixed.md` for Genre-Switching**
 
-### **File: `prompts/final/encyclopedia_mixed.md`**
+### **File: `prompts/encyclopedia_mixed.md`**
 
 ```md
 ENCYCLOPEDIA / MIXED (Polymath works: fiqh + hadith analysis + rijal + usul + history/polemics)

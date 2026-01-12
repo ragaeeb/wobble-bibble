@@ -29,6 +29,6 @@
 - "If you transliterate a phrase (e.g., a duʿāʾ or poem), you MUST follow it with the English translation in parentheses or immediately after."
 
 ## 3. Targeted Files
-- `prompts/final/master_prompt.md` (Glossary, Translation Rule)
-- `prompts/final/fatawa.md` (Q&A Rule)
-- `prompts/final/encyclopedia_mixed.md` (Q&A Rule consistency)
+- `prompts/master_prompt.md` (Glossary, Translation Rule)
+- `prompts/fatawa.md` (Q&A Rule)
+- `prompts/encyclopedia_mixed.md` (Q&A Rule consistency)

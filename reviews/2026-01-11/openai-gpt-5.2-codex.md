@@ -58,7 +58,7 @@ The SOP is clear and practical. The case folder structure, labels taxonomy, and 
 
 ---
 
-## Review of `prompts/final/encyclopedia_mixed.md`
+## Review of `prompts/encyclopedia_mixed.md`
 **Strengths:**
 - Explicitly warns against mode‑locking and forbids mode tags.
 - Good local rule application guidance for isnad, jarḥ/taʿdīl, fiqh/usul, and polemics.

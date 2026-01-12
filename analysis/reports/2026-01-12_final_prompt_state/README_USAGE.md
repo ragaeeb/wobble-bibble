@@ -20,23 +20,23 @@ The system works on a **Inheritance Model**. You do not use a single prompt; you
 Important: “Inheritance” is conceptual only. If you are using a web UI, the model cannot read files from this repo. You must paste the text.
 
 ### Step 1: Logic Layer (The Master Prompt)
-Copy the contents of **[master_prompt.md](prompts/final/master_prompt.md)**.
+Copy the contents of **[master_prompt.md](prompts/master_prompt.md)**.
 *   *This defines the "Iron Rules": ALA-LC policies, Unicode allow-lists, and the locked Glossary.*
 
 ### Step 2: Specialization Layer (The Add-on)
 Copy **ONE** specialized prompt and paste it **immediately below** the Master Prompt text to adapt the rules to your specific genre:
-*   **[hadith.md](prompts/final/hadith.md)**: For Isnad-heavy texts, Sharh, or Sunan collections.
-*   **[fatawa.md](prompts/final/fatawa.md)**: For Q&A, Fatawa collections, and general advice.
-*   **[fiqh.md](prompts/final/fiqh.md)**: For Fiqh Manuals (Matn/Sharh) requiring strict legal terminology (Wajib/Haram).
-*   **[tafsir.md](prompts/final/tafsir.md)**: For Quranic exegesis (Attributes of Allah, Grammar, Isra'iliyyat).
-*   **[jarh_wa_tadil.md](prompts/final/jarh_wa_tadil.md)**: For Narrator Criticism (Rijal) works.
-*   **[encyclopedia_mixed.md](prompts/final/encyclopedia_mixed.md)**: For polymath works (e.g., Albani, Ibn Taymiyyah) that blend disciplines.
+*   **[hadith.md](prompts/hadith.md)**: For Isnad-heavy texts, Sharh, or Sunan collections.
+*   **[fatawa.md](prompts/fatawa.md)**: For Q&A, Fatawa collections, and general advice.
+*   **[fiqh.md](prompts/fiqh.md)**: For Fiqh Manuals (Matn/Sharh) requiring strict legal terminology (Wajib/Haram).
+*   **[tafsir.md](prompts/tafsir.md)**: For Quranic exegesis (Attributes of Allah, Grammar, Isra'iliyyat).
+*   **[jarh_wa_tadil.md](prompts/jarh_wa_tadil.md)**: For Narrator Criticism (Rijal) works.
+*   **[encyclopedia_mixed.md](prompts/encyclopedia_mixed.md)**: For polymath works (e.g., Albani, Ibn Taymiyyah) that blend disciplines.
 
 ### Step 3: Input
 Paste your Arabic text segment.
 
 ### Practical notes (web usage)
-- **Zero-Waste Prompts**: The prompt files in `prompts/final/` have been stripped of all metadata headers and instructions. They contain *only* the raw rules to maximize context window efficiency.
+- **Zero-Waste Prompts**: The prompt files in `prompts/` have been stripped of all metadata headers and instructions. They contain *only* the raw rules to maximize context window efficiency.
 - **Stacking is Mandatory**: You MUST paste the Master Prompt first, followed by the Add-on. The Add-on relies on definitions in the Master.
 - Term formatting convention: technical terms should be `translit (English)` (parentheses are reserved for this use).
 - Name connector convention: mid-chain بن/ابن -> `b.` (e.g., ʿAbd Allāh b. Yūsuf); initial `Ibn` stays `Ibn` (e.g., Ibn Taymiyyah).
@@ -47,7 +47,7 @@ Paste your Arabic text segment.
 
 | Directory | Content |
 | :--- | :--- |
-| **`prompts/final/`** | ✅ **Use These.** The latest v4.0 optimized templates covering all genres. |
+| **`prompts/`** | ✅ **Use These.** The latest v4.0 optimized templates covering all genres. |
 | **`analysis/`** | 🧠 **The Brain.** Contains the [Synthesis Report](analysis/synthesis.md) and detailed model evaluations. |
 | **`analysis/reasoning_dumps/`** | 💭 **Raw Data.** Chain-of-thought logs from Gemini, GPT, and Claude showing *how* they translate. |
 | **`research/`** | 🏛 **Archive.** Older prompt iterations and raw suggestions. |

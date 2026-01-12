@@ -9,7 +9,7 @@ P44 - A man from the attendees: ...
 ```
 
 ## 2. Primary Hypothesis (Prompt-Driven; Not a Model Failure)
-This behavior can be directly induced by the add-on rule in `prompts/final/encyclopedia_mixed.md`:
+This behavior can be directly induced by the add-on rule in `prompts/encyclopedia_mixed.md`:
 > INTERNAL Q&A: If segment has multiple turns, output one line per turn and REPEAT the Segment ID on each line.
 
 The raw reasoning you provided matches that interpretation (the model explicitly states it should repeat the ID per line).

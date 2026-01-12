@@ -99,7 +99,7 @@ DO NOT describe rule application. Translate sequentially.
 ## 5. **Backtick/Formatting Noise Check**  
 
 ### **Findings**  
-1. **No Markdown in Output:** All `prompts/final/*.md` correctly specify *"Plain text only (no markdown)"*.  
+1. **No Markdown in Output:** All `prompts/*.md` correctly specify *"Plain text only (no markdown)"*.  
 2. **Backticks Used Correctly:**  
    - `translit (English)` uses parentheses (allowed).  
    - **Risk:** `fatawa.md`/`fiqh.md` use *backticks* in docs (e.g., \`wājib (obligatory)\`), but **final prompts omit them**. ✅ **Safe.**  

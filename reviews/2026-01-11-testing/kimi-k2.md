@@ -17,7 +17,7 @@
 ---
 
 #### **2. Systemic Redundancy & Token Inflation**  
-**Location:** Across all `prompts/final/*.md` except `master_prompt.md`  
+**Location:** Across all `prompts/*.md` except `master_prompt.md`  
 **Risk:** Wasted context window, maintenance drift, and contradictory updates.
 
 **Details:** The following rules are **copy-pasted identically** across 4+ add-ons (~150-200 tokens each):
