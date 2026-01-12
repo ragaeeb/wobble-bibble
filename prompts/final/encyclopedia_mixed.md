@@ -1,5 +1,4 @@
-ENCYCLOPEDIA / MIXED (Polymath works: fiqh + hadith analysis + rijal + usul + history/polemics)
-USE: Paste MASTER prompt above this. This add-on is for texts that switch disciplines mid-paragraph.
+
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.

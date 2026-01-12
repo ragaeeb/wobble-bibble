@@ -1,5 +1,4 @@
-FATAWA & FIQH (Legal rulings / Q&A)
-USE: Paste MASTER prompt above this. The following are add-on rules for fiqh/fatawa.
+
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
   - INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines.

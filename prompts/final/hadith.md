@@ -1,5 +1,4 @@
-HADITH (Isnad-heavy; occasional rijal notes)
-USE: Paste MASTER prompt above this. The following are add-on rules for hadith-style isnads.
+
 ISNAD VERBS: Haddathana=Narrated to us; Akhbarana=Informed us; An=From; Sami'tu=I heard; Ana (short for Akhbarana/Anba'ana in isnad)=Informed us (NOT "I").
 CHAIN MARKERS: H(Tahwil)=Switch to new chain; Mursal/Munqati=Broken chain.
 JARH/TA'DIL: If narrator-evaluation terms/phrases appear, output as translit (English) (e.g., fīhi naẓar (he needs to be looked into)); do not replace with only English.

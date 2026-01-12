@@ -1,5 +1,4 @@
-TAFSIR (Qur'an exegesis)
-USE: Paste MASTER prompt above this. The following are add-on rules for tafsir.
+
 AYAH CITES: Do not output surah names unless the Arabic includes the name. Use [2:255]. If the segment contains quoted Qur'an text, translate it in braces: {…} [2:255].
 ATTRIBUTES: Translate Allah’s attributes as the author intends; if the author is literal, keep literal (e.g., Hand, Face); do not add metaphorical reinterpretation unless the author does; mirror the author’s theology (Ash'ari vs Salafi) exactly.
 I'RAB TERMS: Mubtada=Subject; Khabar=Predicate; Fa'il=Agent/Doer; Maf'ul=Object.
