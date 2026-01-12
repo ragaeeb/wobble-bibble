@@ -16,6 +16,7 @@ Create a case folder whenever any of these happen:
 - Citation/source invented or templated
 - “Correction loop” / emendation / best-guess reconstruction (hallucination risk)
 - Term-format drift (e.g., outputting English-only keywords when `translit (English)` was required)
+- Arabic leakage inside term-pairs (e.g., Arabic script used as the “translit” half: `اختلاف (disagreement)` instead of `ikhtilāf (disagreement)`)
 - Long dithering or self-contradiction across the same segment set
 
 ## 2) Storage layout (small, searchable, LLM-friendly)
@@ -43,6 +44,7 @@ In each case folder, save these files (copy/paste exact text):
 - Model name/version, date/time, UI/platform, and settings (thinking on/off, temperature, etc.).
 - Critical: List the prompt versions used (e.g., `prompts/final/master_prompt.md (v4) + prompts/final/hadith.md (v4)`).
 - Prompt Hash (if using version control or hashing tool): The short hash of the prompt stack.
+  - Define Prompt Hash as: hash of `04_prompt_stack.txt` (master + add-on), not of the Arabic input/output.
 
 `04_prompt_stack.txt`
 - The exact prompt text you pasted (Master + Specialized Add-on).
@@ -96,6 +98,10 @@ Use these labels in `07_labels.txt` (add more only when needed):
 - markdown_leak
 - parentheses_collision
 - mode_locking
+- gravity_well_drift
+- diacritics_drop
+- label_newline_drift
+- term_pair_pluralization
 
 ## 6) Notes template (`06_notes.md`)
 Keep this short and factual:
@@ -106,6 +112,7 @@ Keep this short and factual:
   - Segment IDs affected:
   - Prompt Hash (optional, for tracking versions):
 - Observed failure:
+- Drift checklist (optional): Shaykh/Sheikh; Qurʾān/Quran; Muḥammad/Muhammad; muṣḥaf/mushaf; Salafīyyah/Salafism; Ṭāʾifah/Ta'ifah; Sunnah casing.
 - Collision Note (if rule conflict):
 - Why it’s wrong (one sentence):
 - What the output should have done instead:
@@ -123,6 +130,11 @@ Keep this short and factual:
 6) Regression check:
    - Re-run 2–3 older cases likely impacted (same genre, different content).
 7) Record outcome in `06_notes.md` (status + prompt version/date).
+
+### Pro-Tip: Standard Fix Patterns
+- **For Arabic Leakage**: Don't just say "No Arabic". Define `Transliteration` as `Latin Only`.
+- **For Spelling Drift**: Use a "LOCKED ANCHORS" list for high-frequency terms (`Shaykh`, `Muḥammad`).
+- **For Structure Drift**: Use spatial constraints ("SAME LINE", "NO BLANK LINES") rather than just formatting examples.
 
 ## 8) When to update vs branch (new add-on)
 Update an existing prompt when:

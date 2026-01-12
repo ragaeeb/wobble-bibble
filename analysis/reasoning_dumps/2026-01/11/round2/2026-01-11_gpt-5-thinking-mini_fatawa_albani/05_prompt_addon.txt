@@ -1,5 +1,3 @@
-ENCYCLOPEDIA / MIXED (Polymath works: fiqh + hadith analysis + rijal + usul + history/polemics)
-USE: Paste MASTER prompt above this. This add-on is for texts that switch disciplines mid-paragraph.
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" (or "Questioner:"/"Answer:") appear (start or mid-segment), force a NEW LINE for the utterance. Do not bury Q&A labels in paragraphs.
@@ -26,15 +24,15 @@ PRIORITY MATRIX (Resolve Conflicts in Order):
 
 GENRE TRIGGERS (Look Ahead):
 - "ḥaddathanā"/"akhbaranā" -> Start Isnad Rules.
-- "qāla al-muṣannif" / "qāla al-Shāfiʿī" -> Start Quote Rules.
+- "qāla al-muṣannif" / "qāla al-shāfiʿī" -> Start Quote Rules.
 - "yuqālu" / "zuiʿma" -> Start Weak-Form Rules.
 
 RULE RESET: After the trigger phrase ends (e.g., Isnad chain ends at "qāla"), STOP applying Isnad rules. Do NOT carry Full ALA-LC into the speech content/matn. Return to Narrative/Base state.
 
 SEGMENTATION: Do not merge genres. Translate sequentially (Isnad -> Matn) observing the reset at the boundary.
-DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣaḥīḥ in fiqh validity = ṣaḥīḥ (valid). Sunnah (Capitalized) = The Corpus/Prophetic Tradition. sunnah (lowercase) = legal status/recommended.
+DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣaḥīḥ in fiqh validity = ṣaḥīḥ (valid). sunnah as hadith/legal source = sunnah (Prophetic practice). sunnah as legal status = sunnah/mustaḥabb (recommended) when context is a ruling.
 HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/Ana/Anba'ana=Informed us; An=From; Sami'tu=I heard) and keep FULL ALA-LC for Arabic-script narrator names; do not invent grading or missing links.
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.
 
-CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmīyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
+CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmiyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
 RETRACTION: If the author retracts (kuntu aqulu... wa-al-ana aqulu...), make the change explicit in English.

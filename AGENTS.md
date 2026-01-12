@@ -20,6 +20,7 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **`prompts/final/`**: specialized variants for Fiqh, Hadith, Tafsir, etc.
 
 ### 3. Standards
+- **Transliteration definition (Critical)**: Transliteration = Latin letters only (ALA-LC with diacritics). Arabic script is forbidden everywhere in output (including inside parentheses/quotes) except `ﷺ`.
 - **Transliteration**: We use **ALA-LC** with diacritics for Arabic-script personal names and place names (and isnad narrator names). If the input already uses Latin/English spellings, keep them as written (do not “upgrade” diacritics), except locked glossary terms may be normalized.
 - **Name connectors**: mid-chain بن/ابن -> `b.` (e.g., ʿAbd Allāh b. Yūsuf; Aḥmad b. Taymiyyah). Initial `Ibn` stays `Ibn` (e.g., Ibn Taymiyyah).
 - **Honorifics**: Use `ﷺ` for Prophet Muhammad. Do not use Arabic script for others; use English (e.g., "may Allah be pleased with him").
@@ -31,6 +32,20 @@ If you are asked to generate a translation or refine a prompt, use these as your
 - **Inference**: Models are instructed **NOT** to infer missing text in truncated segments.
 - **Typos/Scribal Errors**: Do not correct or emend; translate as written (avoid “best-guess” reconstructions).
 - **Polymath Works**: For scholars like Albani/Ibn Taymiyyah who switch disciplines, use `prompts/final/encyclopedia_mixed.md` (do not output any mode tags/labels).
+
+## Recent Refinement Lessons (Jan 11 Round 2 Hardening)
+1.  **Fidelity vs. Negation**: Models prioritize "fidelity constraint" (quote original logic) over generic "No Arabic" bans.
+    *   **Fix**: Explicitly redefine "Transliteration" = "Latin letters only". Explicitly ban Arabic "inside brackets/quotes".
+2.  **Gravity Wells**: Common English spellings (`Sheikh`, `Sunnah`, `Hadith`) act as gravity wells, pulling models away from strict ALA-LC.
+    *   **Fix**: Use "Locked Glossary Anchors" (Explicitly forbidden vs. required forms) for these specific high-frequency terms.
+3.  **Structural Rigidity**: Q&A labels prone to drift (inserting newlines).
+    *   **Fix**: Enforce "Label and Text must be on SAME LINE" explicitly.
+4.  **Round 2 Drift Anchors**: High-frequency terms drift to plain English spellings or wrong casing.
+    *   **Fix**: Lock anchors explicitly (examples): Shaykh (not Sheikh), Muḥammad (not Muhammad), Qurʾān (not Quran), muṣḥaf (not mushaf), Salafīyyah (not Salafism), Ṭāʾifah (not Ta'ifah).
+5.  **Sunnah Ambiguity**: `sunnah/Sunnah` meanings collide (corpus/source vs legal status vs generic practice).
+    *   **Fix**: Prompts must state the convention explicitly (and disambiguate by context) or models will drift to generic lowercase.
+6.  **Prompt Artifacts Cause Leakage**: Backticks and “mode” phrasing inside prompts can leak into output.
+    *   **Fix**: Avoid backticks in prompt examples; avoid “switching modes” phrasing (use “apply X rules” and do not output mode talk).
 
 ## Recent Refinement Lessons (Jan 11 Hardening)
 1.  **Markdown "Leakage"**: Models instructed to use bold output labels (e.g., `**Label:**`) often interpret this as permission to use Markdown elsewhere. **Fix**: Use Plain Text labels (`Label:`) and forbid markdown globally.

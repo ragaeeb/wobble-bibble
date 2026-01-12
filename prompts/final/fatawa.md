@@ -7,8 +7,9 @@ model_source: Synthesized Expert Assistant
 FATAWA & FIQH (Legal rulings / Q&A)
 USE: Paste MASTER prompt above this. The following are add-on rules for fiqh/fatawa.
 STRUCTURE (Apply First):
-- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" (or "Questioner:"/"Answer:") appear (start or mid-segment), force a NEW LINE for the utterance. Do not bury Q&A labels in paragraphs.
+- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" (or "Questioner:"/"Answer:") appear (start or mid-segment), force a NEW LINE for the utterance.
   - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
+  - RIGIDITY: Label and text must be on the SAME LINE. Do NOT insert a newline after the label.
 
 HONORIFICS: Expand common phrases (do not transliterate):
 - Allah ʿazza wa-jall -> Allah, the Mighty and Majestic
