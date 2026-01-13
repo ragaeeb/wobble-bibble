@@ -6,9 +6,7 @@ STRUCTURE (Apply First):
 - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 DEFINITIONS & CASING:
-- PROPER NAMES: Transliterate ONLY (Full ALA-LC). No parentheses. Includes Sects (Rāfiḍah).
 - GEOPOLITICS: Modern place names may use English exonyms (Filasṭīn -> Palestine).
-- COMMON NOUNS: Use "translit (English)" on FIRST occurrence. Fallback: Treat ambiguous tokens as common nouns.
 - PLURALS: Do not pluralize term-pairs by appending "s" (e.g., "ḥadīth (report)s"). Use the English plural or rephrase.
 
 STATE LOGIC (Priority: Isnad > Rijal > Fiqh > Narrative):
