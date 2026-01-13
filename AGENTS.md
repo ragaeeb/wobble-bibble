@@ -17,9 +17,31 @@ See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the SOP on prompt analysi
 ### Source Code (`src/`)
 - **`index.ts`** - Public API exports
 - **`validation.ts`** - LLM output validation (marker format, order, hallucination detection)
-- **`prompt-stacking.ts`** - Combine master + specialized prompts
+- **`prompts.ts`** - API for accessing and stacking prompts
 - **`formatting.ts`** - Format segments for LLM input
 - **`constants.ts`** - Marker patterns and enums
+
+### Test Suite (`src/*.test.ts` and `tests/`)
+- **Unit Tests (`src/*.test.ts`)**: Fast feedback on internal logic.
+- **Integration Tests (`tests/dist.test.ts`)**: Verify the production bundle (`dist/`) works as expected.
+
+## Development Standards
+
+### Testing Convention
+All tests **MUST** use the `it('should...')` convention for readability and consistency.
+```typescript
+describe('MyComponent', () => {
+    it('should behave as expected when X occurs', () => {
+        // ...
+    });
+});
+```
+
+### Prompt Bundling
+This library externalizes prompt text files (`prompts/*.md`) from the code.
+- **Build Step**: During `bun run generate` (part of `npm run build`), a script reads the MD files and generates a single TypeScript file in `.generated/prompts.ts`.
+- **Git Hygiene**: The `.generated/` directory is git-ignored. The source tree remains clean of generated artifacts.
+- **Access**: `src/prompts.ts` imports from `@generated/prompts` using a TypeScript path alias.
 
 ## Directory Map for Agents
 

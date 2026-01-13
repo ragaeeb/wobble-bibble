@@ -1,7 +1,7 @@
 /**
  * Prompts API for consumers to access bundled translation prompts.
  */
-import { MASTER_PROMPT, PROMPTS, type PromptId, type PromptMetadata } from './generated/prompts';
+import { MASTER_PROMPT, PROMPTS, type PromptId, type PromptMetadata } from '@generated/prompts';
 
 // Re-export types
 export type { PromptId, PromptMetadata };

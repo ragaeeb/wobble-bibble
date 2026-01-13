@@ -2,9 +2,13 @@
 
 [![npm version](https://img.shields.io/npm/v/wobble-bibble.svg)](https://www.npmjs.com/package/wobble-bibble)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Bun](https://img.shields.io/badge/Runtime-Bun-black?logo=bun)](https://bun.sh)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?logo=typescript)](https://www.typescriptlang.org)
+[![Linter: Biome](https://img.shields.io/badge/Linter-Biome-FFB13B?logo=biome)](https://biomejs.dev)
 ![Status](https://img.shields.io/badge/Status-Active_Research-green)
 ![Version](https://img.shields.io/badge/Prompts-v4.0_Optimized-blue)
 ![Focus](https://img.shields.io/badge/Focus-Academic_Fidelity-orange)
+![Standard](https://img.shields.io/badge/Standard-ALA--LC-darkred)
 [![wakatime](https://wakatime.com/badge/user/a0b906ce-b8e7-4463-8bce-383238df6d4b/project/f2110f75-cd59-4395-9790-b971ad3a8195.svg)](https://wakatime.com/badge/user/a0b906ce-b8e7-4463-8bce-383238df6d4b/project/f2110f75-cd59-4395-9790-b971ad3a8195)
 
 TypeScript library for Islamic text translation prompts with LLM output validation and prompt stacking utilities.

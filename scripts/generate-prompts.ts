@@ -6,7 +6,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const PROMPTS_DIR = 'prompts';
-const OUTPUT_DIR = 'src/generated';
+const OUTPUT_DIR = '.generated';
 const OUTPUT_FILE = 'prompts.ts';
 
 type PromptFile = {
