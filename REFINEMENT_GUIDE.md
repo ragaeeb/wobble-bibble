@@ -49,6 +49,7 @@ In each case folder, save these files (copy/paste exact text):
 `04_prompt_stack.txt`
 - The exact prompt text you pasted (Master + Specialized Add-on).
 - Do not include the Arabic content here (keep that in `01_input.txt` to keep things modular).
+- **NOTE:** Do NOT save `prompt_master.txt` and `prompt_addon.txt` as separate files. Only save this combined stack to reduce directory clutter.
 
 `05_reasoning_raw_01.md` (and more chunks if needed)
 - The model’s reasoning trace, "thinking" block, or explanation. Capture whatever the platform provides.
@@ -76,32 +77,35 @@ Keep files small enough to paste into a model later:
   - `Chunk: 01/04 (covers P1201–P1230)`
 
 ## 5) Labels taxonomy (controlled vocabulary)
-Use these labels in `07_labels.txt` (add more only when needed):
-- ids_alignment
-- arabic_leak
-- unicode_violation
-- translit_boundary
-- name_connector_b_rule
-- glossary_conflict
-- term_format_translit_english
-- safety_sanitization
-- citation_hallucination
-- typo_emendation
-- fiqh_dispute_resolution
-- hadith_isnad_parse
-- jarh_terms_nuance
-- tafsir_attributes
-- mixed_genre_switch
-- formatting_drift
-- blobbing_common_nouns
-- structure_collapse_qa
-- markdown_leak
-- parentheses_collision
-- mode_locking
-- gravity_well_drift
-- diacritics_drop
-- label_newline_drift
-- term_pair_pluralization
+Use these labels in `07_labels.txt` (add more only when needed).
+
+| Label | Definition / When to Use |
+| :--- | :--- |
+| **ids_alignment** | **CRITICAL.** Any issue where Segment IDs are dropped, duplicated, merged, or drift from the source. Includes "invented" IDs (e.g., splitting one segment into P12a/P12b). |
+| **arabic_leak** | Arabic script appears in output (other than `ﷺ`). |
+| **unicode_violation** | Forbidden characters (emojis, complex accents like `â/ã`, extended math symbols) appear. |
+| **translit_boundary** | Model transliterates a word that should be translated (e.g. *kitāb* instead of Book) or translates a name that should be transliterated (*The Father of Hurayrah*). |
+| **name_connector_b_rule** | Failure to use `b.` for *ibn/bin* in the middle of a chain, or using `b.` at the start of a name. |
+| **glossary_conflict** | Model ignores a "Locked Anchor" (e.g., using *Sheikh* instead of *Shaykh*, or *Koran* instead of *Qurʾān*). |
+| **term_format_translit_english** | Failure to use the `translit (English)` format for the first occurrence of a technical term (e.g., just saying "bid'ah" or just "innovation"). |
+| **safety_sanitization** | Model softens, omits, or adds disclaimers to controversial text (e.g., Jihad, Takfir, slavery) instead of translating literally. |
+| **citation_hallucination** | Model invents a source (e.g., `[Sahih Bukhari]`) that isn't in the Arabic text, or hallucinates a "missing" part of the text. |
+| **typo_emendation** | Model "fixes" a typo in the Arabic source (e.g., translates "bull" as "revolution" because it thinks the author made a mistake). Hallucination risk. |
+| **fiqh_dispute_resolution** | (Fiqh Mode) Model tries to "solve" the legal issue instead of just translating the text. |
+| **hadith_isnad_parse** | (Hadith Mode) Failure to identify the chain boundary, or mangling the narrator names. |
+| **jarh_terms_nuance** | (Rijal Mode) Mistranslating specific narrator criticism terms (e.g., *Saduq* vs *Thiqah*). |
+| **tafsir_attributes** | (Tafsir Mode) Misinterpreting Divine Attributes (e.g., interpreting "Hand" metaphorically when author meant literally). |
+| **mixed_genre_switch** | Model gets stuck in one mode (e.g., Isnad) when text switches to another (e.g., Narrative), or vice versa. form of **mode_locking**. |
+| **formatting_drift** | General loss of structure (e.g., forgetting to bold labels, losing line breaks). |
+| **blobbing_common_nouns** | Capitalizing common nouns as if they were proper names (e.g., *The Imām* instead of *the imām*). |
+| **structure_collapse_qa** | Q&A format breaks down (e.g., Question and Answer run into the same paragraph). |
+| **markdown_leak** | Bold/Italic/Headers appear despite "Plain Text" rule. |
+| **parentheses_collision** | Parentheses used for unauthorized purposes (commentary, glosses) in violation of restrictions. |
+| **mode_locking** | Model applies rules from previous section to current section (e.g. treating common words as narrators). |
+| **gravity_well_drift** | Model reverts to generic internet spelling for high-frequency terms (e.g. *Sunni* instead of *Sunnī*) despite explicit rules. |
+| **diacritics_drop** | Lazy transliteration (e.g., *Uthman* instead of *ʿUthmān*) or inconsistent application. |
+| **label_newline_drift** | Inserting a newline after a label when it should be inline (e.g., `Questioner:\nText`). |
+| **term_pair_pluralization** | Incorrectly pluralizing the pair (e.g., *hadith (report)s*) instead of rephrasing (*reports (ahadith)*). |
 
 ## 6) Notes template (`06_notes.md`)
 Keep this short and factual:
