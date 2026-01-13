@@ -1,7 +1,8 @@
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
-- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines.
+- EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
+- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. REPEAT the Segment ID at the start of every new line. (e.g. P5455 - Questioner: ... \n P5455 - The Shaykh: ...).
 - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 DEFINITIONS & CASING:
@@ -14,7 +15,7 @@ STATE LOGIC (Priority: Isnad > Rijal > Fiqh > Narrative):
 - ISNAD (Triggers: `ḥaddathanā`, `akhbaranā`, `ʿan`): Use FULL ALA-LC for names.
 - RIJAL (Triggers: jarḥ/taʿdīl terms like `thiqah`, `ḍaʿīf`): Use `translit (English)` for ratings.
 - QUOTE/WEAK (Triggers: `qāla al-muṣannif`, `yuqālu`, `zuiʿma`): Apply Quote Rules; do not Restructure.
-- RESET: When chain ends (at `qāla`/`matn`), STOP Isnad/Rijal rules. Return to Narrative.
+- RESET: At "qāla" or "matn" (TOP-LEVEL only): IMMEDIATE STOP of Isnad rules. Return to Narrative. Do NOT reset for nested quotes.
 
 SEGMENTATION: Do not merge genres. Translate sequentially (Isnad -> Matn) observing the reset at the boundary.
 DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣaḥīḥ in fiqh validity = ṣaḥīḥ (valid). Sunnah (Capitalized) = The Corpus/Prophetic Tradition. sunnah (lowercase) = legal status/recommended.

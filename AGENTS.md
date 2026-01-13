@@ -68,9 +68,29 @@ To ensure the robustness of these prompts, we periodically run a "Peer Review" c
 
 ### 1. Generating Review Context
 We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
-**Command:**
+
+**Option A: General Health Check (All Prompts)**
 ```bash
 code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/*.md" .
+```
+
+**Option B: Specific Proposal Review (Targeted)**
+Use this when asking agents to review a specific fix. You MUST include the relevant "Reasoning Dump" case folder to prove the error exists.
+**Tip:** Include `input`, `output`, and `notes`. Exclude `reasoning` (too large) unless necessary.
+
+```bash
+code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
+  -i "README.md" \
+  -i "AGENTS.md" \
+  -i "REFINEMENT_GUIDE.md" \
+  -i "prompts/master_prompt.md" \
+  -i "prompts/encyclopedia_mixed.md" \
+  -i "analysis/reports/2026-01-13-hallucinations/*" \
+  -i "analysis/proposals/REVIEW_REQUEST.md" \
+  -i "analysis/reasoning_dumps/path/to/case/01_input.txt" \
+  -i "analysis/reasoning_dumps/path/to/case/02_output.txt" \
+  -i "analysis/reasoning_dumps/path/to/case/*notes.md" \
+  .
 ```
 *Note: This command excludes the heavy `analysis/reasoning_dumps/` and `reviews/` folders to keep context concise (~10-15k tokens).*
 
