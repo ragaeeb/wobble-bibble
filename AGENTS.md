@@ -3,9 +3,23 @@
 This file provides context for AI agents working on this repository to understand the project mission and data structure.
 
 ## Mission
-The mission of this repository is to solve the "Friction Points" in Arabic-to-English translation of Islamic scholarly materials. We use LLM reasoning logs to identify where models "panic" or "dither" and fix those behaviors through rigid, rule-based prompt engineering.
+This repository provides a TypeScript library (`wobble-bibble`) for:
+1. **Prompt Management**: Stacking master + specialized prompts for Islamic text translation
+2. **Output Validation**: Detecting LLM hallucinations (invented IDs, malformed markers, order errors)
+3. **Prompt Refinement**: Continuous improvement of prompts based on model failure analysis
 
-See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the SOP on how to analyze model failures and update prompts.
+The underlying goal is to solve "Friction Points" in Arabic-to-English translation of Islamic scholarly materials using rigid, rule-based prompt engineering.
+
+See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the SOP on prompt analysis and updates.
+
+## Library Architecture
+
+### Source Code (`src/`)
+- **`index.ts`** - Public API exports
+- **`validation.ts`** - LLM output validation (marker format, order, hallucination detection)
+- **`prompt-stacking.ts`** - Combine master + specialized prompts
+- **`formatting.ts`** - Format segments for LLM input
+- **`constants.ts`** - Marker patterns and enums
 
 ## Directory Map for Agents
 

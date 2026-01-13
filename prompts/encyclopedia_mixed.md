@@ -2,7 +2,7 @@ NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
 - EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
-- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. REPEAT the Segment ID at the start of every new line. (e.g. P5455 - Questioner: ... \n P5455 - The Shaykh: ...).
+- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines; do NOT prefix subsequent lines with "ID - ". (e.g. P5455 - Questioner: ... \n The Shaykh: ...).
 - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 DEFINITIONS & CASING:
@@ -23,4 +23,3 @@ HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/A
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.
 
 CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmīyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
-RETRACTION: If the author retracts (kuntu aqulu... wa-al-ana aqulu...), make the change explicit in English.

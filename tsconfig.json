@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "allowJs": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": ["ESNext"],
+        "module": "Preserve",
+        "moduleDetection": "force",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": false,
+        "noUncheckedIndexedAccess": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "outDir": "./dist",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "verbatimModuleSyntax": true
+    },
+    "exclude": ["node_modules", "**/*.test.ts"],
+    "include": ["src/**/*"]
+}
