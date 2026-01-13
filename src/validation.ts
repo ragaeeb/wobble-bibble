@@ -166,6 +166,46 @@ export const detectDuplicateIds = (ids: string[]): string | undefined => {
 };
 
 /**
+ * Detects IDs in the output that were not in the source (invented/hallucinated IDs).
+ * @param outputIds - IDs extracted from LLM output
+ * @param sourceIds - IDs that were present in the source input
+ * @returns Error message if invented IDs found, undefined if all IDs are valid
+ */
+export const detectInventedIds = (outputIds: string[], sourceIds: string[]): string | undefined => {
+    const sourceSet = new Set(sourceIds);
+    const invented = outputIds.filter((id) => !sourceSet.has(id));
+
+    if (invented.length > 0) {
+        return `Invented ID(s) detected: ${invented.map((id) => `"${id}"`).join(', ')} - these IDs do not exist in the source`;
+    }
+};
+
+/**
+ * Detects segments that appear truncated (just "…" or very short with no real content).
+ * @param text - The full LLM output text
+ * @returns Error message if truncated segments found, undefined if all segments have content
+ */
+export const detectTruncatedSegments = (text: string): string | undefined => {
+    // Pattern to match segment lines
+    const segmentPattern = /^([A-Z]\d+[a-j]?)\s*[-–—]\s*(.*)$/gm;
+    const truncated: string[] = [];
+
+    for (const match of text.matchAll(segmentPattern)) {
+        const id = match[1];
+        const content = match[2].trim();
+
+        // Check for truncated content: empty, just ellipsis, or [INCOMPLETE]
+        if (!content || content === '…' || content === '...' || content === '[INCOMPLETE]') {
+            truncated.push(id);
+        }
+    }
+
+    if (truncated.length > 0) {
+        return `Truncated segment(s) detected: ${truncated.map((id) => `"${id}"`).join(', ')} - segments must be fully translated`;
+    }
+};
+
+/**
  * Validates translation marker format and returns error message if invalid.
  * Catches common AI hallucinations like malformed reference IDs.
  *
