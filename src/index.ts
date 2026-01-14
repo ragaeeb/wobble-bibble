@@ -1,19 +1,7 @@
-// =============================================================================
-// VALIDATION
-// =============================================================================
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
 export { MARKER_ID_PATTERN, Markers, TRANSLATION_MARKER_PARTS } from './constants';
-// =============================================================================
-// FORMATTING
-// =============================================================================
 export { formatExcerptsForPrompt } from './formatting';
 export type { PromptId, PromptMetadata, StackedPrompt } from './prompts';
-// =============================================================================
-// PROMPTS
-// =============================================================================
+
 export {
     getMasterPrompt,
     getPrompt,
@@ -22,11 +10,12 @@ export {
     getStackedPrompt,
     stackPrompts,
 } from './prompts';
+
 export type { TranslationValidationResult, ValidationWarning, ValidationWarningType } from './validation';
+
 export {
     detectArabicScript,
     detectDuplicateIds,
-    detectForbiddenTerms,
     detectImplicitContinuation,
     detectInventedIds,
     detectMetaTalk,

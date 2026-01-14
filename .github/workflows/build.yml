@@ -29,6 +29,9 @@ jobs:
       - name: Test
         run: bun test src/ --coverage --coverage-reporter=lcov
 
+      - name: Test Distribution
+        run: bun run test:dist
+
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:

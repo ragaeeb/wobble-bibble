@@ -1,6 +1,8 @@
 # wobble-bibble 🕌
 
 [![npm version](https://img.shields.io/npm/v/wobble-bibble.svg)](https://www.npmjs.com/package/wobble-bibble)
+[![codecov](https://codecov.io/gh/ragaeeb/wobble-bibble/graph/badge.svg?token=3BCT73JB7F)](https://codecov.io/gh/ragaeeb/wobble-bibble)
+[![Size](https://deno.bundlejs.com/badge?q=wobble-bibble@latest&badge=detailed)](https://bundlejs.com/?q=wobble-bibble%40latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Runtime-Bun-black?logo=bun)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?logo=typescript)](https://www.typescriptlang.org)
@@ -26,6 +28,7 @@ bun add wobble-bibble
 - **Bundled Prompts**: 8 optimized translation prompts (Hadith, Fiqh, Tafsir, etc.) with strongly-typed access
 - **Translation Validation**: Catch LLM hallucinations like malformed segment IDs, Arabic leaks, forbidden terms
 - **Prompt Stacking**: Master + specialized prompts combined automatically
+- **Gold Standards**: [High-fidelity reference dataset](docs/gold-standard.md) for benchmarking
 
 ## Quick Start
 
@@ -51,7 +54,6 @@ const ids = getPromptIds(); // ['master_prompt', 'hadith', 'fiqh', ...]
 import {
     validateTranslations,
     detectArabicScript,
-    detectForbiddenTerms,
     detectNewlineAfterId,
 } from 'wobble-bibble';
 
@@ -66,7 +68,6 @@ if (!result.isValid) {
 
 // Individual detectors
 const arabicWarnings = detectArabicScript(llmOutput); // Soft warnings
-const forbiddenError = detectForbiddenTerms(llmOutput); // Hard error
 const newlineError = detectNewlineAfterId(llmOutput); // Hard error
 ```
 
@@ -90,7 +91,6 @@ const newlineError = detectNewlineAfterId(llmOutput); // Hard error
 | `validateTranslations(text, expectedIds)` | Full validation pipeline |
 | `validateTranslationMarkers(text)` | Check for malformed IDs (e.g., `P123$4`) |
 | `detectNewlineAfterId(text)` | Catch `P1234\nText` (Gemini bug) |
-| `detectForbiddenTerms(text)` | Catch Sheikh, Koran, Hadith, Islam, Salafism |
 | `detectImplicitContinuation(text)` | Catch "implicit continuation" text |
 | `detectMetaTalk(text)` | Catch "(Note:", "[Editor:" |
 | `detectDuplicateIds(ids)` | Catch same ID appearing twice |
@@ -126,7 +126,7 @@ const newlineError = detectNewlineAfterId(llmOutput); // Hard error
 
 ## Prompt Development
 
-See [REFINEMENT_GUIDE.md](./REFINEMENT_GUIDE.md) for the methodology used to develop and test these prompts.
+See [REFINEMENT_GUIDE.md](docs/refinement-guide.md) for the methodology used to develop and test these prompts.
 
 ## License
 

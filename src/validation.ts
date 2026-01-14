@@ -1,9 +1,5 @@
 import { MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 /**
  * Warning types for soft validation issues
  */
@@ -13,8 +9,11 @@ export type ValidationWarningType = 'arabic_leak' | 'wrong_diacritics';
  * A soft validation warning (not a hard error)
  */
 export type ValidationWarning = {
+    /** The type of warning */
     type: ValidationWarningType;
+    /** Human-readable warning message */
     message: string;
+    /** The offending text match */
     match?: string;
 };
 
@@ -34,13 +33,12 @@ export type TranslationValidationResult = {
     warnings?: ValidationWarning[];
 };
 
-// =============================================================================
-// SOFT VALIDATORS (return warnings)
-// =============================================================================
-
 /**
  * Detects Arabic script in text (except allowed ﷺ symbol).
  * This is a SOFT warning - Arabic leak is bad but not a hard failure.
+ *
+ * @param text - The text to scan for Arabic script
+ * @returns Array of validation warnings if Arabic is found
  */
 export const detectArabicScript = (text: string): ValidationWarning[] => {
     const warnings: ValidationWarning[] = [];
@@ -65,6 +63,9 @@ export const detectArabicScript = (text: string): ValidationWarning[] => {
 /**
  * Detects wrong diacritics (â/ã/á instead of correct macrons ā/ī/ū).
  * This is a SOFT warning - wrong diacritics are bad but not a hard failure.
+ *
+ * @param text - The text to scan for incorrect diacritics
+ * @returns Array of validation warnings if wrong diacritics are found
  */
 export const detectWrongDiacritics = (text: string): ValidationWarning[] => {
     const warnings: ValidationWarning[] = [];
@@ -86,13 +87,12 @@ export const detectWrongDiacritics = (text: string): ValidationWarning[] => {
     return warnings;
 };
 
-// =============================================================================
-// HARD VALIDATORS (return error strings)
-// =============================================================================
-
 /**
  * Detects newline immediately after segment ID (the "Gemini bug").
  * Format should be "P1234 - Text" not "P1234\nText".
+ *
+ * @param text - The text to validate
+ * @returns Error message if bug is detected, otherwise undefined
  */
 export const detectNewlineAfterId = (text: string): string | undefined => {
     const pattern = new RegExp(`^${MARKER_ID_PATTERN}\\n`, 'm');
@@ -106,6 +106,9 @@ export const detectNewlineAfterId = (text: string): string | undefined => {
 /**
  * Detects forbidden terms from the locked glossary.
  * These are common "gravity well" spellings that should be avoided.
+ *
+ * @param text - The text to scan for forbidden terms
+ * @returns Error message if a forbidden term is found, otherwise undefined
  */
 export const detectForbiddenTerms = (text: string): string | undefined => {
     const forbidden: Array<{ term: RegExp; correct: string }> = [
@@ -126,6 +129,9 @@ export const detectForbiddenTerms = (text: string): string | undefined => {
 
 /**
  * Detects implicit continuation text that LLMs add when hallucinating.
+ *
+ * @param text - The text to scan for continuation markers
+ * @returns Error message if continuation text is found, otherwise undefined
  */
 export const detectImplicitContinuation = (text: string): string | undefined => {
     const patterns = [/implicit continuation/i, /\bcontinuation:/i, /\bcontinued:/i];
@@ -140,6 +146,9 @@ export const detectImplicitContinuation = (text: string): string | undefined => 
 
 /**
  * Detects meta-talk (translator notes, editor comments) that violate NO META-TALK.
+ *
+ * @param text - The text to scan for meta-talk
+ * @returns Error message if meta-talk is found, otherwise undefined
  */
 export const detectMetaTalk = (text: string): string | undefined => {
     const patterns = [/\(note:/i, /\(translator'?s? note:/i, /\[editor:/i, /\[note:/i, /\(ed\.:/i, /\(trans\.:/i];
@@ -154,6 +163,9 @@ export const detectMetaTalk = (text: string): string | undefined => {
 
 /**
  * Detects duplicate segment IDs in the output.
+ *
+ * @param ids - List of IDs extracted from the translation
+ * @returns Error message if duplicates are found, otherwise undefined
  */
 export const detectDuplicateIds = (ids: string[]): string | undefined => {
     const seen = new Set<string>();

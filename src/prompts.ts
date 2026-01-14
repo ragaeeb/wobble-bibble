@@ -1,14 +1,6 @@
-/**
- * Prompts API for consumers to access bundled translation prompts.
- */
 import { MASTER_PROMPT, PROMPTS, type PromptId, type PromptMetadata } from '@generated/prompts';
 
-// Re-export types
 export type { PromptId, PromptMetadata };
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 /**
  * A stacked prompt ready for use with an LLM.
@@ -24,12 +16,9 @@ export type StackedPrompt = {
     isMaster: boolean;
 };
 
-// =============================================================================
-// UTILITIES
-// =============================================================================
-
 /**
  * Stacks a master prompt with a specialized addon prompt.
+ *
  * @param master - The master/base prompt
  * @param addon - The specialized addon prompt
  * @returns Combined prompt text
@@ -43,10 +32,6 @@ export const stackPrompts = (master: string, addon: string): string => {
     }
     return `${master}\n${addon}`;
 };
-
-// =============================================================================
-// PUBLIC API
-// =============================================================================
 
 /**
  * Gets all available prompts as stacked prompts (master + addon combined).
@@ -69,11 +54,11 @@ export const getPrompts = (): StackedPrompt[] => {
  *
  * @param id - The prompt ID to retrieve
  * @returns The stacked prompt
+ * @throws Error if prompt ID is not found
  */
 export const getPrompt = (id: PromptId): StackedPrompt => {
     const prompt = PROMPTS.find((p) => p.id === id);
     if (!prompt) {
-        // This should never happen with proper typing, but handle gracefully
         throw new Error(`Prompt not found: ${id}`);
     }
 

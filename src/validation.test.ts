@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test';
 import {
     detectArabicScript,
     detectDuplicateIds,
-    detectForbiddenTerms,
     detectImplicitContinuation,
     detectInventedIds,
     detectMetaTalk,
@@ -91,44 +90,6 @@ describe('detectNewlineAfterId', () => {
         const text = 'P5456\nQuestioner: What is the ruling?';
         const error = detectNewlineAfterId(text);
         expect(error).toBeDefined();
-    });
-});
-
-describe('detectForbiddenTerms', () => {
-    it('shoulddetects Sheikh instead of Shaykh', () => {
-        const text = 'P123 - Sheikh Muhammad said...';
-        const error = detectForbiddenTerms(text);
-        expect(error).toContain('Sheikh');
-    });
-
-    it('shoulddetects Koran instead of Qurʾān', () => {
-        const text = 'P123 - The Koran says...';
-        const error = detectForbiddenTerms(text);
-        expect(error).toContain('Koran');
-    });
-
-    it('shoulddetects Hadith without dots', () => {
-        const text = 'P123 - This Hadith is authentic';
-        const error = detectForbiddenTerms(text);
-        expect(error).toContain('Hadith');
-    });
-
-    it('shoulddetects Islam without macron', () => {
-        const text = 'P123 - Islam is the religion';
-        const error = detectForbiddenTerms(text);
-        expect(error).toContain('Islam');
-    });
-
-    it('shoulddetects Salafism instead of Salafīyyah', () => {
-        const text = 'P123 - Salafism is a methodology';
-        const error = detectForbiddenTerms(text);
-        expect(error).toContain('Salafism');
-    });
-
-    it('shouldallows correct terms', () => {
-        const text = 'P123 - Shaykh Muḥammad said that the Qurʾān and the ḥadīth of Islām...';
-        const error = detectForbiddenTerms(text);
-        expect(error).toBeUndefined();
     });
 });
 

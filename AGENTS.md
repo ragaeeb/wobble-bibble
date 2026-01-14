@@ -10,7 +10,7 @@ This repository provides a TypeScript library (`wobble-bibble`) for:
 
 The underlying goal is to solve "Friction Points" in Arabic-to-English translation of Islamic scholarly materials using rigid, rule-based prompt engineering.
 
-See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the SOP on prompt analysis and updates.
+See **[REFINEMENT_GUIDE.md](refinement-guide.md)** for the SOP on prompt analysis and updates.
 
 ## Library Architecture
 
@@ -47,8 +47,8 @@ This library externalizes prompt text files (`prompts/*.md`) from the code.
 
 ### 1. Analysis & Synthesis
 If you are asked to understand *why* a certain rule exists, look here:
-- **`analysis/synthesis.md`**: Summarizes all known struggles (e.g., Transliteration Boundary confusion, Safety Traps, Theological Absurdity handling).
-- **`analysis/reports/*.md`**: Contains granular analysis of specific model families.
+- **`archive/reports/`**: Summarizes known struggles (Transliteration Boundary confusion, Safety Traps, Theological Absurdity handling).
+- **`archive/benchmarks/`**: Highly granular logic traces and failure cases across model families.
 
 ### 2. Prompt Templates
 If you are asked to generate a translation or refine a prompt, use these as your base.
@@ -107,7 +107,7 @@ We use `code2prompt` to bundle the entire project logic and instructions for the
 
 **Option A: General Health Check (All Prompts)**
 ```bash
-code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/*.md" .
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "docs/agents.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
 ```
 
 **Option B: Specific Proposal Review (Targeted)**
@@ -117,18 +117,17 @@ Use this when asking agents to review a specific fix. You MUST include the relev
 ```bash
 code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
   -i "README.md" \
-  -i "AGENTS.md" \
-  -i "REFINEMENT_GUIDE.md" \
+  -i "docs/agents.md" \
+  -i "docs/refinement-guide.md" \
   -i "prompts/master_prompt.md" \
   -i "prompts/encyclopedia_mixed.md" \
-  -i "analysis/reports/2026-01-13-hallucinations/*" \
-  -i "analysis/proposals/REVIEW_REQUEST.md" \
-  -i "analysis/reasoning_dumps/path/to/case/01_input.txt" \
-  -i "analysis/reasoning_dumps/path/to/case/02_output.txt" \
-  -i "analysis/reasoning_dumps/path/to/case/*notes.md" \
+  -i "archive/reports/2026-01-13-hallucinations/*" \
+  -i "archive/benchmarks/path/to/case/01_input.txt" \
+  -i "archive/benchmarks/path/to/case/02_output.txt" \
+  -i "archive/benchmarks/path/to/case/*notes.md" \
   .
 ```
-*Note: This command excludes the heavy `analysis/reasoning_dumps/` and `reviews/` folders to keep context concise (~10-15k tokens).*
+*Note: This command excludes the heavy `archive/benchmarks/` and `archive/reviews/` folders to keep context concise (~10-15k tokens).*
 
 ### 2. Synthesis Methodology (The "Agent Stack" Protocol)
 If you are asked to synthesize feedback from new reviews, follow this logic:
