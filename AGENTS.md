@@ -46,9 +46,9 @@ This library externalizes prompt text files (`prompts/*.md`) from the code.
 ## Directory Map for Agents
 
 ### 1. Analysis & Synthesis
-If you are asked to understand *why* a certain rule exists, look here:
-- **`archive/reports/`**: Summarizes known struggles (Transliteration Boundary confusion, Safety Traps, Theological Absurdity handling).
-- **`archive/benchmarks/`**: Highly granular logic traces and failure cases across model families.
+If you are asked to understand *why* a certain rule exists or to fix a prompt failure, look here:
+- **GitHub Issues**: All prompt refinement cases are tracked as structured issues. Use the `prompt-refinement` label to filter. Each issue contains input, output, expected, diagnosis, and proposed fix.
+- **`docs/refinement-guide.md`**: The Standard Operating Procedure for the fix workflow.
 
 ### 2. Prompt Templates
 If you are asked to generate a translation or refine a prompt, use these as your base.

@@ -1,0 +1,120 @@
+name: "🎯 Prompt Refinement Case"
+description: "Document a model failure for prompt refinement."
+title: "[Refinement] "
+labels: ["prompt-refinement", "triage"]
+body:
+  - type: dropdown
+    id: model
+    attributes:
+      label: "Model"
+      description: "Which model exhibited the failure?"
+      options:
+        - gemini-3.0-pro
+        - gpt-5.2-thinking
+        - gpt-5o-thinking-mini
+        - grok-4-expert
+        - grok-4.1-thinking
+        - other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prompt_addon
+    attributes:
+      label: "Prompt Add-on"
+      description: "Which specialized genre prompt was stacked with master_prompt?"
+      options:
+        - master_prompt_only
+        - hadith
+        - fatawa
+        - fiqh
+        - tafsir
+        - encyclopedia_mixed
+        - jarh_wa_tadil
+        - usul_al_fiqh
+        - other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: failure_type
+    attributes:
+      label: "Failure Type"
+      description: "Check all that apply."
+      options:
+        - label: "ids_alignment [Dropped/merged/hallucinated IDs]"
+        - label: "arabic_leak [Arabic script in output other than ﷺ]"
+        - label: "translit_boundary [Transliterated where should translate, or vice versa]"
+        - label: "safety_sanitization [Model softened/omitted/added disclaimers]"
+        - label: "glossary_conflict [Ignored locked anchors like Shaykh/Muḥammad]"
+        - label: "formatting_drift [Markdown leakage, newline drift, structural loss]"
+        - label: "mode_locking [Stuck in one logic mode across genre switches]"
+        - label: "term_format_drift [Missing 'translit (English)' format]"
+        - label: "citation_hallucination [Invented sources not in Arabic text]"
+        - label: "diacritics_drop [Lazy transliteration (e.g., Uthman instead of ʿUthmān)]"
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "One-line description of the failure."
+      placeholder: "Model dropped segment P1234 and leaked Arabic script in P1235."
+    validations:
+      required: true
+
+  - type: textarea
+    id: input
+    attributes:
+      label: "Input"
+      description: "The exact Arabic segments (with IDs) sent to the model."
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: "Output"
+      description: "The model's raw, unedited output."
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Output"
+      description: "What the correct output should look like for the affected segments."
+      placeholder: "P1234 - The Shaykh said: ..."
+      render: text
+
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: "Reasoning Trace"
+      description: "The model's thinking block (if available). Paste excerpts if too long."
+      render: markdown
+
+  - type: textarea
+    id: prompt_stack
+    attributes:
+      label: "Prompt Stack"
+      description: "The exact combined prompt text used (Master + Addon)."
+      render: markdown
+
+  - type: textarea
+    id: diagnosis
+    attributes:
+      label: "Diagnosis"
+      description: "Why is the output wrong? What rule was violated?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: "Proposed Fix"
+      description: "Your hypothesis and suggested prompt edit."
+      placeholder: |
+        Hypothesis: The translit_boundary rule is ambiguous.
+        Fix: Add "TRANSLATE common nouns like kitab, masjid" to master_prompt.
