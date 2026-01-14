@@ -1,85 +1,133 @@
-# Islamic Translation Prompt Lab 🕌
+# wobble-bibble 🕌
 
+[![npm version](https://img.shields.io/npm/v/wobble-bibble.svg)](https://www.npmjs.com/package/wobble-bibble)
+[![codecov](https://codecov.io/gh/ragaeeb/wobble-bibble/graph/badge.svg?token=3BCT73JB7F)](https://codecov.io/gh/ragaeeb/wobble-bibble)
+[![Size](https://deno.bundlejs.com/badge?q=wobble-bibble@latest&badge=detailed)](https://bundlejs.com/?q=wobble-bibble%40latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Bun](https://img.shields.io/badge/Runtime-Bun-black?logo=bun)](https://bun.sh)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?logo=typescript)](https://www.typescriptlang.org)
+[![Linter: Biome](https://img.shields.io/badge/Linter-Biome-FFB13B?logo=biome)](https://biomejs.dev)
 ![Status](https://img.shields.io/badge/Status-Active_Research-green)
 ![Version](https://img.shields.io/badge/Prompts-v4.0_Optimized-blue)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
 ![Focus](https://img.shields.io/badge/Focus-Academic_Fidelity-orange)
+![Standard](https://img.shields.io/badge/Standard-ALA--LC-darkred)
 [![wakatime](https://wakatime.com/badge/user/a0b906ce-b8e7-4463-8bce-383238df6d4b/project/f2110f75-cd59-4395-9790-b971ad3a8195.svg)](https://wakatime.com/badge/user/a0b906ce-b8e7-4463-8bce-383238df6d4b/project/f2110f75-cd59-4395-9790-b971ad3a8195)
 
-**Repository:** [github.com/ragaeeb/wobble-bibble](https://github.com/ragaeeb/wobble-bibble)
+TypeScript library for Islamic text translation prompts with LLM output validation and prompt stacking utilities.
 
-This project is dedicated to the research, analysis, and refinement of AI prompts for the **high-fidelity translation** of Islamic scholarly texts (Hadith, Fiqh, Tafsir, Jarh wa Ta'dil) from Arabic to English.
+## Installation
 
-Our goal is to solve the "Friction Points" where LLMs typically fail—such as transliteration inconsistencies, theological sanitization, and textual hallucinations—by enforcing rigid, rule-based prompt protocols.
+```bash
+npm install wobble-bibble
+# or
+bun add wobble-bibble
+```
 
----
+## Features
 
-## 🚀 How to Use These Prompts
+- **Bundled Prompts**: 8 optimized translation prompts (Hadith, Fiqh, Tafsir, etc.) with strongly-typed access
+- **Translation Validation**: Catch LLM hallucinations like malformed segment IDs, Arabic leaks, forbidden terms
+- **Prompt Stacking**: Master + specialized prompts combined automatically
+- **Gold Standards**: [High-fidelity reference dataset](docs/gold-standard.md) for benchmarking
 
-The system works on a **Inheritance Model**. You do not use a single prompt; you stack them.
-Important: “Inheritance” is conceptual only. If you are using a web UI, the model cannot read files from this repo. You must paste the text.
+## Quick Start
 
-### Step 1: Logic Layer (The Master Prompt)
-Copy the contents of **[master_prompt.md](prompts/master_prompt.md)**.
-*   *This defines the "Iron Rules": ALA-LC policies, Unicode allow-lists, and the locked Glossary.*
+### Get Translation Prompts
 
-### Step 2: Specialization Layer (The Add-on)
-Copy **ONE** specialized prompt and paste it **immediately below** the Master Prompt text to adapt the rules to your specific genre:
-*   **[hadith.md](prompts/hadith.md)**: For Isnad-heavy texts, Sharh, or Sunan collections.
-*   **[fatawa.md](prompts/fatawa.md)**: For Q&A, Fatawa collections, and general advice.
-*   **[fiqh.md](prompts/fiqh.md)**: For Fiqh Manuals (Matn/Sharh) requiring strict legal terminology (Wajib/Haram).
-*   **[tafsir.md](prompts/tafsir.md)**: For Quranic exegesis (Attributes of Allah, Grammar, Isra'iliyyat).
-*   **[jarh_wa_tadil.md](prompts/jarh_wa_tadil.md)**: For Narrator Criticism (Rijal) works.
-*   **[encyclopedia_mixed.md](prompts/encyclopedia_mixed.md)**: For polymath works (e.g., Albani, Ibn Taymiyyah) that blend disciplines.
+```typescript
+import { getPrompt, getPrompts, getPromptIds } from 'wobble-bibble';
 
-### Step 3: Input
-Paste your Arabic text segment.
+// Get a specific stacked prompt (strongly typed)
+const hadithPrompt = getPrompt('hadith');
+console.log(hadithPrompt.content); // Master + Hadith addon combined
 
-### Practical notes (web usage)
-- **Zero-Waste Prompts**: The prompt files in `prompts/` have been stripped of all metadata headers and instructions. They contain *only* the raw rules to maximize context window efficiency.
-- **Stacking is Mandatory**: You MUST paste the Master Prompt first, followed by the Add-on. The Add-on relies on definitions in the Master.
-- Term formatting convention: technical terms should be `translit (English)` (parentheses are reserved for this use).
-- Name connector convention: mid-chain بن/ابن -> `b.` (e.g., ʿAbd Allāh b. Yūsuf); initial `Ibn` stays `Ibn` (e.g., Ibn Taymiyyah).
+// Get all available prompts
+const allPrompts = getPrompts();
 
----
+// Get list of prompt IDs for dropdowns
+const ids = getPromptIds(); // ['master_prompt', 'hadith', 'fiqh', ...]
+```
 
-## 📂 Project Structure
+### Validate LLM Output
 
-| Directory | Content |
-| :--- | :--- |
-| **`prompts/`** | ✅ **Use These.** The latest v4.0 optimized templates covering all genres. |
-| **`analysis/`** | 🧠 **The Brain.** Contains the [Synthesis Report](analysis/synthesis.md) and detailed model evaluations. |
-| **`analysis/reasoning_dumps/`** | 💭 **Raw Data.** Chain-of-thought logs from Gemini, GPT, and Claude showing *how* they translate. |
-| **`research/`** | 🏛 **Archive.** Older prompt iterations and raw suggestions. |
+```typescript
+import {
+    validateTranslations,
+    detectArabicScript,
+    detectNewlineAfterId,
+} from 'wobble-bibble';
 
----
+const llmOutput = `P1234 - Translation of first segment
+P1235 - Translation of second segment`;
 
-## 🔬 Supported & Tested Models
+// Full validation pipeline
+const result = validateTranslations(llmOutput, ['P1234', 'P1235']);
+if (!result.isValid) {
+    console.error('Error:', result.error);
+}
 
-These prompts have been optimized based on reasoning traces from:
-*   **Google Gemini 3.0 Pro** (Excellent at sticking to "Locked Glossaries")
-*   **GPT-5.2 "Thinking"** (Strongest at multi-pass 3-step revision)
-*   **Claude 3.5 Sonnet** (Best for poetic/literary flow in Tafsir)
-*   **Grok-4 Expert** (Used for stress-testing "Safety Override" protocols)
+// Individual detectors
+const arabicWarnings = detectArabicScript(llmOutput); // Soft warnings
+const newlineError = detectNewlineAfterId(llmOutput); // Hard error
+```
 
-## ✨ Key Features (v4.0)
+## API Reference
 
-*   **🛡 Safety Overrides:** Explicit instructions to *not* sanitize polemical or controversial terms (e.g., "Rafidah", "Jihad") to maintain academic historical fidelity.
-*   **📝 Transliteration Matrix:** A strict decision table for where to use FULL ALA-LC (diacritics) vs. keeping existing Latin spellings as written, plus strict `b.` connector handling.
-*   **🔄 3-Pass QA:** A mandatory internal protocol requiring the model to check Alignment, Accuracy, and Compliance before outputting.
-*   **⚡️ Token Optimized:** All prompts are stripped of Markdown headers/tables to minimize context window usage.
+### Prompts
 
-## 🔄 Contributing / Refining
-Found a bug? Model hallucinating?
-See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the official protocol on how to capture reasoning logs and update these prompts.
+| Function | Description |
+|----------|-------------|
+| `getPrompt(id)` | Get a specific stacked prompt by ID (strongly typed) |
+| `getPrompts()` | Get all available stacked prompts |
+| `getStackedPrompt(id)` | Get just the prompt content string |
+| `getMasterPrompt()` | Get raw master prompt (for custom addons) |
+| `getPromptIds()` | Get list of available prompt IDs |
+| `stackPrompts(master, addon)` | Manually combine prompts |
 
----
+### Validation (Hard Errors)
 
-## 📅 Status
-**Last Updated:** January 11, 2026
-**Current Version:** v4.0 (Final)
+| Function | Description |
+|----------|-------------|
+| `validateTranslations(text, expectedIds)` | Full validation pipeline |
+| `validateTranslationMarkers(text)` | Check for malformed IDs (e.g., `P123$4`) |
+| `detectNewlineAfterId(text)` | Catch `P1234\nText` (Gemini bug) |
+| `detectImplicitContinuation(text)` | Catch "implicit continuation" text |
+| `detectMetaTalk(text)` | Catch "(Note:", "[Editor:" |
+| `detectDuplicateIds(ids)` | Catch same ID appearing twice |
 
-## ✍️ Author
-**Ragaeeb Haq**
-*   [GitHub Profile](https://github.com/ragaeeb)
-*   [Project Repository](https://github.com/ragaeeb/wobble-bibble)
+### Validation (Soft Warnings)
+
+| Function | Description |
+|----------|-------------|
+| `detectArabicScript(text)` | Detect Arabic characters (except ﷺ) |
+| `detectWrongDiacritics(text)` | Detect â/ã/á instead of macrons |
+
+### Utilities
+
+| Function | Description |
+|----------|-------------|
+| `extractTranslationIds(text)` | Extract all segment IDs from text |
+| `normalizeTranslationText(text)` | Split merged markers onto separate lines |
+| `findUnmatchedTranslationIds(ids, expected)` | Find IDs not in expected list |
+| `formatExcerptsForPrompt(segments, prompt)` | Format segments for LLM input |
+
+## Available Prompts
+
+| ID | Name | Use Case |
+|----|------|----------|
+| `master_prompt` | Master Prompt | Universal grounding rules |
+| `hadith` | Hadith | Isnad-heavy texts, Sharh |
+| `fiqh` | Fiqh | Legal terminology |
+| `tafsir` | Tafsir | Quranic exegesis |
+| `fatawa` | Fatawa | Q&A format |
+| `encyclopedia_mixed` | Encyclopedia Mixed | Polymath works |
+| `jarh_wa_tadil` | Jarh Wa Tadil | Narrator criticism |
+| `usul_al_fiqh` | Usul Al Fiqh | Legal methodology |
+
+## Prompt Development
+
+See [REFINEMENT_GUIDE.md](docs/refinement-guide.md) for the methodology used to develop and test these prompts.
+
+## License
+
+MIT

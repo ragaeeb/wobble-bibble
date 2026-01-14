@@ -1,6 +1,6 @@
 STRUCTURE (Apply First):
 - Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
-  - INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines.
+  - INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines; do NOT prefix subsequent lines with "ID - ".
   - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 
 HONORIFICS: Expand common phrases (do not transliterate):

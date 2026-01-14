@@ -3,16 +3,52 @@
 This file provides context for AI agents working on this repository to understand the project mission and data structure.
 
 ## Mission
-The mission of this repository is to solve the "Friction Points" in Arabic-to-English translation of Islamic scholarly materials. We use LLM reasoning logs to identify where models "panic" or "dither" and fix those behaviors through rigid, rule-based prompt engineering.
+This repository provides a TypeScript library (`wobble-bibble`) for:
+1. **Prompt Management**: Stacking master + specialized prompts for Islamic text translation
+2. **Output Validation**: Detecting LLM hallucinations (invented IDs, malformed markers, order errors)
+3. **Prompt Refinement**: Continuous improvement of prompts based on model failure analysis
 
-See **[REFINEMENT_GUIDE.md](REFINEMENT_GUIDE.md)** for the SOP on how to analyze model failures and update prompts.
+The underlying goal is to solve "Friction Points" in Arabic-to-English translation of Islamic scholarly materials using rigid, rule-based prompt engineering.
+
+See **[REFINEMENT_GUIDE.md](refinement-guide.md)** for the SOP on prompt analysis and updates.
+
+## Library Architecture
+
+### Source Code (`src/`)
+- **`index.ts`** - Public API exports
+- **`validation.ts`** - LLM output validation (marker format, order, hallucination detection)
+- **`prompts.ts`** - API for accessing and stacking prompts
+- **`formatting.ts`** - Format segments for LLM input
+- **`constants.ts`** - Marker patterns and enums
+
+### Test Suite (`src/*.test.ts` and `tests/`)
+- **Unit Tests (`src/*.test.ts`)**: Fast feedback on internal logic.
+- **Integration Tests (`tests/dist.test.ts`)**: Verify the production bundle (`dist/`) works as expected.
+
+## Development Standards
+
+### Testing Convention
+All tests **MUST** use the `it('should...')` convention for readability and consistency.
+```typescript
+describe('MyComponent', () => {
+    it('should behave as expected when X occurs', () => {
+        // ...
+    });
+});
+```
+
+### Prompt Bundling
+This library externalizes prompt text files (`prompts/*.md`) from the code.
+- **Build Step**: During `bun run generate` (part of `npm run build`), a script reads the MD files and generates a single TypeScript file in `.generated/prompts.ts`.
+- **Git Hygiene**: The `.generated/` directory is git-ignored. The source tree remains clean of generated artifacts.
+- **Access**: `src/prompts.ts` imports from `@generated/prompts` using a TypeScript path alias.
 
 ## Directory Map for Agents
 
 ### 1. Analysis & Synthesis
 If you are asked to understand *why* a certain rule exists, look here:
-- **`analysis/synthesis.md`**: Summarizes all known struggles (e.g., Transliteration Boundary confusion, Safety Traps, Theological Absurdity handling).
-- **`analysis/reports/*.md`**: Contains granular analysis of specific model families.
+- **`archive/reports/`**: Summarizes known struggles (Transliteration Boundary confusion, Safety Traps, Theological Absurdity handling).
+- **`archive/benchmarks/`**: Highly granular logic traces and failure cases across model families.
 
 ### 2. Prompt Templates
 If you are asked to generate a translation or refine a prompt, use these as your base.
@@ -68,11 +104,30 @@ To ensure the robustness of these prompts, we periodically run a "Peer Review" c
 
 ### 1. Generating Review Context
 We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
-**Command:**
+
+**Option A: General Health Check (All Prompts)**
 ```bash
-code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "REFINEMENT_GUIDE.md" -i "analysis/synthesis*.md" -i "prompts/*.md" .
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "docs/agents.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
 ```
-*Note: This command excludes the heavy `analysis/reasoning_dumps/` and `reviews/` folders to keep context concise (~10-15k tokens).*
+
+**Option B: Specific Proposal Review (Targeted)**
+Use this when asking agents to review a specific fix. You MUST include the relevant "Reasoning Dump" case folder to prove the error exists.
+**Tip:** Include `input`, `output`, and `notes`. Exclude `reasoning` (too large) unless necessary.
+
+```bash
+code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
+  -i "README.md" \
+  -i "docs/agents.md" \
+  -i "docs/refinement-guide.md" \
+  -i "prompts/master_prompt.md" \
+  -i "prompts/encyclopedia_mixed.md" \
+  -i "archive/reports/2026-01-13-hallucinations/*" \
+  -i "archive/benchmarks/path/to/case/01_input.txt" \
+  -i "archive/benchmarks/path/to/case/02_output.txt" \
+  -i "archive/benchmarks/path/to/case/*notes.md" \
+  .
+```
+*Note: This command excludes the heavy `archive/benchmarks/` and `archive/reviews/` folders to keep context concise (~10-15k tokens).*
 
 ### 2. Synthesis Methodology (The "Agent Stack" Protocol)
 If you are asked to synthesize feedback from new reviews, follow this logic:
