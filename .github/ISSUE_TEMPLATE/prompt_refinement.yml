@@ -66,8 +66,8 @@ body:
     id: input
     attributes:
       label: "Input"
-      description: "The exact Arabic segments (with IDs) sent to the model."
-      render: text
+      description: "Attach a `.txt` file containing the exact Arabic segments (with IDs) sent to the model. Drag and drop the file here."
+      placeholder: "[Drag and drop input.txt here, or paste a short excerpt if under 500 chars]"
     validations:
       required: true
 
@@ -75,8 +75,8 @@ body:
     id: output
     attributes:
       label: "Output"
-      description: "The model's raw, unedited output."
-      render: text
+      description: "Attach a `.txt` file containing the model's raw, unedited output. Drag and drop the file here."
+      placeholder: "[Drag and drop output.txt here, or paste a short excerpt if under 500 chars]"
     validations:
       required: true
 
@@ -92,21 +92,66 @@ body:
     id: reasoning
     attributes:
       label: "Reasoning Trace"
-      description: "The model's thinking block (if available). Paste excerpts if too long."
-      render: markdown
+      description: "Attach a `.txt` or `.md` file containing the model's thinking block (if available). Drag and drop the file here."
+      placeholder: "[Drag and drop reasoning.txt here, or paste a short excerpt if under 500 chars]"
+
+  - type: markdown
+    attributes:
+      value: |
+        > **Note:** The prompt stack (Master + Addon) is not needed here. AI agents will automatically
+        > reconstruct it from `prompts/master_prompt.md` + the addon selected above.
+
+  - type: checkboxes
+    id: violated_rules
+    attributes:
+      label: "Violated Rules"
+      description: "Check all rules that were violated. This helps AI agents quickly identify the failure pattern."
+      options:
+        # Core Rules (Master Prompt)
+        - label: "NO_SANITIZATION — Model softened polemics or added disclaimers"
+        - label: "NO_META_TALK — Model added commentary instead of pure translation"
+        - label: "NO_MARKDOWN — Model used bold, italics, headers, or other formatting"
+        - label: "NO_EMENDATION — Model corrected typos or scribal errors"
+        - label: "NO_INFERENCE — Model inferred missing/truncated text"
+        - label: "NO_RESTRUCTURING — Model reordered or restructured content"
+        - label: "NO_INVENTED_SEGMENTS — Model created/modified segment IDs"
+        - label: "NO_ARABIC_SCRIPT — Arabic script in output (except ﷺ)"
+        # Transliteration Rules
+        - label: "ALA_LC_SCHEME — Failed to use proper ALA-LC diacritics"
+        - label: "DIACRITIC_FALLBACK — Used substitute accents (â/ã/á) instead of proper diacritics"
+        - label: "STANDARDIZED_TERMS — Wrong spelling (Sheikh→Shaykh, Quran→Qurʾān, etc.)"
+        - label: "IBN_CONNECTOR — Wrong b./Ibn usage in names"
+        - label: "PROPER_NAMES — Added parenthetical translation to proper names"
+        # Structure Rules
+        - label: "SEGMENT_ID_FORMAT — Wrong ID format (em-dash, newline after ID, etc.)"
+        - label: "MULTI_LINE_SEGMENTS — Repeated segment ID on continuation lines"
+        - label: "QA_STRUCTURE — Q&A labels not on same line, or wrong newline handling"
+        - label: "OUTPUT_COMPLETENESS — Truncated, summarized, or skipped content"
+        - label: "OUTPUT_UNIQUENESS — Same segment ID output multiple times"
+        # Technical Term Rules
+        - label: "DEFINITION_RULE — Missing 'translit (English)' on first occurrence"
+        - label: "OPAQUE_TRANSLITERATION — Multi-word transliteration without translation"
+        - label: "PARENTHESES_GOVERNANCE — Wrong use of parentheses"
+        - label: "WORD_CHOICE_ALLAH — Used 'God' instead of 'Allah' for الله"
+        - label: "MODERN_REGISTER — Used archaic words (thee, thou, verily, etc.)"
+        # Genre-Specific Rules
+        - label: "ISNAD_VERBS — Wrong translation of ḥaddathanā/akhbaranā/ʿan"
+        - label: "JARH_TADIL_TERMS — Narrator ratings not in 'translit (English)' format"
+        - label: "FIQH_TERMS — Legal terms not in 'translit (English)' format"
+        - label: "USUL_TERMS — Usul al-fiqh terms not in 'translit (English)' format"
+        - label: "AYAH_CITATION — Wrong Qur'an verse format or invented references"
+        - label: "ATTRIBUTE_THEOLOGY — Reinterpreted author's theological position"
+        - label: "HONORIFICS — Failed to use ﷺ or wrong honorific expansion"
+        - label: "KHILAF_ATTRIBUTION — Resolved disputes or chose views without source doing so"
+        - label: "MODE_RESET — Stuck in Isnad/Rijal mode after genre switch"
+        - label: "SUNNAH_AMBIGUITY — Wrong Sunnah/sunnah casing for context"
 
   - type: textarea
-    id: prompt_stack
+    id: diagnosis_notes
     attributes:
-      label: "Prompt Stack"
-      description: "The exact combined prompt text used (Master + Addon)."
-      render: markdown
-
-  - type: textarea
-    id: diagnosis
-    attributes:
-      label: "Diagnosis"
-      description: "Why is the output wrong? What rule was violated?"
+      label: "Diagnosis Notes"
+      description: "Additional explanation of why the output is wrong, or details about the rule violation."
+      placeholder: "The model used 'Sheikh' instead of 'Shaykh' in three places, violating the STANDARDIZED_TERMS rule..."
     validations:
       required: true
 
