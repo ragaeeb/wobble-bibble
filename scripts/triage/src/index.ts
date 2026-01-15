@@ -4,7 +4,7 @@
  * Usage: bun run src/index.ts <issue_number>
  *
  * Environment:
- * - GEMINI_API_KEY: Required (can be in root .env file)
+ * - GOOGLE_API_KEY: Required (can be in root .env file)
  * - GITHUB_TOKEN: Optional (auto-detected from gh CLI if not set)
  */
 
@@ -64,8 +64,8 @@ function getConfig(): Config {
         process.exit(1);
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-        console.error('Error: GEMINI_API_KEY environment variable is required');
+    if (!process.env.GOOGLE_API_KEY) {
+        console.error('Error: GOOGLE_API_KEY environment variable is required');
         process.exit(1);
     }
 
