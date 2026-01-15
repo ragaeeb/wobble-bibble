@@ -201,22 +201,8 @@ async function main(): Promise<void> {
     writeFileSync(outputPath, JSON.stringify(triageResult, null, 2));
     console.log(`📄 Wrote triage result to ${outputPath}`);
 
-    const comment = buildComment(result.summaryComment, owner, repo);
-
-    // Update initial comment if ID is provided, otherwise create new comment
-    const initialCommentId = process.env.INITIAL_COMMENT_ID;
-    if (initialCommentId) {
-        await octokit.issues.updateComment({
-            body: comment,
-            comment_id: Number.parseInt(initialCommentId, 10),
-            owner,
-            repo,
-        });
-        console.log(`💬 Updated comment #${initialCommentId} with results`);
-    } else {
-        await octokit.issues.createComment({ body: comment, issue_number: issueNumber, owner, repo });
-        console.log('💬 Posted summary comment');
-    }
+    // Note: Comment posting is handled by the workflow after artifact upload
+    // so the comment can include the direct artifact download URL
 
     console.log('✨ Triage complete!');
 

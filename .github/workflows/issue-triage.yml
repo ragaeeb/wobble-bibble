@@ -80,7 +80,6 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          INITIAL_COMMENT_ID: ${{ steps.initial_comment.outputs.comment_id }}
         run: |
           echo "::group::Running AI triage"
           START_TIME=$(date +%s)
@@ -88,7 +87,7 @@ jobs:
           ISSUE_NUMBER="${{ github.event.inputs.issue_number || github.event.issue.number }}"
           echo "Triaging issue #$ISSUE_NUMBER"
           
-          # Run triage and capture output
+          # Run triage (writes JSON and outputs summary to file)
           bun run src/index.ts $ISSUE_NUMBER
           
           END_TIME=$(date +%s)
@@ -105,15 +104,47 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
-      - name: Update comment with artifact URL
+      - name: Update comment with final results
         if: steps.initial_comment.outputs.comment_id
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "::group::Updating comment with artifact URL"
-          echo "Artifact URL: ${{ steps.upload.outputs.artifact-url }}"
+          echo "::group::Updating comment with results"
+          ISSUE_NUMBER="${{ github.event.inputs.issue_number || github.event.issue.number }}"
+          COMMENT_ID="${{ steps.initial_comment.outputs.comment_id }}"
+          ARTIFACT_URL="${{ steps.upload.outputs.artifact-url }}"
           
-          # The triage script already posted the final comment, 
-          # so we just log the artifact URL for debugging
-          echo "Artifact ID: ${{ steps.upload.outputs.artifact-id }}"
+          # Read the summary from the JSON file
+          JSON_FILE="scripts/triage/triage-issue-${ISSUE_NUMBER}.json"
+          if [ -f "$JSON_FILE" ]; then
+            # Extract violations count and labels
+            VIOLATIONS=$(jq '.detectedViolations | length' "$JSON_FILE")
+            LABELS=$(jq -r '.labelsApplied | join(", ")' "$JSON_FILE")
+            
+            # Build the comment body
+            COMMENT_BODY="🤖 **AI Triage Complete**
+          
+          Found **${VIOLATIONS} violation(s)** and applied labels.
+          
+          **Labels:** \`${LABELS}\`
+          
+          ---
+          📦 **Triage Artifact**: [Download JSON](${ARTIFACT_URL}) (available for 90 days)"
+          else
+            COMMENT_BODY="🤖 **AI Triage Complete**
+          
+          Triage finished but no artifact was generated.
+          
+          ---
+          _Workflow run: [#${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})_"
+          fi
+          
+          # Update the comment
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/issues/comments/${COMMENT_ID} \
+            -f body="$COMMENT_BODY"
+          
+          echo "Updated comment with artifact URL: $ARTIFACT_URL"
           echo "::endgroup::"
