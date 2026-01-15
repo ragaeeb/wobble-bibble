@@ -40,9 +40,38 @@ jobs:
 
       - name: Install triage agent dependencies
         working-directory: scripts/triage
-        run: bun install
+        run: |
+          echo "::group::Installing dependencies"
+          bun install
+          echo "::endgroup::"
+
+      - name: Post initial comment
+        id: initial_comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "::group::Posting initial comment"
+          ISSUE_NUMBER="${{ github.event.inputs.issue_number || github.event.issue.number }}"
+          COMMENT_BODY="🤖 **AI Triage Started**
+
+          Analyzing your refinement case... This usually takes 1-2 minutes.
+
+          ---
+          _Workflow run: [#${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})_"
+          
+          COMMENT_ID=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments \
+            -f body="$COMMENT_BODY" \
+            --jq '.id')
+          
+          echo "comment_id=$COMMENT_ID" >> $GITHUB_OUTPUT
+          echo "Posted initial comment with ID: $COMMENT_ID"
+          echo "::endgroup::"
 
       - name: Run triage agent
+        id: triage
         working-directory: scripts/triage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,15 +80,40 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+          INITIAL_COMMENT_ID: ${{ steps.initial_comment.outputs.comment_id }}
         run: |
-          # Use input issue number for manual trigger, otherwise use event issue number
+          echo "::group::Running AI triage"
+          START_TIME=$(date +%s)
+          
           ISSUE_NUMBER="${{ github.event.inputs.issue_number || github.event.issue.number }}"
+          echo "Triaging issue #$ISSUE_NUMBER"
+          
+          # Run triage and capture output
           bun run src/index.ts $ISSUE_NUMBER
+          
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "Triage completed in ${DURATION}s"
+          echo "::endgroup::"
 
       - name: Upload triage artifact
+        id: upload
         uses: actions/upload-artifact@v6
         with:
           name: triage-issue-${{ github.event.inputs.issue_number || github.event.issue.number }}
           path: scripts/triage/triage-issue-*.json
           retention-days: 90
           if-no-files-found: warn
+
+      - name: Update comment with artifact URL
+        if: steps.initial_comment.outputs.comment_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "::group::Updating comment with artifact URL"
+          echo "Artifact URL: ${{ steps.upload.outputs.artifact-url }}"
+          
+          # The triage script already posted the final comment, 
+          # so we just log the artifact URL for debugging
+          echo "Artifact ID: ${{ steps.upload.outputs.artifact-id }}"
+          echo "::endgroup::"
