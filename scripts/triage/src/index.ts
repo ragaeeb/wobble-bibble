@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { Octokit } from '@octokit/rest';
 import { createTriageGraph, type TriageStateType } from './graph.js';
 import type { TriageResult } from './types.js';
+import { buildComment, buildTriageResult } from './utils.js';
 
 // Note: Bun auto-loads .env from cwd. If running from scripts/triage/,
 // create a .env there or set env vars before running.
@@ -106,51 +107,6 @@ function getConfig(): Config {
     };
 }
 
-function buildTriageResult(
-    config: Config,
-    issue: { html_url: string },
-    result: TriageStateType,
-    existingLabels: string[],
-    labelsToAdd: string[],
-): TriageResult {
-    const modelLabel = existingLabels.find((l) => l.startsWith('model:'));
-    const addonLabel = existingLabels.find((l) => l.startsWith('addon:'));
-
-    return {
-        attachmentUrl: result.attachmentUrl,
-        createdAt: new Date().toISOString(),
-        detectedViolations: result.violations,
-        issueNumber: config.issueNumber,
-        issueUrl: issue.html_url,
-        labelsApplied: [...existingLabels, ...labelsToAdd],
-        metadata: {
-            model: modelLabel?.replace('model:', '') ?? null,
-            promptAddon: addonLabel?.replace('addon:', '') ?? null,
-        },
-        parsedContent: {
-            inputArabic: result.parsedDump?.inputArabic ?? '',
-            inputCharCount: result.parsedDump?.inputArabic.length ?? 0,
-            output: result.parsedDump?.output ?? '',
-            outputCharCount: result.parsedDump?.output.length ?? 0,
-            promptStack: result.parsedDump?.promptStack ?? '',
-            reasoningCharCount: result.parsedDump?.reasoningTrace.length ?? 0,
-            reasoningTrace: result.parsedDump?.reasoningTrace ?? '',
-        },
-    };
-}
-
-function buildComment(summaryComment: string, owner: string, repo: string): string {
-    const runId = process.env.GITHUB_RUN_ID;
-    const artifactUrl = runId
-        ? `https://github.com/${owner}/${repo}/actions/runs/${runId}`
-        : '(artifact URL will be available after workflow completes)';
-
-    return `${summaryComment}
-
----
-📦 **Triage Artifact**: [View workflow run](${artifactUrl}) (JSON artifact available for 90 days)`;
-}
-
 async function main(): Promise<void> {
     const config = getConfig();
     const { issueNumber, owner, repo, githubToken } = config;
@@ -210,7 +166,9 @@ async function main(): Promise<void> {
     process.exit(0);
 }
 
-main().catch((error) => {
-    console.error('❌ Triage failed:', error);
-    process.exit(1);
-});
+if (import.meta.main) {
+    main().catch((error) => {
+        console.error('❌ Triage failed:', error);
+        process.exit(1);
+    });
+}

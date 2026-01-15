@@ -10,7 +10,7 @@ import { ANALYZE_PROMPT, loadPromptRules, PARSE_DUMP_PROMPT, SUMMARY_PROMPT, SYS
 import type { ParsedDump, Violation } from './types.js';
 
 // Regex to extract attachment URLs from GitHub issue body
-const ATTACHMENT_URL_REGEX = /https:\/\/github\.com\/user-attachments\/files\/\d+\/[^\s)]+\.txt/gi;
+export const ATTACHMENT_URL_REGEX = /https:\/\/github\.com\/user-attachments\/files\/\d+\/[^\s)]+\.txt/gi;
 
 // Simple reducer that replaces old value with new value
 const replaceReducer = <T>(_old: T, newVal: T) => newVal;

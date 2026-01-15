@@ -69,6 +69,8 @@ export type TriageResult = {
     metadata: {
         model: string | null;
         promptAddon: string | null;
+        /** Thinking time extracted from reasoning trace (e.g., "Thought for 34s") */
+        thinkingTimeSeconds: number | null;
     };
     parsedContent: {
         promptStack: string;
