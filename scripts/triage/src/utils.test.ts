@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { buildComment, extractThinkingTime, parseGitHubUrl } from './utils.js';
+import { extractThinkingTime, parseGitHubUrl } from './utils.js';
 
 describe('utils', () => {
     describe('parseGitHubUrl', () => {
@@ -41,34 +41,6 @@ describe('utils', () => {
         it('should return null if no thinking time found', () => {
             const trace = 'No thinking trace here.';
             expect(extractThinkingTime(trace)).toBeNull();
-        });
-    });
-
-    describe('buildComment', () => {
-        it('should include artifact URL when GITHUB_RUN_ID is set', () => {
-            const originalRunId = process.env.GITHUB_RUN_ID;
-            process.env.GITHUB_RUN_ID = '12345';
-            try {
-                const comment = buildComment('Summary here', 'owner', 'repo');
-                const expected =
-                    'Summary here\n\n---\n📦 **Triage Artifact**: [View workflow run](https://github.com/owner/repo/actions/runs/12345) (JSON artifact available for 90 days)';
-                expect(comment).toEqual(expected);
-            } finally {
-                process.env.GITHUB_RUN_ID = originalRunId;
-            }
-        });
-
-        it('should include fallback message when GITHUB_RUN_ID is not set', () => {
-            const originalRunId = process.env.GITHUB_RUN_ID;
-            delete process.env.GITHUB_RUN_ID;
-            try {
-                const comment = buildComment('Summary here', 'owner', 'repo');
-                const expected =
-                    'Summary here\n\n---\n📦 **Triage Artifact**: [View workflow run]((artifact URL will be available after workflow completes)) (JSON artifact available for 90 days)';
-                expect(comment).toEqual(expected);
-            } finally {
-                process.env.GITHUB_RUN_ID = originalRunId;
-            }
         });
     });
 });

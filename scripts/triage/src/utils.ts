@@ -38,8 +38,8 @@ export function buildTriageResult(
     const modelLabel = existingLabels.find((l) => l.startsWith('model:'));
     const addonLabel = existingLabels.find((l) => l.startsWith('addon:'));
 
-    const reasoningTrace = result.parsedDump?.reasoningTrace ?? '';
-    const thinkingTimeSeconds = extractThinkingTime(reasoningTrace);
+    // Extract thinking time from rawDumpContent (more reliable than parsed reasoningTrace)
+    const thinkingTimeSeconds = extractThinkingTime(result.rawDumpContent ?? '');
 
     return {
         attachmentUrl: result.attachmentUrl,
@@ -63,19 +63,4 @@ export function buildTriageResult(
             reasoningTrace: result.parsedDump?.reasoningTrace ?? '',
         },
     };
-}
-
-/**
- * Build the summary comment for GitHub
- */
-export function buildComment(summaryComment: string, owner: string, repo: string): string {
-    const runId = process.env.GITHUB_RUN_ID;
-    const artifactUrl = runId
-        ? `https://github.com/${owner}/${repo}/actions/runs/${runId}`
-        : '(artifact URL will be available after workflow completes)';
-
-    return `${summaryComment}
-
----
-📦 **Triage Artifact**: [View workflow run](${artifactUrl}) (JSON artifact available for 90 days)`;
 }

@@ -197,18 +197,34 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
  */
 async function analyzeError(state: TriageStateType): Promise<Partial<TriageStateType>> {
     if (state.error || !state.parsedDump) {
+        console.log('⏭️ Skipping analysis (error or no parsed dump)');
         return {};
     }
 
+    console.log('🔬 Starting violation analysis...');
+
     const repoRoot = process.env.REPO_ROOT || process.cwd();
     const rules = loadPromptRules(repoRoot);
+    console.log(`📚 Loaded ${rules.length} chars of prompt rules`);
 
     const model = getModel();
+
+    // Reduce content limits for faster processing
+    const inputSlice = state.parsedDump.inputArabic.slice(0, 5000);
+    const outputSlice = state.parsedDump.output.slice(0, 5000);
+    const reasoningSlice = state.parsedDump.reasoningTrace.slice(0, 5000);
+
+    console.log(
+        `📊 Analyzing: input=${inputSlice.length}, output=${outputSlice.length}, reasoning=${reasoningSlice.length} chars`,
+    );
+
     const prompt = ANALYZE_PROMPT.replace('{hints}', state.hints || 'No hints provided')
-        .replace('{rules}', rules.slice(0, 30000))
-        .replace('{input}', state.parsedDump.inputArabic.slice(0, 10000))
-        .replace('{output}', state.parsedDump.output.slice(0, 10000))
-        .replace('{reasoning}', state.parsedDump.reasoningTrace.slice(0, 10000));
+        .replace('{rules}', rules.slice(0, 15000))
+        .replace('{input}', inputSlice)
+        .replace('{output}', outputSlice)
+        .replace('{reasoning}', reasoningSlice);
+
+    console.log(`📤 Sending ${prompt.length} chars to Gemini for analysis...`);
 
     try {
         const response = await model.invoke([
@@ -216,9 +232,14 @@ async function analyzeError(state: TriageStateType): Promise<Partial<TriageState
             { content: prompt, role: 'user' },
         ]);
 
+        console.log('📥 Received Gemini analysis response');
+
         const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+        console.log(`🤖 Analysis response length: ${content.length} chars`);
+
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
+            console.log('⚠️ No JSON found in analysis response');
             return {
                 labelsToApply: ['triaged'],
                 violations: [],
@@ -266,13 +287,17 @@ async function analyzeError(state: TriageStateType): Promise<Partial<TriageState
  * Node 3: Generate summary comment
  */
 async function generateSummary(state: TriageStateType): Promise<Partial<TriageStateType>> {
+    console.log(`📝 Generating summary (violations: ${state.violations.length})...`);
+
     if (state.error) {
+        console.log('⚠️ Error state detected, returning error comment');
         return {
             summaryComment: `⚠️ **Triage Error**\n\n${state.error}\n\nPlease ensure you've attached a valid .txt file with the combined dump.`,
         };
     }
 
     if (state.violations.length === 0) {
+        console.log('✅ No violations detected');
         return {
             summaryComment:
                 '✅ **Triage Complete**\n\nNo rule violations were automatically detected. Manual review may still be needed.',

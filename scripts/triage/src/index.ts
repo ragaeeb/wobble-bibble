@@ -8,12 +8,18 @@
  * - GITHUB_TOKEN: Optional (auto-detected from gh CLI if not set)
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import { Octokit } from '@octokit/rest';
+import rootPkg from '../../../package.json';
 import { createTriageGraph, type TriageStateType } from './graph.js';
-import type { TriageResult } from './types.js';
-import { buildComment, buildTriageResult } from './utils.js';
+import { buildTriageResult, parseGitHubUrl } from './utils.js';
+
+// Validate package.json has required fields at module load time
+const repoInfo = parseGitHubUrl(rootPkg.repository?.url || rootPkg.homepage || '');
+if (!repoInfo && !process.env.GITHUB_REPOSITORY) {
+    console.error('Error: Could not parse owner/repo from package.json and GITHUB_REPOSITORY not set');
+    process.exit(1);
+}
 
 // Note: Bun auto-loads .env from cwd. If running from scripts/triage/,
 // create a .env there or set env vars before running.
@@ -79,24 +85,13 @@ function getConfig(): Config {
     if (process.env.GITHUB_REPOSITORY) {
         // CI: GITHUB_REPOSITORY is "owner/repo"
         [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    } else if (repoInfo) {
+        // Local: use pre-parsed package.json info
+        owner = repoInfo.owner;
+        repo = repoInfo.repo;
     } else {
-        // Local: parse from package.json
-        const pkgPath = join(import.meta.dir, '../../../../package.json');
-        if (existsSync(pkgPath)) {
-            const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-            const repoUrl = pkg.repository?.url || pkg.homepage || '';
-            const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
-            if (match) {
-                owner = match[1];
-                repo = match[2];
-            } else {
-                console.error('Error: Could not parse owner/repo from package.json');
-                process.exit(1);
-            }
-        } else {
-            console.error('Error: package.json not found and GITHUB_REPOSITORY not set');
-            process.exit(1);
-        }
+        console.error('Error: Could not determine repository owner/name');
+        process.exit(1);
     }
 
     return {
