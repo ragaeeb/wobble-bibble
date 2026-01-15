@@ -8,26 +8,14 @@
  * - GITHUB_TOKEN: Optional (auto-detected from gh CLI if not set)
  */
 
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Octokit } from '@octokit/rest';
 import { createTriageGraph, type TriageStateType } from './graph.js';
 import type { TriageResult } from './types.js';
 
-// Load .env from root project directory if it exists
-// Bun auto-loads .env from cwd, but we might be in scripts/triage/
-const rootEnvPath = join(import.meta.dir, '../../../.env');
-if (existsSync(rootEnvPath) && !process.env.GEMINI_API_KEY) {
-    const envFile = Bun.file(rootEnvPath);
-    const content = await envFile.text();
-    for (const line of content.split('\n')) {
-        const [key, ...valueParts] = line.split('=');
-        const value = valueParts.join('=').trim();
-        if (key && value && !process.env[key.trim()]) {
-            process.env[key.trim()] = value.replace(/^["']|["']$/g, '');
-        }
-    }
-}
+// Note: Bun auto-loads .env from cwd. If running from scripts/triage/,
+// create a .env there or set env vars before running.
 
 interface Config {
     issueNumber: number;
@@ -83,11 +71,38 @@ function getConfig(): Config {
 
     process.env.REPO_ROOT = process.env.GITHUB_WORKSPACE || process.cwd();
 
+    // Get owner/repo from environment or package.json
+    let owner: string;
+    let repo: string;
+
+    if (process.env.GITHUB_REPOSITORY) {
+        // CI: GITHUB_REPOSITORY is "owner/repo"
+        [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    } else {
+        // Local: parse from package.json
+        const pkgPath = join(import.meta.dir, '../../../../package.json');
+        if (existsSync(pkgPath)) {
+            const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+            const repoUrl = pkg.repository?.url || pkg.homepage || '';
+            const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
+            if (match) {
+                owner = match[1];
+                repo = match[2];
+            } else {
+                console.error('Error: Could not parse owner/repo from package.json');
+                process.exit(1);
+            }
+        } else {
+            console.error('Error: package.json not found and GITHUB_REPOSITORY not set');
+            process.exit(1);
+        }
+    }
+
     return {
         githubToken,
         issueNumber,
-        owner: process.env.GITHUB_REPOSITORY_OWNER || 'ragaeeb',
-        repo: process.env.GITHUB_REPOSITORY?.split('/')[1] || 'wobble-bibble',
+        owner,
+        repo,
     };
 }
 

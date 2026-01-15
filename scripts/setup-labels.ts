@@ -2,11 +2,111 @@
  * Label Setup Script
  *
  * Creates all required labels for the AI-powered issue triage system.
- * Run manually: GITHUB_TOKEN=xxx bun run scripts/setup-labels.ts
+ * Run manually: bun run scripts/setup-labels.ts
+ *
+ * Environment:
+ * - GITHUB_TOKEN: Required (auto-detected from gh CLI if not set)
+ * - GITHUB_REPOSITORY: Optional (auto-detected from package.json if not set)
  */
 
-const OWNER = 'ragaeeb';
-const REPO = 'wobble-bibble';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface RepoInfo {
+    owner: string;
+    repo: string;
+}
+
+/**
+ * Parse owner/repo from a GitHub URL
+ * Supports: https://github.com/owner/repo, git+https://github.com/owner/repo.git
+ */
+function parseGitHubUrl(url: string): RepoInfo | null {
+    const match = url.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
+    if (match) {
+        return { owner: match[1], repo: match[2] };
+    }
+    return null;
+}
+
+/**
+ * Get repository info from environment or package.json
+ */
+function getRepoInfo(): RepoInfo {
+    // 1. Check GITHUB_REPOSITORY env var (set in CI: "owner/repo")
+    if (process.env.GITHUB_REPOSITORY) {
+        const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+        if (owner && repo) {
+            return { owner, repo };
+        }
+    }
+
+    // 2. Check GITHUB_REPOSITORY_OWNER + derive repo from package.json name
+    if (process.env.GITHUB_REPOSITORY_OWNER) {
+        // Try to get repo name from package.json
+        const pkgPath = join(import.meta.dir, '../package.json');
+        if (existsSync(pkgPath)) {
+            const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+            if (pkg.name) {
+                return { owner: process.env.GITHUB_REPOSITORY_OWNER, repo: pkg.name };
+            }
+        }
+    }
+
+    // 3. Parse from package.json repository field or homepage
+    const pkgPath = join(import.meta.dir, '../package.json');
+    if (existsSync(pkgPath)) {
+        const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+
+        // Try repository.url first
+        if (pkg.repository?.url) {
+            const info = parseGitHubUrl(pkg.repository.url);
+            if (info) {
+                return info;
+            }
+        }
+
+        // Try homepage
+        if (pkg.homepage) {
+            const info = parseGitHubUrl(pkg.homepage);
+            if (info) {
+                return info;
+            }
+        }
+    }
+
+    console.error('Error: Could not determine repository owner/name');
+    console.error('Set GITHUB_REPOSITORY env var or ensure package.json has repository.url');
+    process.exit(1);
+}
+
+/**
+ * Get GitHub token from environment or gh CLI
+ */
+function getGitHubToken(): string {
+    // Check environment first (CI will have this set)
+    if (process.env.GITHUB_TOKEN) {
+        return process.env.GITHUB_TOKEN;
+    }
+
+    // Try to get from gh CLI for local development
+    try {
+        const result = Bun.spawnSync(['gh', 'auth', 'token']);
+        if (result.exitCode === 0) {
+            const token = result.stdout.toString().trim();
+            if (token) {
+                console.log('🔑 Using GITHUB_TOKEN from gh CLI');
+                return token;
+            }
+        }
+    } catch {
+        // gh CLI not available or not logged in
+    }
+
+    console.error('Error: GITHUB_TOKEN not set and gh CLI not available');
+    console.error('Either set GITHUB_TOKEN env var or login with: gh auth login');
+    process.exit(1);
+}
 
 interface LabelDefinition {
     name: string;
@@ -93,8 +193,8 @@ const LABELS: LabelDefinition[] = [
     { color: 'c2e0c6', description: 'Rule: Sunnah ambiguity', name: 'rule:SUNNAH_AMBIGUITY' },
 ];
 
-async function createLabel(token: string, label: LabelDefinition): Promise<void> {
-    const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/labels`, {
+async function createLabel(token: string, owner: string, repo: string, label: LabelDefinition): Promise<void> {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/labels`, {
         body: JSON.stringify(label),
         headers: {
             Accept: 'application/vnd.github.v3+json',
@@ -109,7 +209,7 @@ async function createLabel(token: string, label: LabelDefinition): Promise<void>
     } else if (response.status === 422) {
         // Label already exists, try to update it
         const updateResponse = await fetch(
-            `https://api.github.com/repos/${OWNER}/${REPO}/labels/${encodeURIComponent(label.name)}`,
+            `https://api.github.com/repos/${owner}/${repo}/labels/${encodeURIComponent(label.name)}`,
             {
                 body: JSON.stringify({ color: label.color, description: label.description }),
                 headers: {
@@ -132,16 +232,15 @@ async function createLabel(token: string, label: LabelDefinition): Promise<void>
 }
 
 async function main(): Promise<void> {
-    const token = process.env.GITHUB_TOKEN;
-    if (!token) {
-        console.error('Error: GITHUB_TOKEN environment variable is required');
-        process.exit(1);
-    }
+    const token = getGitHubToken();
+    const { owner, repo } = getRepoInfo();
 
-    console.log(`Setting up ${LABELS.length} labels for ${OWNER}/${REPO}...\n`);
+    console.log(`Setting up ${LABELS.length} labels for ${owner}/${repo}...\n`);
 
     for (const label of LABELS) {
-        await createLabel(token, label);
+        await createLabel(token, owner, repo, label);
+        // Small delay to avoid hitting secondary rate limits
+        await new Promise((r) => setTimeout(r, 100));
     }
 
     console.log('\n✨ Done!');

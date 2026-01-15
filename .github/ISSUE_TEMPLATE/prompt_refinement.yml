@@ -28,7 +28,7 @@ body:
     id: combined_dump
     attributes:
       label: "Combined Dump"
-      description: "Attach a single .txt file containing everything: prompt stack, Arabic input, model output, and reasoning trace. Drag and drop the file here."
+      description: "Drag and drop a .txt file containing: prompt stack, Arabic input, model output, and reasoning trace."
       placeholder: "[Drag and drop combined_dump.txt here]"
     validations:
       required: true

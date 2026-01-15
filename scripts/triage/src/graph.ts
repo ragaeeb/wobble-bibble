@@ -80,33 +80,41 @@ function getModel(): ChatGoogleGenerativeAI {
  * Node 1: Parse the combined dump file
  */
 async function parseDump(state: TriageStateType): Promise<Partial<TriageStateType>> {
-    // Extract attachment URL from issue body
-    const matches = state.issueBody.match(ATTACHMENT_URL_REGEX);
-    if (!matches || matches.length === 0) {
-        return {
-            attachmentUrl: null,
-            error: 'No attachment URL found in issue body. Please attach a .txt file.',
-        };
-    }
-
-    const attachmentUrl = matches[0];
-
-    // Fetch the attachment content
     let rawDumpContent: string;
-    try {
-        const response = await fetch(attachmentUrl);
-        if (!response.ok) {
+    let attachmentUrl: string | null = null;
+
+    // Try to extract attachment URL from issue body first
+    const matches = state.issueBody.match(ATTACHMENT_URL_REGEX);
+    if (matches && matches.length > 0) {
+        attachmentUrl = matches[0];
+        // Fetch the attachment content
+        try {
+            const response = await fetch(attachmentUrl);
+            if (!response.ok) {
+                return {
+                    attachmentUrl,
+                    error: `Failed to fetch attachment: ${response.status} ${response.statusText}`,
+                };
+            }
+            rawDumpContent = await response.text();
+        } catch (error) {
             return {
                 attachmentUrl,
-                error: `Failed to fetch attachment: ${response.status} ${response.statusText}`,
+                error: `Failed to fetch attachment: ${error}`,
             };
         }
-        rawDumpContent = await response.text();
-    } catch (error) {
-        return {
-            attachmentUrl,
-            error: `Failed to fetch attachment: ${error}`,
-        };
+    } else {
+        // No attachment - try to extract pasted content from Combined Dump section
+        const [, combinedDumpMatch] =
+            state.issueBody.match(/### Combined Dump[\s\S]*?\n\n([\s\S]*?)(?=\n###|$)/i) || [];
+        if (combinedDumpMatch?.trim()) {
+            rawDumpContent = combinedDumpMatch.trim();
+        } else {
+            return {
+                attachmentUrl: null,
+                error: 'No combined dump content found. Please paste content or attach a .txt file.',
+            };
+        }
     }
 
     // Use Gemini to parse the dump into sections
@@ -130,6 +138,20 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
         }
 
         const parsed = JSON.parse(jsonMatch[0]) as ParsedDump;
+        // Validate required fields exist and are strings
+        if (typeof parsed.promptStack !== 'string') {
+            parsed.promptStack = '';
+        }
+        if (typeof parsed.inputArabic !== 'string') {
+            parsed.inputArabic = '';
+        }
+        if (typeof parsed.output !== 'string') {
+            parsed.output = '';
+        }
+        if (typeof parsed.reasoningTrace !== 'string') {
+            parsed.reasoningTrace = '';
+        }
+
         return {
             attachmentUrl,
             parsedDump: parsed,
@@ -181,6 +203,13 @@ async function analyzeError(state: TriageStateType): Promise<Partial<TriageState
             violations: Violation[];
             failureTypes: string[];
         };
+        // Ensure arrays exist
+        if (!Array.isArray(result.violations)) {
+            result.violations = [];
+        }
+        if (!Array.isArray(result.failureTypes)) {
+            result.failureTypes = [];
+        }
 
         const labelsToApply = new Set<string>();
 
@@ -243,7 +272,10 @@ async function generateSummary(state: TriageStateType): Promise<Partial<TriageSt
         };
     } catch {
         const violationList = state.violations
-            .map((v) => `- **${v.ruleId}** (${v.severity}): ${v.evidence.slice(0, 50)}...`)
+            .map(
+                (v) =>
+                    `- **${v.ruleId ?? 'unknown'}** (${v.severity ?? 'unknown'}): ${(v.evidence ?? '').slice(0, 50)}...`,
+            )
             .join('\n');
 
         return {
