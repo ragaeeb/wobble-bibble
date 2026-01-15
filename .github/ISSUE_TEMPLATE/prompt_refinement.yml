@@ -3,55 +3,17 @@ description: "Document a model failure for prompt refinement."
 title: "[Refinement] "
 labels: ["prompt-refinement", "triage"]
 body:
-  - type: dropdown
-    id: model
+  - type: markdown
     attributes:
-      label: "Model"
-      description: "Which model exhibited the failure?"
-      options:
-        - gemini-3.0-pro
-        - gpt-5.2-thinking
-        - gpt-5o-thinking-mini
-        - grok-4-expert
-        - grok-4.1-thinking
-        - other
-    validations:
-      required: true
-
-  - type: dropdown
-    id: prompt_addon
-    attributes:
-      label: "Prompt Add-on"
-      description: "Which specialized genre prompt was stacked with master_prompt?"
-      options:
-        - master_prompt_only
-        - hadith
-        - fatawa
-        - fiqh
-        - tafsir
-        - encyclopedia_mixed
-        - jarh_wa_tadil
-        - usul_al_fiqh
-        - other
-    validations:
-      required: true
-
-  - type: checkboxes
-    id: failure_type
-    attributes:
-      label: "Failure Type"
-      description: "Check all that apply."
-      options:
-        - label: "ids_alignment [Dropped/merged/hallucinated IDs]"
-        - label: "arabic_leak [Arabic script in output other than ﷺ]"
-        - label: "translit_boundary [Transliterated where should translate, or vice versa]"
-        - label: "safety_sanitization [Model softened/omitted/added disclaimers]"
-        - label: "glossary_conflict [Ignored locked anchors like Shaykh/Muḥammad]"
-        - label: "formatting_drift [Markdown leakage, newline drift, structural loss]"
-        - label: "mode_locking [Stuck in one logic mode across genre switches]"
-        - label: "term_format_drift [Missing 'translit (English)' format]"
-        - label: "citation_hallucination [Invented sources not in Arabic text]"
-        - label: "diacritics_drop [Lazy transliteration (e.g., Uthman instead of ʿUthmān)]"
+      value: |
+        ## Instructions
+        1. **Attach your combined dump file** (prompt + input + output + reasoning) below
+        2. **Add labels** from the sidebar for:
+           - Model used (e.g., `model:gemini-3.0-pro`)
+           - Prompt addon (e.g., `addon:hadith`)
+        3. **Provide a summary and optional hints** below
+        
+        > The AI triage agent will automatically classify the failure and apply additional labels.
 
   - type: textarea
     id: summary
@@ -63,103 +25,21 @@ body:
       required: true
 
   - type: textarea
-    id: input
+    id: combined_dump
     attributes:
-      label: "Input"
-      description: "Attach a `.txt` file containing the exact Arabic segments (with IDs) sent to the model. Drag and drop the file here."
-      placeholder: "[Drag and drop input.txt here, or paste a short excerpt if under 500 chars]"
+      label: "Combined Dump"
+      description: "Drag and drop a .txt file containing: prompt stack, Arabic input, model output, and reasoning trace."
+      placeholder: "[Drag and drop combined_dump.txt here]"
     validations:
       required: true
 
   - type: textarea
-    id: output
+    id: hints
     attributes:
-      label: "Output"
-      description: "Attach a `.txt` file containing the model's raw, unedited output. Drag and drop the file here."
-      placeholder: "[Drag and drop output.txt here, or paste a short excerpt if under 500 chars]"
-    validations:
-      required: true
-
-  - type: textarea
-    id: expected
-    attributes:
-      label: "Expected Output"
-      description: "What the correct output should look like for the affected segments."
-      placeholder: "P1234 - The Shaykh said: ..."
-      render: text
-
-  - type: textarea
-    id: reasoning
-    attributes:
-      label: "Reasoning Trace"
-      description: "Attach a `.txt` or `.md` file containing the model's thinking block (if available). Drag and drop the file here."
-      placeholder: "[Drag and drop reasoning.txt here, or paste a short excerpt if under 500 chars]"
-
-  - type: markdown
-    attributes:
-      value: |
-        > **Note:** The prompt stack (Master + Addon) is not needed here. AI agents will automatically
-        > reconstruct it from `prompts/master_prompt.md` + the addon selected above.
-
-  - type: checkboxes
-    id: violated_rules
-    attributes:
-      label: "Violated Rules"
-      description: "Check all rules that were violated. This helps AI agents quickly identify the failure pattern."
-      options:
-        # Core Rules (Master Prompt)
-        - label: "NO_SANITIZATION — Model softened polemics or added disclaimers"
-        - label: "NO_META_TALK — Model added commentary instead of pure translation"
-        - label: "NO_MARKDOWN — Model used bold, italics, headers, or other formatting"
-        - label: "NO_EMENDATION — Model corrected typos or scribal errors"
-        - label: "NO_INFERENCE — Model inferred missing/truncated text"
-        - label: "NO_RESTRUCTURING — Model reordered or restructured content"
-        - label: "NO_INVENTED_SEGMENTS — Model created/modified segment IDs"
-        - label: "NO_ARABIC_SCRIPT — Arabic script in output (except ﷺ)"
-        # Transliteration Rules
-        - label: "ALA_LC_SCHEME — Failed to use proper ALA-LC diacritics"
-        - label: "DIACRITIC_FALLBACK — Used substitute accents (â/ã/á) instead of proper diacritics"
-        - label: "STANDARDIZED_TERMS — Wrong spelling (Sheikh→Shaykh, Quran→Qurʾān, etc.)"
-        - label: "IBN_CONNECTOR — Wrong b./Ibn usage in names"
-        - label: "PROPER_NAMES — Added parenthetical translation to proper names"
-        # Structure Rules
-        - label: "SEGMENT_ID_FORMAT — Wrong ID format (em-dash, newline after ID, etc.)"
-        - label: "MULTI_LINE_SEGMENTS — Repeated segment ID on continuation lines"
-        - label: "QA_STRUCTURE — Q&A labels not on same line, or wrong newline handling"
-        - label: "OUTPUT_COMPLETENESS — Truncated, summarized, or skipped content"
-        - label: "OUTPUT_UNIQUENESS — Same segment ID output multiple times"
-        # Technical Term Rules
-        - label: "DEFINITION_RULE — Missing 'translit (English)' on first occurrence"
-        - label: "OPAQUE_TRANSLITERATION — Multi-word transliteration without translation"
-        - label: "PARENTHESES_GOVERNANCE — Wrong use of parentheses"
-        - label: "WORD_CHOICE_ALLAH — Used 'God' instead of 'Allah' for الله"
-        - label: "MODERN_REGISTER — Used archaic words (thee, thou, verily, etc.)"
-        # Genre-Specific Rules
-        - label: "ISNAD_VERBS — Wrong translation of ḥaddathanā/akhbaranā/ʿan"
-        - label: "JARH_TADIL_TERMS — Narrator ratings not in 'translit (English)' format"
-        - label: "FIQH_TERMS — Legal terms not in 'translit (English)' format"
-        - label: "USUL_TERMS — Usul al-fiqh terms not in 'translit (English)' format"
-        - label: "AYAH_CITATION — Wrong Qur'an verse format or invented references"
-        - label: "ATTRIBUTE_THEOLOGY — Reinterpreted author's theological position"
-        - label: "HONORIFICS — Failed to use ﷺ or wrong honorific expansion"
-        - label: "KHILAF_ATTRIBUTION — Resolved disputes or chose views without source doing so"
-        - label: "MODE_RESET — Stuck in Isnad/Rijal mode after genre switch"
-        - label: "SUNNAH_AMBIGUITY — Wrong Sunnah/sunnah casing for context"
-
-  - type: textarea
-    id: diagnosis_notes
-    attributes:
-      label: "Diagnosis Notes"
-      description: "Additional explanation of why the output is wrong, or details about the rule violation."
-      placeholder: "The model used 'Sheikh' instead of 'Shaykh' in three places, violating the STANDARDIZED_TERMS rule..."
-    validations:
-      required: true
-
-  - type: textarea
-    id: proposed_fix
-    attributes:
-      label: "Proposed Fix"
-      description: "Your hypothesis and suggested prompt edit."
+      label: "Hints (Optional)"
+      description: "Quick notes on what went wrong. The AI will use these to help identify the issue."
       placeholder: |
-        Hypothesis: The translit_boundary rule is ambiguous.
-        Fix: Add "TRANSLATE common nouns like kitab, masjid" to master_prompt.
+        Examples:
+        - "Arabic script appeared in the narrator name"
+        - "Model used 'Sheikh' instead of 'Shaykh'"
+        - "Segment P405 was dropped entirely"
