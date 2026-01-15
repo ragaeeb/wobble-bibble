@@ -83,21 +83,34 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
     let rawDumpContent: string;
     let attachmentUrl: string | null = null;
 
+    console.log('📎 Parsing dump from issue body...');
+    console.log(`📄 Issue body length: ${state.issueBody.length} chars`);
+
     // Try to extract attachment URL from issue body first
     const matches = state.issueBody.match(ATTACHMENT_URL_REGEX);
+    console.log(`🔍 Attachment URL matches: ${JSON.stringify(matches)}`);
+
     if (matches && matches.length > 0) {
         attachmentUrl = matches[0];
+        console.log(`📥 Fetching attachment: ${attachmentUrl}`);
+
         // Fetch the attachment content
         try {
             const response = await fetch(attachmentUrl);
+            console.log(`📡 Fetch response: ${response.status} ${response.statusText}`);
+
             if (!response.ok) {
+                console.error(`❌ Fetch failed: ${response.status}`);
                 return {
                     attachmentUrl,
                     error: `Failed to fetch attachment: ${response.status} ${response.statusText}`,
                 };
             }
             rawDumpContent = await response.text();
+            console.log(`📝 Fetched content length: ${rawDumpContent.length} chars`);
+            console.log(`📝 First 200 chars: ${rawDumpContent.slice(0, 200)}`);
         } catch (error) {
+            console.error(`❌ Fetch error: ${error}`);
             return {
                 attachmentUrl,
                 error: `Failed to fetch attachment: ${error}`,
@@ -105,11 +118,14 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
         }
     } else {
         // No attachment - try to extract pasted content from Combined Dump section
+        console.log('📋 No attachment URL found, looking for pasted content...');
         const [, combinedDumpMatch] =
             state.issueBody.match(/### Combined Dump[\s\S]*?\n\n([\s\S]*?)(?=\n###|$)/i) || [];
         if (combinedDumpMatch?.trim()) {
             rawDumpContent = combinedDumpMatch.trim();
+            console.log(`📝 Found pasted content: ${rawDumpContent.length} chars`);
         } else {
+            console.error('❌ No combined dump content found');
             return {
                 attachmentUrl: null,
                 error: 'No combined dump content found. Please paste content or attach a .txt file.',
@@ -118,6 +134,7 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
     }
 
     // Use Gemini to parse the dump into sections
+    console.log('🤖 Sending to Gemini for parsing...');
     const model = getModel();
     const prompt = PARSE_DUMP_PROMPT.replace('{dumpContent}', rawDumpContent.slice(0, 50000));
 
@@ -128,8 +145,12 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
         ]);
 
         const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+        console.log(`🤖 Gemini response length: ${content.length} chars`);
+        console.log(`🤖 Gemini response (first 500): ${content.slice(0, 500)}`);
+
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
+            console.error('❌ No JSON found in Gemini response');
             return {
                 attachmentUrl,
                 error: 'Failed to parse dump: no JSON in response',
@@ -138,6 +159,10 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
         }
 
         const parsed = JSON.parse(jsonMatch[0]) as ParsedDump;
+        console.log(
+            `✅ Parsed dump - promptStack: ${parsed.promptStack?.length ?? 0}, inputArabic: ${parsed.inputArabic?.length ?? 0}, output: ${parsed.output?.length ?? 0}`,
+        );
+
         // Validate required fields exist and are strings
         if (typeof parsed.promptStack !== 'string') {
             parsed.promptStack = '';
@@ -158,6 +183,7 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
             rawDumpContent,
         };
     } catch (error) {
+        console.error(`❌ Gemini parsing error: ${error}`);
         return {
             attachmentUrl,
             error: `Failed to parse dump with AI: ${error}`,
