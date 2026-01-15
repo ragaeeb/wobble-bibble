@@ -77,6 +77,44 @@ function getModel(): ChatGoogleGenerativeAI {
 }
 
 /**
+ * Retry a function with exponential backoff
+ */
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelayMs = 2000): Promise<T> {
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            const delay = baseDelayMs * 2 ** attempt;
+            console.log(`⚠️ Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+            await new Promise((r) => setTimeout(r, delay));
+        }
+    }
+    throw lastError;
+}
+
+/**
+ * Invoke model with retry and validate response has content
+ */
+async function invokeModelWithRetry(
+    model: ChatGoogleGenerativeAI,
+    messages: Array<{ content: string; role: string }>,
+): Promise<string> {
+    return withRetry(async () => {
+        const response = await model.invoke(messages);
+        const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+
+        // Check for empty or invalid responses
+        if (!content || content === '[]' || content.length < 10) {
+            throw new Error(`Empty or invalid Gemini response: ${content.slice(0, 100)}`);
+        }
+
+        return content;
+    });
+}
+
+/**
  * Node 1: Parse the combined dump file
  */
 async function parseDump(state: TriageStateType): Promise<Partial<TriageStateType>> {
@@ -139,12 +177,11 @@ async function parseDump(state: TriageStateType): Promise<Partial<TriageStateTyp
     const prompt = PARSE_DUMP_PROMPT.replace('{dumpContent}', rawDumpContent.slice(0, 50000));
 
     try {
-        const response = await model.invoke([
+        const content = await invokeModelWithRetry(model, [
             { content: SYSTEM_PROMPT, role: 'system' },
             { content: prompt, role: 'user' },
         ]);
 
-        const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
         console.log(`🤖 Gemini response length: ${content.length} chars`);
         console.log(`🤖 Gemini response (first 500): ${content.slice(0, 500)}`);
 
@@ -227,14 +264,12 @@ async function analyzeError(state: TriageStateType): Promise<Partial<TriageState
     console.log(`📤 Sending ${prompt.length} chars to Gemini for analysis...`);
 
     try {
-        const response = await model.invoke([
+        const content = await invokeModelWithRetry(model, [
             { content: SYSTEM_PROMPT, role: 'system' },
             { content: prompt, role: 'user' },
         ]);
 
         console.log('📥 Received Gemini analysis response');
-
-        const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
         console.log(`🤖 Analysis response length: ${content.length} chars`);
 
         const jsonMatch = content.match(/\{[\s\S]*\}/);
