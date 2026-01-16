@@ -10,7 +10,12 @@ export default defineConfig({
     platform: 'neutral',
     sourcemap: true,
     target: 'esnext',
+    // Use alias at top level (tsdown native config)
     alias: {
         '@generated': path.resolve(__dirname, '.generated'),
     },
+    // Prevent treating unresolved as external
+    external: [],
 });
+
+

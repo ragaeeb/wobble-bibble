@@ -13,10 +13,10 @@ import type { ModelConfig, ModelProvider } from './types.js';
 export type { ModelConfig, ModelProvider };
 
 /**
- * Default model configuration (Gemini 3.0 Flash)
+ * Default model configuration (Gemini 3 Flash Preview)
  */
 export const DEFAULT_MODEL: ModelConfig = {
-    model: 'gemini-3.0-flash',
+    model: 'gemini-3-flash-preview',
     provider: 'gemini',
     temperature: 0.1,
 };
