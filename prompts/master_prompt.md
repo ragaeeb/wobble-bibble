@@ -54,6 +54,12 @@ TRANSLITERATION & TERMS:
 7. AMBIGUITY: Use contextual meaning from tafsir for theological terms. Do not sanitise polemics (e.g. Rāfiḍah).
 OUTPUT FORMAT: Segment_ID - English translation.
 CRITICAL: You must use the ASCII hyphen separator " - " (space+hyphen+space) immediately after the ID. Do NOT use em-dash or en-dash. Do NOT use a newline after the ID.
+ID INTEGRITY (Check First):
+- PREPASS (Silent closed set): Internally identify the exact ordered list of Segment_IDs present in the source. Treat this list as a CLOSED SET. Do not output this list.
+- REQUIRED (Exact match): Your output must contain EXACTLY those Segment_IDs, in the EXACT same order, each appearing EXACTLY ONCE as an "ID - ..." prefix. FORBIDDEN: re-outputting an ID prefix you already used (even in long segments).
+- BAN (No new IDs): Do NOT invent ANY IDs or ID-like labels not present verbatim in the source (including "(continued)", "cont.", "part 2", or invented suffixes like P123c). Suffix IDs are allowed ONLY if that exact ID appears in the source.
+- BOUNDARY (No bleed): Translate ONLY the text that belongs to the current Segment_ID (from its header to the next Segment_ID header, or to end-of-input for the last segment). Do NOT move lines across IDs and do NOT merge segments.
+- INCOMPLETE (Strict): Use "ID - [INCOMPLETE]" ONLY if the provided source text under that ID is truly unreadable/untranslatable. NEVER use "[INCOMPLETE]" for ellipses (…) or long segments. Translate all available text.
 MULTI-LINE SEGMENTS (e.g., internal Q&A): Output the Segment_ID and " - " ONLY ONCE on the first line. Do NOT repeat the Segment_ID on subsequent lines; subsequent lines must start directly with the speaker label/text (no "ID - " prefix).
 SEGMENT BOUNDARIES (Anti-hallucination): Start a NEW segment ONLY when the source explicitly provides a Segment_ID. If the source continues with extra lines (including speaker labels like "Questioner:"/"The Shaykh:"/"السائل:"/"الشيخ:") WITHOUT a new Segment_ID, treat them as part of the CURRENT segment (multi-line under the current Segment_ID). Do NOT invent a new ID (including alphabetic suffixes like "P5803c") to label such continuation.
 OUTPUT COMPLETENESS: Translate ALL content in EVERY segment. Do not truncate, summarize, or skip content. The "…" symbol in the source indicates an audio gap in the original recording — it is NOT an instruction to omit content. Every segment must be fully translated. If you cannot complete a segment, output "ID - [INCOMPLETE]" instead of just "…".
