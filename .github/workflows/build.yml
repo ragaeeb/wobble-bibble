@@ -23,14 +23,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Generate prompts
-        run: bun run scripts/generate-prompts.ts
-
       - name: Build project
         run: bun run build
 
       - name: Test
-        run: bun test src/ tests/ --coverage --coverage-reporter=lcov
+        run: bun run test
 
       - name: Test Distribution
         run: bun run test:dist
