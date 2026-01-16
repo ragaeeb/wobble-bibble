@@ -5,7 +5,7 @@ import type { TriageResult } from './types.js';
  * Parse owner/repo from a GitHub URL
  */
 export function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-    const match = url.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
+    const match = url.match(/github\.com[/:]([^/]+)\/([^/#?]+?)(?:\.git)?(?:$|[?#\/])/);
     if (match) {
         return { owner: match[1], repo: match[2] };
     }
@@ -49,7 +49,7 @@ export function buildTriageResult(
         detectedViolations: result.violations,
         issueNumber: config.issueNumber,
         issueUrl: issue.html_url,
-        labelsApplied: [...existingLabels, ...labelsToAdd],
+        labelsApplied: [...new Set([...existingLabels, ...labelsToAdd])],
         metadata: {
             analysisModel,
             model: modelLabel?.replace('model:', '') ?? null,
@@ -58,11 +58,11 @@ export function buildTriageResult(
         },
         parsedContent: {
             inputArabic: result.parsedDump?.inputArabic ?? '',
-            inputCharCount: result.parsedDump?.inputArabic.length ?? 0,
+            inputCharCount: result.parsedDump?.inputArabic?.length ?? 0,
             output: result.parsedDump?.output ?? '',
-            outputCharCount: result.parsedDump?.output.length ?? 0,
+            outputCharCount: result.parsedDump?.output?.length ?? 0,
             promptStack: result.parsedDump?.promptStack ?? '',
-            reasoningCharCount: result.parsedDump?.reasoningTrace.length ?? 0,
+            reasoningCharCount: result.parsedDump?.reasoningTrace?.length ?? 0,
             reasoningTrace: result.parsedDump?.reasoningTrace ?? '',
         },
     };

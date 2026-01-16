@@ -8,6 +8,7 @@
         "moduleDetection": "force",
         "moduleResolution": "bundler",
         "noEmit": true,
+        "isolatedDeclarations": false,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noPropertyAccessFromIndexSignature": false,

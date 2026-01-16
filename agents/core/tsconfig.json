@@ -1,0 +1,20 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "paths": {
+            "@wobble-bibble/agents-shared": ["../shared/index.ts"],
+            "@wobble-bibble/agent-synthesis": ["../synthesis/src/index.ts"],
+            "@wobble-bibble/agent-synthesis/*": ["../synthesis/src/*"],
+            "@wobble-bibble/agent-engineer": ["../engineer/src/index.ts"],
+            "@wobble-bibble/agent-engineer/*": ["../engineer/src/*"],
+            "@wobble-bibble/agent-validation": ["../validation/src/index.ts"],
+            "@wobble-bibble/agent-validation/*": ["../validation/src/*"],
+            "@wobble-bibble/agent-consolidator": ["../consolidator/src/index.ts"],
+            "@wobble-bibble/agent-consolidator/*": ["../consolidator/src/*"],
+            "@wobble-bibble/agent-implementation": ["../implementation/src/index.ts"],
+            "@wobble-bibble/agent-implementation/*": ["../implementation/src/*"]
+        }
+    },
+    "include": ["src/**/*"]
+}

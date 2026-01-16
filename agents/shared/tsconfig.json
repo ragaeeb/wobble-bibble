@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        // Shared module needs to include its own files since it's the target of the path mapping
+        "paths": {
+            "@wobble-bibble/agents-shared": ["./index.ts"]
+        },
+        "rootDir": "."
+    },
+    "extends": "../tsconfig.base.json",
+    "include": ["./**/*.ts"]
+}

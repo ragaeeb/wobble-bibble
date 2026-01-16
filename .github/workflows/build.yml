@@ -27,7 +27,7 @@ jobs:
         run: bun run build
 
       - name: Test
-        run: bun test src/ --coverage --coverage-reporter=lcov
+        run: bun run test
 
       - name: Test Distribution
         run: bun run test:dist

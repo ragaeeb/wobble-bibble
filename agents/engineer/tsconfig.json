@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "paths": {
+            "@wobble-bibble/agents-shared": ["../shared/index.ts"]
+        }
+    },
+    "include": ["src/**/*"]
+}
