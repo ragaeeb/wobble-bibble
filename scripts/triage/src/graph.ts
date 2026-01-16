@@ -4,13 +4,11 @@
  * Uses proper LangGraph.js Annotation patterns per docs.langchain.com
  */
 
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
+import { ATTACHMENT_URL_REGEX } from './constants.js';
+import { createChatModel, getModelFromEnv } from './models.js';
 import { ANALYZE_PROMPT, loadPromptRules, PARSE_DUMP_PROMPT, SUMMARY_PROMPT, SYSTEM_PROMPT } from './prompts.js';
 import type { ParsedDump, Violation } from './types.js';
-
-// Regex to extract attachment URLs from GitHub issue body
-export const ATTACHMENT_URL_REGEX = /https:\/\/github\.com\/user-attachments\/files\/\d+\/[^\s)]+\.txt/gi;
 
 // Simple reducer that replaces old value with new value
 const replaceReducer = <T>(_old: T, newVal: T) => newVal;
@@ -67,13 +65,12 @@ const TriageState = Annotation.Root({
 export type TriageStateType = typeof TriageState.State;
 
 /**
- * Initialize the Gemini model
+ * Get the configured chat model
  */
-function getModel(): ChatGoogleGenerativeAI {
-    return new ChatGoogleGenerativeAI({
-        model: 'gemini-3-flash-preview',
-        temperature: 0.1,
-    });
+function getModel() {
+    const config = getModelFromEnv();
+    console.log(`🤖 Using model: ${config.provider}/${config.model}`);
+    return createChatModel(config);
 }
 
 /**
@@ -98,7 +95,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelayMs = 
  * Invoke model with retry and validate response has content
  */
 async function invokeModelWithRetry(
-    model: ChatGoogleGenerativeAI,
+    model: ReturnType<typeof getModel>,
     messages: Array<{ content: string; role: string }>,
 ): Promise<string> {
     return withRetry(async () => {

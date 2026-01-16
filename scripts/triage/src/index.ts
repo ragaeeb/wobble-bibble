@@ -12,6 +12,7 @@ import { writeFileSync } from 'node:fs';
 import { Octokit } from '@octokit/rest';
 import rootPkg from '../../../package.json';
 import { createTriageGraph, type TriageStateType } from './graph.js';
+import { getModelFromEnv } from './models.js';
 import { buildTriageResult, parseGitHubUrl } from './utils.js';
 
 // Validate package.json has required fields at module load time
@@ -147,7 +148,9 @@ async function main(): Promise<void> {
         await octokit.issues.removeLabel({ issue_number: issueNumber, name: 'triage', owner, repo }).catch(() => {});
     }
 
-    const triageResult = buildTriageResult(config, issue, result, existingLabels, labelsToAdd);
+    const modelConfig = getModelFromEnv();
+    const analysisModel = `${modelConfig.provider}/${modelConfig.model}`;
+    const triageResult = buildTriageResult(config, issue, result, existingLabels, labelsToAdd, analysisModel);
     const outputPath = `triage-issue-${issueNumber}.json`;
     writeFileSync(outputPath, JSON.stringify(triageResult, null, 2));
     console.log(`📄 Wrote triage result to ${outputPath}`);
