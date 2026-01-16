@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'bun:test';
 import type { PromptId, StackedPrompt } from './prompts';
 import { getMasterPrompt, getPrompt, getPromptIds, getPrompts, getStackedPrompt, stackPrompts } from './prompts';
@@ -97,5 +99,13 @@ describe('getMasterPrompt', () => {
         const content = getMasterPrompt();
         expect(content).toContain('ROLE:');
         expect(content).toContain('CRITICAL NEGATIONS:');
+    });
+
+    test('should include the LOCKED FORMULAE section', () => {
+        const masterPromptPath = join(process.cwd(), 'prompts', 'master_prompt.md');
+        const content = readFileSync(masterPromptPath, 'utf8');
+        expect(content).toContain('LOCKED FORMULAE (Do NOT translate):');
+        expect(content).toContain('al-salāmu ʿalaykum');
+        expect(content).toContain('in shāʾ Allah');
     });
 });
