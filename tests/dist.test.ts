@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 // @ts-expect-error - Importing from dist which might not be typed yet in the IDE's view
-import * as lib from '../dist/index.js';
+import * as lib from '../dist/index.mjs';
 
 describe('Distribution Integration Test', () => {
     it('should export all expected prompt functions', () => {

@@ -23,8 +23,13 @@ export async function getCheckpointer() {
         return new MemorySaver();
     }
     
-    // Only use checkpointer if we are in a persistent environment
-    return SqliteSaver.fromConnString(DB_PATH);
+    // Try SqliteSaver, fall back to MemorySaver if native module fails (P1 fix)
+    try {
+        return SqliteSaver.fromConnString(DB_PATH);
+    } catch (err) {
+        console.warn('⚠️ SQLite checkpointer unavailable, using MemorySaver:', err);
+        return new MemorySaver();
+    }
 }
 
 /**

@@ -49,6 +49,15 @@ export async function runValidation(state: ValidationState): Promise<Partial<Val
         });
     }
 
+    // P1: Guard against empty results (division by zero)
+    if (results.length === 0) {
+        return {
+            testResults: results,
+            validationStatus: 'FAIL',
+            failureReason: 'No test results — empty corpus or load failed'
+        };
+    }
+
     const failedCount = results.filter(r => r.status === 'FAIL').length;
     const passRate = (results.length - failedCount) / results.length;
     const status = passRate >= 0.95 ? 'PASS' : 'FAIL';
@@ -56,6 +65,6 @@ export async function runValidation(state: ValidationState): Promise<Partial<Val
     return {
         testResults: results,
         validationStatus: status,
-        failureReason: status === 'FAIL' ? `Pass rate ${passRate * 100}% below threshold 95%` : undefined
+        failureReason: status === 'FAIL' ? `Pass rate ${(passRate * 100).toFixed(1)}% below threshold 95%` : undefined
     };
 }

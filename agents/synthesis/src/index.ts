@@ -8,7 +8,7 @@ import type { SynthesisState } from './types.js';
 // Define the graph state channels
 const graphState = {
     issueIds: {
-        value: (x: number[], y: number[]) => x ?? y,
+        value: (x: number[], y: number[]) => y ?? x,
         default: () => []
     },
     summaries: {
@@ -37,7 +37,7 @@ async function reduceStep(state: SynthesisState) {
 }
 
 // Build the graph
-export function createsSynthesisGraph() {
+export function createSynthesisGraph() {
     const workflow = new StateGraph<SynthesisState>({
         channels: graphState
     })

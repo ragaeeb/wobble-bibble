@@ -35,7 +35,7 @@ export async function consolidateFindings(
     Output JSON:
     {
         "decision": "APPROVE",
-        "description": "Markdow description...",
+        "description": "Markdown description...",
         "reason": "Brief summary"
     }
     `;

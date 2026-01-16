@@ -13,10 +13,10 @@ import type { ModelConfig, ModelProvider } from './types.js';
 export type { ModelConfig, ModelProvider };
 
 /**
- * Default model configuration (Gemini 3 Flash)
+ * Default model configuration (Gemini 3.0 Flash)
  */
 export const DEFAULT_MODEL: ModelConfig = {
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-3.0-flash',
     provider: 'gemini',
     temperature: 0.1,
 };
@@ -37,7 +37,7 @@ export const NOVA_MODEL: ModelConfig = {
  * Defaults to Gemini if not set or invalid.
  */
 export function getModelFromEnv(): ModelConfig {
-    const provider = process.env.LLM_PROVIDER;
+    const provider = process.env.LLM_PROVIDER?.toLowerCase();
     if (provider === 'nova') {
         return NOVA_MODEL;
     }
@@ -52,6 +52,9 @@ export function getModelFromEnv(): ModelConfig {
  */
 export function createChatModel(config: ModelConfig) {
     if (config.provider === 'nova') {
+        if (!process.env.NOVA_API_KEY) {
+            throw new Error('NOVA_API_KEY environment variable is required for Nova provider');
+        }
         return new ChatOpenAI({
             configuration: {
                 baseURL: 'https://api.nova.amazon.com/v1',
@@ -61,6 +64,7 @@ export function createChatModel(config: ModelConfig) {
             temperature: config.temperature ?? 0.1,
         });
     }
+    // Note: ChatGoogleGenerativeAI typically uses GOOGLE_API_KEY from env automatically
     return new ChatGoogleGenerativeAI({
         model: config.model,
         temperature: config.temperature ?? 0.1,

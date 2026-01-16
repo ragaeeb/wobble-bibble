@@ -3,7 +3,7 @@
  * Orchestrates Triage -> Synthesis -> Engineer -> Validation -> Consolidator -> Implementation
  */
 import { StateGraph, END, START } from '@langchain/langgraph';
-import { createsSynthesisGraph } from '@wobble-bibble/agent-synthesis';
+import { createSynthesisGraph } from '@wobble-bibble/agent-synthesis';
 import { createEngineerGraph } from '@wobble-bibble/agent-engineer';
 import { createValidationGraph } from '@wobble-bibble/agent-validation';
 import { createConsolidatorGraph } from '@wobble-bibble/agent-consolidator';
@@ -73,7 +73,7 @@ export async function createPipeline() {
     const checkpointer = await getCheckpointer();
 
     const builder = new StateGraph({ channels: pipelineState })
-        .addNode("synthesis", createsSynthesisGraph())
+        .addNode("synthesis", createSynthesisGraph())
         .addNode("engineer", createEngineerGraph())
         .addNode("validation", createValidationGraph())
         .addNode("consolidator", createConsolidatorGraph())

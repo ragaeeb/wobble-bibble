@@ -48,22 +48,29 @@ export function sanitize(raw: string, source = 'unknown'): SanitizedInput {
     }
 
     // Truncate individual lines
+    let hasLineTruncation = false;
     content = content
         .split('\n')
         .map((line) => {
             if (line.length > MAX_LINE_LENGTH) {
-                flags.push('LINE_TRUNCATED');
+                hasLineTruncation = true;
                 return `${line.slice(0, MAX_LINE_LENGTH)}...[truncated]`;
             }
             return line;
         })
         .join('\n');
+    
+    if (hasLineTruncation) {
+        flags.push('LINE_TRUNCATED');
+    }
 
     // Filter injection patterns (replace with [FILTERED])
+    // P0 Fix: Use replace-and-compare to avoid global regex lastIndex issues
     for (const pattern of INJECTION_PATTERNS) {
-        if (pattern.test(content)) {
+        const newContent = content.replace(pattern, '[FILTERED]');
+        if (newContent !== content) {
             flags.push('INJECTION_FILTERED');
-            content = content.replace(pattern, '[FILTERED]');
+            content = newContent;
         }
     }
 

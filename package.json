@@ -1,13 +1,18 @@
 {
-    "devDependencies": {
-        "@types/bun": "latest"
-    },
     "name": "wobble-bibble-monorepo",
     "private": true,
     "workspaces": [
         "agents/*"
     ],
+    "scripts": {
+        "build": "tsdown",
+        "test:dist": "bun test tests/dist.test.ts"
+    },
     "dependencies": {
         "@langchain/openai": "^1.2.2"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "tsdown": "^0.6.1"
     }
 }
