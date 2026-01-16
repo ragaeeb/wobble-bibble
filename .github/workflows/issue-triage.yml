@@ -47,7 +47,7 @@ jobs:
           bun-version: latest
 
       - name: Install triage agent dependencies
-        working-directory: scripts/triage
+        working-directory: agents/triage
         run: |
           echo "::group::Installing dependencies"
           bun install
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run triage agent
         id: triage
-        working-directory: scripts/triage
+        working-directory: agents/triage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
