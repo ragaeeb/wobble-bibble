@@ -117,6 +117,21 @@
         "typescript": "^5.9.3",
       },
     },
+    "scripts/triage": {
+      "name": "triage-agent",
+      "version": "1.0.0",
+      "dependencies": {
+        "@langchain/core": "^1.1.15",
+        "@langchain/google-genai": "^2.1.10",
+        "@langchain/langgraph": "^1.0.15",
+        "@octokit/rest": "^22.0.1",
+        "openai": "^6.16.0",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.9",
+        "typescript": "^5.9.3",
+      },
+    },
     "agents/validation": {
       "name": "@wobble-bibble/agent-validation",
       "version": "0.1.0",

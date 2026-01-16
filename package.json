@@ -2,7 +2,8 @@
     "name": "wobble-bibble-monorepo",
     "private": true,
     "workspaces": [
-        "agents/*"
+        "agents/*",
+        "scripts/*"
     ],
     "scripts": {
         "build": "tsdown",
