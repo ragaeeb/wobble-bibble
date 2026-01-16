@@ -50,7 +50,7 @@
         "build": "bun run generate && tsdown",
         "generate": "bun run scripts/generate-prompts.ts",
         "lint": "biome check .",
-        "test": "bun test",
+        "test": "bun test src/ tests/",
         "test:dist": "bun run build && bun test tests/dist.test.ts"
     },
     "sideEffects": false,

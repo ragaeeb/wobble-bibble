@@ -9,6 +9,14 @@ on:
         description: 'Issue number to triage'
         required: true
         type: number
+      llm_provider:
+        description: 'LLM provider to use'
+        required: false
+        default: 'gemini'
+        type: choice
+        options:
+          - gemini
+          - nova
 
 permissions:
   issues: write
@@ -76,10 +84,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          NOVA_API_KEY: ${{ secrets.NOVA_API_KEY }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+          LLM_PROVIDER: ${{ github.event.inputs.llm_provider || 'gemini' }}
         run: |
           echo "::group::Running AI triage"
           START_TIME=$(date +%s)
@@ -117,9 +127,10 @@ jobs:
           # Read the summary from the JSON file
           JSON_FILE="scripts/triage/triage-issue-${ISSUE_NUMBER}.json"
           if [ -f "$JSON_FILE" ]; then
-            # Extract violations count and labels
+            # Extract violations count, labels, and analysis model
             VIOLATIONS=$(jq '.detectedViolations | length' "$JSON_FILE")
             LABELS=$(jq -r '.labelsApplied | join(", ")' "$JSON_FILE")
+            ANALYSIS_MODEL=$(jq -r '.metadata.analysisModel // "unknown"' "$JSON_FILE")
             
             # Build the comment body
             COMMENT_BODY="🤖 **AI Triage Complete**
@@ -129,7 +140,8 @@ jobs:
           **Labels:** \`${LABELS}\`
           
           ---
-          📦 **Triage Artifact**: [Download JSON](${ARTIFACT_URL}) (available for 90 days)"
+          📦 **Triage Artifact**: [Download JSON](${ARTIFACT_URL}) (available for 90 days)
+          🧠 **Analysis Model:** \`${ANALYSIS_MODEL}\`"
           else
             COMMENT_BODY="🤖 **AI Triage Complete**
           

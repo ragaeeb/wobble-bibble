@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { ATTACHMENT_URL_REGEX } from './graph.js';
+import { ATTACHMENT_URL_REGEX } from './constants.js';
 
-describe('graph', () => {
+describe('constants', () => {
     describe('ATTACHMENT_URL_REGEX', () => {
         it('should match standard user attachment URLs', () => {
             const url = 'https://github.com/user-attachments/files/24652510/5.2-arabic-hallucinated-id.txt';
             const matches = url.match(ATTACHMENT_URL_REGEX);
             expect(matches).not.toBeNull();
-            expect(matches?.[0]).toBe(url);
+            expect(matches?.[0]).toEqual(url);
         });
 
         it('should match multiple URLs in text', () => {

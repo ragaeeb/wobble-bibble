@@ -67,10 +67,14 @@ export type TriageResult = {
     createdAt: string;
     attachmentUrl: string | null;
     metadata: {
+        /** The model used to generate the translation (from issue label) */
         model: string | null;
+        /** The addon prompt used (from issue label) */
         promptAddon: string | null;
         /** Thinking time extracted from reasoning trace (e.g., "Thought for 34s") */
         thinkingTimeSeconds: number | null;
+        /** The LLM used for triage analysis (e.g., "gemini/gemini-3-flash-preview") */
+        analysisModel: string;
     };
     parsedContent: {
         promptStack: string;

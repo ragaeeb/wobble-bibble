@@ -34,6 +34,7 @@ export function buildTriageResult(
     result: TriageStateType,
     existingLabels: string[],
     labelsToAdd: string[],
+    analysisModel: string,
 ): TriageResult {
     const modelLabel = existingLabels.find((l) => l.startsWith('model:'));
     const addonLabel = existingLabels.find((l) => l.startsWith('addon:'));
@@ -49,6 +50,7 @@ export function buildTriageResult(
         issueUrl: issue.html_url,
         labelsApplied: [...existingLabels, ...labelsToAdd],
         metadata: {
+            analysisModel,
             model: modelLabel?.replace('model:', '') ?? null,
             promptAddon: addonLabel?.replace('addon:', '') ?? null,
             thinkingTimeSeconds,
