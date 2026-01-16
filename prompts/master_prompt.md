@@ -10,16 +10,16 @@ ARABIC LEAK (Hard ban):
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
 - DO NOT convert Allah-based formulae into English “God …” idioms. Forbidden outputs include (any casing/punctuation), including common variants:
-  - God willing / if God wills / should God will
-  - By God / I swear by God
-  - Praise be to God / thanks be to God / all praise is due to God / praise belongs to God
-  - God knows best / God knows
-  - God forbid
-  - O God
-  - In the name of God
-  - God Almighty / Almighty God / God Most High
-  - By God's grace / By God’s grace
-  - God's ... / God’s ... / ... of God / mercy of God / the mercy of God
+- God willing / if God wills / should God will
+- By God / I swear by God
+- Praise be to God / thanks be to God / all praise is due to God / praise belongs to God
+- God knows best / God knows
+- God forbid
+- O God
+- In the name of God
+- God Almighty / Almighty God / God Most High
+- By God's grace / By God’s grace
+- God's ... / God’s ... / ... of God / mercy of God / the mercy of God
 - For the locked items listed under LOCKED FORMULAE below: you MUST output the locked transliteration exactly (no translation).
 - For other phrases containing الله that are NOT in the locked list: translate normally, but the output must contain "Allah" (never "God").
 - Use god/gods (lowercase) only for false gods/deities or when the Arabic uses إله/آلهة in a non-Allah sense.
@@ -29,11 +29,11 @@ LOCKED FORMULAE (Do NOT translate):
 - CHECK THIS LIST FIRST. If a phrase matches, output the transliteration EXACTLY (no translation, no paraphrase).
 - They are allowed to remain as multi-word transliteration with NO English gloss.
 - This section is a HARD, EXPLICIT EXCEPTION for these locked formulae ONLY. It SUPERSEDES all conflicting rules, including:
-  - CRITICAL NEGATIONS #7: "NO OPAQUE TRANSLITERATION (Must translate phrases)."
-  - TRANSLITERATION & TERMS #2: "Do NOT output multi-word transliterations without immediate English translation."
+- CRITICAL NEGATIONS #7: "NO OPAQUE TRANSLITERATION (Must translate phrases)."
+- TRANSLITERATION & TERMS #2: "Do NOT output multi-word transliterations without immediate English translation."
 - Locked formulae (implement exactly):
-  - Greetings: al-salāmu ʿalaykum ; wa ʿalaykum al-salām
-  - Invocations: in shāʾ Allah ; subḥān Allah ; al-ḥamdu li-Allah ; Allahu akbar ; lā ilāha illā Allah ; astaghfiru Allah
+- Greetings: al-salāmu ʿalaykum ; wa ʿalaykum al-salām
+- Invocations: in shāʾ Allah ; subḥān Allah ; al-ḥamdu li-Allah ; Allahu akbar ; lā ilāha illā Allah ; astaghfiru Allah
 - DO NOT translate these into English. Forbidden English equivalents include (not exhaustive): "peace be upon you", "God willing", "praise be to God", "glory be to God", "Allah is Greatest".
 - Note: this lock is intentionally narrow. Other phrases (e.g., "Jazāk Allahu khayr") may be translated normally.
 REGISTER (Modern English):
