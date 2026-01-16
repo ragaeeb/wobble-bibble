@@ -35,17 +35,16 @@ export async function runValidation(state: ValidationState): Promise<Partial<Val
     // const model = getModel(); // Would be used here
 
     for (const testCase of cases) {
-        // TODO: Execute prompt with testCase.input
-        // Mock result for now assuming 95% pass rate
-        const isPass = Math.random() > 0.05; 
-        
+        // TODO: Execute prompt with testCase.input and compare to expectedOutput
+        // Deterministic stub until execution is wired.
         results.push({
             caseId: testCase.id,
             input: testCase.input,
             expectedOutput: testCase.expectedOutput,
-            actualOutput: isPass ? testCase.expectedOutput : "[Regressed Output]",
-            status: isPass ? 'PASS' : 'FAIL',
-            tags: testCase.tags
+            actualOutput: '[STUB - not executed]',
+            status: 'SKIPPED',
+            tags: testCase.tags,
+            stubbed: true,
         });
     }
 
@@ -58,7 +57,17 @@ export async function runValidation(state: ValidationState): Promise<Partial<Val
         };
     }
 
-    const failedCount = results.filter(r => r.status === 'FAIL').length;
+    // If we haven't executed anything yet, do not produce a misleading PASS.
+    const hasStubbed = results.some((r) => r.stubbed);
+    if (hasStubbed) {
+        return {
+            testResults: results,
+            validationStatus: 'FAIL',
+            failureReason: 'Validation execution is not wired yet (results are stubbed/SKIPPED)',
+        };
+    }
+
+    const failedCount = results.filter((r) => r.status === 'FAIL').length;
     const passRate = (results.length - failedCount) / results.length;
     const status = passRate >= 0.95 ? 'PASS' : 'FAIL';
 

@@ -12,8 +12,8 @@ const ALLOWED_PROMPT_FILES = [
     'tafsir.md',
     'fatawa.md',
     'encyclopedia_mixed.md',
-    'aqeedah.md',
-    'jarh_tadil.md',
+    'jarh_wa_tadil.md',
+    'usul_al_fiqh.md',
 ];
 
 export async function readPromptFile(filename: string): Promise<string> {

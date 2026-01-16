@@ -24,6 +24,11 @@ export interface TestResult {
     input: string;
     expectedOutput: string;
     actualOutput: string;
-    status: 'PASS' | 'FAIL';
+    status: 'PASS' | 'FAIL' | 'SKIPPED';
     tags: string[];
+    /**
+     * True when the test case was not executed (skeleton stub).
+     * Keeps CI deterministic while execution wiring is incomplete.
+     */
+    stubbed?: boolean;
 }

@@ -64,6 +64,10 @@ export function sanitize(raw: string, source = 'unknown'): SanitizedInput {
         flags.push('LINE_TRUNCATED');
     }
 
+    // Risk scan must be done on bounded-but-unfiltered content (so we can still flag HIGH_RISK)
+    // while keeping runtime predictable.
+    const riskScore = detectInjectionPatterns(content);
+
     // Filter injection patterns (replace with [FILTERED])
     // P0 Fix: Use replace-and-compare to avoid global regex lastIndex issues
     for (const pattern of INJECTION_PATTERNS) {
@@ -79,8 +83,6 @@ export function sanitize(raw: string, source = 'unknown'): SanitizedInput {
         .replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]')
         .replace(/<script[\s\S]*?<\/script>/gi, '[SCRIPT_REMOVED]')
         .replace(/<!--[\s\S]*?-->/g, '[COMMENT_REMOVED]');
-
-    const riskScore = detectInjectionPatterns(raw); // Score on original
 
     if (riskScore > 0.5) {
         flags.push('HIGH_RISK');

@@ -33,6 +33,11 @@ describe('utils', () => {
             expect(extractThinkingTime(trace)).toBe(135);
         });
 
+        it('should extract minutes only', () => {
+            const trace = 'Wait... Thinking...\nThought for 2m\nDone';
+            expect(extractThinkingTime(trace)).toBe(120);
+        });
+
         it('should handle case insensitivity', () => {
             const trace = 'thought for 10s';
             expect(extractThinkingTime(trace)).toBe(10);

@@ -9,6 +9,28 @@ interface RunnableLike {
     invoke: (input: any) => Promise<any>;
 }
 
+function parseConsolidatorJson(raw: string): { description: string; reason?: string } | null {
+    try {
+        const content = raw.replace(/```json\n?|\n?```/g, '').trim();
+        const parsed: unknown = JSON.parse(content);
+        if (typeof parsed !== 'object' || parsed === null) return null;
+
+        const obj = parsed as Record<string, unknown>;
+        const description = obj.description;
+        const reason = obj.reason;
+
+        if (typeof description !== 'string' || description.trim().length === 0) return null;
+        if (reason !== undefined && typeof reason !== 'string') return null;
+
+        return {
+            description: description.trim(),
+            reason: typeof reason === 'string' ? reason : undefined,
+        };
+    } catch {
+        return null;
+    }
+}
+
 export async function consolidateFindings(
     state: ConsolidatorState,
     model?: RunnableLike
@@ -46,8 +68,14 @@ export async function consolidateFindings(
             new HumanMessage(prompt)
         ]);
 
-        const content = String(result.content).replace(/```json\n?|\n?```/g, '');
-        const parsed = JSON.parse(content);
+        const parsed = parseConsolidatorJson(String(result.content));
+        if (!parsed) {
+            return {
+                finalDecision: 'NEEDS_REVISION',
+                decisionReason: 'Failed to generate PR description: invalid/missing JSON fields (expected non-empty "description")',
+                pullRequestDescription: undefined,
+            };
+        }
         
         return {
             finalDecision: 'APPROVE',

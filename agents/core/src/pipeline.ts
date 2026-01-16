@@ -15,7 +15,11 @@ import { getCheckpointer, getThreadConfig } from '@wobble-bibble/agents-shared';
 const pipelineState = {
     // Pipeline Input
     issueIds: {
-        value: (x: number[], y: number[]) => x ?? y,
+        // Merge incoming IDs instead of dropping them.
+        value: (x: number[] | undefined, y: number[] | undefined) => [
+            ...(x ?? []),
+            ...(y ?? []),
+        ],
         default: () => []
     },
     // Synthesis Output / Engineer Input

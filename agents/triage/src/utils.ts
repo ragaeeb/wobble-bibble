@@ -16,10 +16,11 @@ export function parseGitHubUrl(url: string): { owner: string; repo: string } | n
  * Extract thinking time from reasoning trace (e.g., "Thought for 34s" or "Thought for 2m 15s")
  */
 export function extractThinkingTime(reasoningTrace: string): number | null {
-    const thinkingMatch = reasoningTrace.match(/Thought for (?:(\d+)m\s*)?(\d+)s/i);
+    const thinkingMatch = reasoningTrace.match(/Thought for (?:(\d+)m\s*)?(?:(\d+)s)?/i);
     if (thinkingMatch) {
         const minutes = thinkingMatch[1] ? Number.parseInt(thinkingMatch[1], 10) : 0;
-        const seconds = Number.parseInt(thinkingMatch[2], 10);
+        const seconds = thinkingMatch[2] ? Number.parseInt(thinkingMatch[2], 10) : 0;
+        if (minutes === 0 && seconds === 0) return null;
         return minutes * 60 + seconds;
     }
     return null;
@@ -48,7 +49,7 @@ export function buildTriageResult(
         detectedViolations: result.violations,
         issueNumber: config.issueNumber,
         issueUrl: issue.html_url,
-        labelsApplied: [...existingLabels, ...labelsToAdd],
+        labelsApplied: [...new Set([...existingLabels, ...labelsToAdd])],
         metadata: {
             analysisModel,
             model: modelLabel?.replace('model:', '') ?? null,

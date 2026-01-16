@@ -1,5 +1,9 @@
 import { defineConfig } from 'tsdown';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// ESM-friendly __dirname replacement
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
     clean: true,
