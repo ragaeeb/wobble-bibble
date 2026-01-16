@@ -108,4 +108,12 @@ describe('getMasterPrompt', () => {
         expect(content).toContain('al-salāmu ʿalaykum');
         expect(content).toContain('in shāʾ Allah');
     });
+
+    test('should include the ID INTEGRITY block', () => {
+        const masterPromptPath = join(process.cwd(), 'prompts', 'master_prompt.md');
+        const content = readFileSync(masterPromptPath, 'utf8');
+        expect(content).toContain('ID INTEGRITY (Check First):');
+        expect(content).toContain('PREPASS (Silent closed set):');
+        expect(content).toContain('BOUNDARY (No bleed):');
+    });
 });
