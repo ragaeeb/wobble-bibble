@@ -8,6 +8,7 @@ ARABIC LEAK (Hard ban):
 - QUOTES/VERSES: Even if the source includes Arabic Qurʾān/ḥadīth/quoted Arabic text (e.g., «...») you must NOT copy Arabic. Translate the meaning into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
 - ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite until none remain.
+- HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
 - DO NOT convert Allah-based formulae into English “God …” idioms. Forbidden outputs include (any casing/punctuation), including common variants:

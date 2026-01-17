@@ -25,22 +25,114 @@ export const formatExcerptsForPrompt = (segments: Segment[], prompt: string) => 
  * normalizeTranslationText('helloP1 - x').includes('\\nP1 -') === true
  */
 export const normalizeTranslationText = (content: string) => {
-    const normalizedLineEndings = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    return normalizeTranslationTextWithMap(content).normalized;
+};
 
-    const mergedMarkerWithSpacePattern = new RegExp(
-        ` (${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
-        'gm',
-    );
+export const normalizeTranslationTextWithMap = (content: string) => {
+    const normalizeLineEndingsWithMap = (input: string) => {
+        let normalized = '';
+        const indexMap: number[] = [];
+        for (let i = 0; i < input.length; i++) {
+            const ch = input[i];
+            if (ch === '\r') {
+                if (input[i + 1] === '\n') {
+                    normalized += '\n';
+                    indexMap.push(i);
+                    i++;
+                    continue;
+                }
+                normalized += '\n';
+                indexMap.push(i);
+                continue;
+            }
+            normalized += ch;
+            indexMap.push(i);
+        }
+        return { normalized, indexMap };
+    };
 
-    const mergedMarkerNoSpacePattern = new RegExp(
-        `([^\\s\\n])(${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
-        'gm',
-    );
+    const insertNewlinesBeforeMergedMarkers = (text: string, map: number[]) => {
+        const mergedMarkerNoSpacePattern = new RegExp(
+            `([^\\s\\n])(${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
+            'g',
+        );
+        let normalized = '';
+        const indexMap: number[] = [];
+        let lastIndex = 0;
+        for (const match of text.matchAll(mergedMarkerNoSpacePattern)) {
+            const matchIndex = match.index ?? 0;
+            for (let i = lastIndex; i < matchIndex; i++) {
+                normalized += text[i];
+                indexMap.push(map[i]);
+            }
+            normalized += match[1];
+            indexMap.push(map[matchIndex]);
+            normalized += '\n';
+            indexMap.push(map[matchIndex]);
+            const marker = match[2];
+            for (let j = 0; j < marker.length; j++) {
+                normalized += marker[j];
+                indexMap.push(map[matchIndex + 1 + j]);
+            }
+            lastIndex = matchIndex + match[0].length;
+        }
+        for (let i = lastIndex; i < text.length; i++) {
+            normalized += text[i];
+            indexMap.push(map[i]);
+        }
+        return { normalized, indexMap };
+    };
 
-    return normalizedLineEndings
-        .replace(mergedMarkerWithSpacePattern, '\n$1')
-        .replace(mergedMarkerNoSpacePattern, '$1\n$2')
-        .replace(/\\\[/gm, '[');
+    const replaceSpaceBeforeMarkerWithNewline = (text: string, map: number[]) => {
+        const mergedMarkerWithSpacePattern = new RegExp(
+            ` (${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
+            'g',
+        );
+        let normalized = '';
+        const indexMap: number[] = [];
+        let lastIndex = 0;
+        for (const match of text.matchAll(mergedMarkerWithSpacePattern)) {
+            const matchIndex = match.index ?? 0;
+            for (let i = lastIndex; i < matchIndex; i++) {
+                normalized += text[i];
+                indexMap.push(map[i]);
+            }
+            normalized += '\n';
+            indexMap.push(map[matchIndex]);
+            const marker = match[1];
+            for (let j = 0; j < marker.length; j++) {
+                normalized += marker[j];
+                indexMap.push(map[matchIndex + 1 + j]);
+            }
+            lastIndex = matchIndex + match[0].length;
+        }
+        for (let i = lastIndex; i < text.length; i++) {
+            normalized += text[i];
+            indexMap.push(map[i]);
+        }
+        return { normalized, indexMap };
+    };
+
+    const removeEscapedBrackets = (text: string, map: number[]) => {
+        let normalized = '';
+        const indexMap: number[] = [];
+        for (let i = 0; i < text.length; i++) {
+            if (text[i] === '\\' && text[i + 1] === '[') {
+                i++;
+                normalized += '[';
+                indexMap.push(map[i]);
+                continue;
+            }
+            normalized += text[i];
+            indexMap.push(map[i]);
+        }
+        return { normalized, indexMap };
+    };
+
+    const lineEndingNormalized = normalizeLineEndingsWithMap(content);
+    const insertedNewlines = insertNewlinesBeforeMergedMarkers(lineEndingNormalized.normalized, lineEndingNormalized.indexMap);
+    const spaceReplaced = replaceSpaceBeforeMarkerWithNewline(insertedNewlines.normalized, insertedNewlines.indexMap);
+    return removeEscapedBrackets(spaceReplaced.normalized, spaceReplaced.indexMap);
 };
 
 /**

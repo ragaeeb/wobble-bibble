@@ -12,9 +12,20 @@ export {
     extractTranslationIds,
     formatExcerptsForPrompt,
     normalizeTranslationText,
+    normalizeTranslationTextWithMap,
     parseTranslations,
     parseTranslationsInOrder,
 } from './textUtils';
 
-export type { Segment, ValidationError, ValidationErrorType, ValidationResponseResult } from './types';
+export type {
+    Range,
+    Segment,
+    TranslationMarker,
+    ValidationContext,
+    ValidationError,
+    ValidationErrorType,
+    ValidationConfig,
+    ValidationResponseResult,
+    ValidationRule,
+} from './types';
 export { VALIDATION_ERROR_TYPE_INFO, validateTranslationResponse } from './validation';
