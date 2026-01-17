@@ -58,3 +58,28 @@ export const extractTranslationIds = (text: string) => {
     }
     return ids;
 };
+
+/**
+ * Split the response into a per-ID map. Values contain translation content only (prefix removed).
+ *
+ * @example
+ * splitResponseById('P1 - a\\nP2 - b').get('P1') === 'a'
+ */
+export const splitResponseById = (text: string) => {
+    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
+    const headerPattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}\\s*`, 'gm');
+    const matches = [...text.matchAll(headerPattern)];
+
+    const map = new Map<string, string>();
+    for (let i = 0; i < matches.length; i++) {
+        const id = matches[i][1];
+        const start = matches[i].index ?? 0;
+        const nextStart = i + 1 < matches.length ? (matches[i + 1].index ?? text.length) : text.length;
+        const chunk = text.slice(start, nextStart).trimEnd();
+        const prefixPattern = new RegExp(`^${id}${optionalSpace}${dashes}\\s*`);
+        map.set(id, chunk.replace(prefixPattern, '').trim());
+    }
+    return map;
+};
+
+export const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

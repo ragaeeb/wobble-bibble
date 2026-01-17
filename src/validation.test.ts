@@ -94,15 +94,6 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         expect(result.errors.some((e) => e.type === 'meta_talk')).toBeTrue();
     });
 
-    it('should detect forbidden terms (gravity wells)', () => {
-        const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
-        const response = `P1 - This mentions Sheikh and Koran and Islam and Salafism.`;
-        const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'forbidden_term')).toBeTrue();
-    });
-
     it('should detect Arabic leakage even inside quotes/brackets', () => {
         const segments = [
             { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },

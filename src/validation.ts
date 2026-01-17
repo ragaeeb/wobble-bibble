@@ -1,5 +1,13 @@
-import { ARCHAIC_WORDS, MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
-import { extractTranslationIds, normalizeTranslationText } from './textUtils';
+import {
+    ARCHAIC_WORDS,
+    COLON_PATTERN,
+    MARKER_ID_PATTERN,
+    MAX_EMPTY_PARENTHESES,
+    MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK,
+    MIN_TRANSLATION_RATIO,
+    TRANSLATION_MARKER_PARTS,
+} from './constants';
+import { escapeRegExp, extractTranslationIds, normalizeTranslationText, splitResponseById } from './textUtils';
 import type { Segment, ValidationError, ValidationErrorType } from './types';
 
 /**
@@ -23,9 +31,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
     empty_parentheses: {
         description: 'Excessive "()" patterns detected, often indicating failed/empty term-pairs.',
-    },
-    forbidden_term: {
-        description: 'A forbidden glossary “gravity well” spelling was detected (e.g., "Sheikh" instead of "Shaykh").',
     },
     implicit_continuation: {
         description: 'The response includes continuation/meta phrasing (e.g., "continued:", "implicit continuation").',
@@ -67,11 +72,7 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
 } as const satisfies Record<ValidationErrorType, { description: string }>;
 
-const MAX_EMPTY_PARENTHESES = 3;
-const MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK = 50;
-const MIN_TRANSLATION_RATIO = 0.25;
-
-const COLON_PATTERN = /[:：]/g;
+const ARCHAIC_PATTERNS = ARCHAIC_WORDS.map((w) => new RegExp(`\\b${escapeRegExp(w)}\\b`, 'i'));
 
 /**
  * Validate an LLM translation response against a set of Arabic source segments.
@@ -85,14 +86,14 @@ const COLON_PATTERN = /[:：]/g;
  * @example
  * // Pass (no errors)
  * validateTranslationResponse(
- *   [{ id: 'P1', content: 'نص عربي طويل...' }],
+ *   [{ id: 'P1', text: 'نص عربي طويل...' }],
  *   'P1 - A complete translation.'
  * ).errors.length === 0
  *
  * @example
  * // Fail (invented ID)
  * validateTranslationResponse(
- *   [{ id: 'P1', content: 'نص عربي طويل...' }],
+ *   [{ id: 'P1', text: 'نص عربي طويل...' }],
  *   'P2 - This ID is not in the corpus.'
  * ).errors.some(e => e.type === 'invented_id') === true
  */
@@ -121,7 +122,6 @@ export const validateTranslationResponse = (segments: Segment[], response: strin
         ...validateTruncatedSegments(normalizedResponse),
         ...validateImplicitContinuation(normalizedResponse),
         ...validateMetaTalk(normalizedResponse),
-        ...validateForbiddenTerms(normalizedResponse),
         ...validateDuplicateIds(parsedIds),
         ...validateInventedIds(parsedIds, segmentById),
         ...validateMissingIdGaps(parsedIds, segmentById, segments),
@@ -136,29 +136,6 @@ export const validateTranslationResponse = (segments: Segment[], response: strin
     ];
 
     return { errors, normalizedResponse, parsedIds };
-};
-
-/**
- * Split the response into a per-ID map. Values contain translation content only (prefix removed).
- *
- * @example
- * splitResponseById('P1 - a\\nP2 - b').get('P1') === 'a'
- */
-const splitResponseById = (text: string) => {
-    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
-    const headerPattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}\\s*`, 'gm');
-    const matches = [...text.matchAll(headerPattern)];
-
-    const map = new Map<string, string>();
-    for (let i = 0; i < matches.length; i++) {
-        const id = matches[i][1];
-        const start = matches[i].index ?? 0;
-        const nextStart = i + 1 < matches.length ? (matches[i + 1].index ?? text.length) : text.length;
-        const chunk = text.slice(start, nextStart).trimEnd();
-        const prefixPattern = new RegExp(`^${id}${optionalSpace}${dashes}\\s*`);
-        map.set(id, chunk.replace(prefixPattern, '').trim());
-    }
-    return map;
 };
 
 /**
@@ -257,19 +234,18 @@ const validateNewlineAfterId = (text: string): ValidationError[] => {
  */
 const validateDuplicateIds = (ids: string[]): ValidationError[] => {
     const seen = new Set<string>();
+    const duplicates = new Set<string>();
     for (const id of ids) {
         if (seen.has(id)) {
-            return [
-                {
-                    id,
-                    message: `Duplicate ID "${id}" detected - each segment should appear only once`,
-                    type: 'duplicate_id',
-                },
-            ];
+            duplicates.add(id);
         }
         seen.add(id);
     }
-    return [];
+    return [...duplicates].map((id) => ({
+        id,
+        message: `Duplicate ID "${id}" detected - each segment should appear only once`,
+        type: 'duplicate_id',
+    }));
 };
 
 /**
@@ -427,35 +403,6 @@ const validateMetaTalk = (text: string): ValidationError[] => {
 };
 
 /**
- * Detect common “gravity well” spellings that violate locked glossary rules.
- *
- * @example
- * validateForbiddenTerms('P1 - Sheikh said...')[0]?.type === 'forbidden_term'
- */
-const validateForbiddenTerms = (text: string): ValidationError[] => {
-    const forbidden: Array<{ term: RegExp; correct: string }> = [
-        { correct: 'Shaykh', term: /\bSheikh\b/i },
-        { correct: 'Qurʾān', term: /\bKoran\b/i },
-        { correct: 'ḥadīth', term: /\bHadith\b/ },
-        { correct: 'Islām', term: /\bIslam\b/ },
-        { correct: 'Salafīyyah', term: /\bSalafism\b/i },
-    ];
-    for (const { term, correct } of forbidden) {
-        const match = text.match(term);
-        if (match) {
-            return [
-                {
-                    match: match[0],
-                    message: `Forbidden term "${match[0]}" detected - use "${correct}" instead`,
-                    type: 'forbidden_term',
-                },
-            ];
-        }
-    }
-    return [];
-};
-
-/**
  * Detect Arabic script characters (except ﷺ).
  *
  * @example
@@ -589,8 +536,7 @@ const validateAllCaps = (text: string): ValidationError[] => {
  */
 const validateArchaicRegister = (text: string): ValidationError[] => {
     const found: string[] = [];
-    for (const w of ARCHAIC_WORDS) {
-        const re = new RegExp(`\\b${w}\\b`, 'i');
+    for (const re of ARCHAIC_PATTERNS) {
         const m = text.match(re);
         if (m) {
             found.push(m[0]);

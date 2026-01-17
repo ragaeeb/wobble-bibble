@@ -69,7 +69,7 @@ describe('Distribution Integration Test', () => {
         const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
         const response = 'P1 - Quote: الله';
         const result = lib.validateTranslationResponse(segments, response);
-        expect(result.errors.some((e: any) => e.type === 'arabic_leak')).toBe(true);
+        expect(result.errors.some((e) => e.type === 'arabic_leak')).toBe(true);
     });
 
     it('should preserve semantic casing rules in the bundled master prompt', () => {
@@ -83,6 +83,6 @@ describe('Distribution Integration Test', () => {
         const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
         const response = 'P1 - Muḥammad ﷺ said...';
         const result = lib.validateTranslationResponse(segments, response);
-        expect(result.errors.some((e: any) => e.type === 'arabic_leak')).toBe(false);
+        expect(result.errors.some((e) => e.type === 'arabic_leak')).toBe(false);
     });
 });

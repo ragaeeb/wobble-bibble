@@ -50,6 +50,8 @@ TRANSLITERATION & TERMS:
 - Do NOT output multi-word transliterations without immediate English translation.
 - Do NOT transliterate full sentences/matn/quotes. Translate into English; transliteration is for names/terms only.
 - EXCEPTION (Duʿāʾ/Supplications): If the source contains a specific duʿāʾ/supplication phrase and you choose to preserve its wording for pronunciation, you MAY output transliteration BUT you MUST also translate it immediately (same line or next) as: "translit (English translation)". Do NOT output Arabic script.
+- Example Allowed: Allāhumma innī asʾaluka al-ʿāfiyah (O Allah, I ask You for well-being).
+- Example Forbidden: Transliterate a long multi-sentence duʿāʾ paragraph without translating it.
 - LOCKED FORMULAE are the only exception allowed to remain multi-word transliteration with NO English gloss.
 - If you use any other multi-word transliteration (not locked), it MUST be immediately glossed: "translit (English)". Prefer full English translation for phrases.
 - Do NOT leave common nouns/objects/roles as transliteration (e.g., tools, foods, occupations). Translate them into English. If you must transliterate a non-name, you MUST immediately gloss it: "translit (English)".

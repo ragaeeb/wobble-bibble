@@ -23,7 +23,6 @@ export type ValidationErrorType =
     | 'truncated_segment'
     | 'implicit_continuation'
     | 'meta_talk'
-    | 'forbidden_term'
     | 'arabic_leak'
     | 'wrong_diacritics'
     | 'empty_parentheses'
@@ -41,4 +40,3 @@ export type ValidationError = { type: ValidationErrorType; message: string; id?:
  * Result of validating an LLM translation response against a set of source segments.
  */
 export type ValidationResponseResult = { normalizedResponse: string; parsedIds: string[]; errors: ValidationError[] };
-

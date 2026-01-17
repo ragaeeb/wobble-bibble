@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { extractTranslationIds, normalizeTranslationText } from './textUtils';
+import { extractTranslationIds, formatExcerptsForPrompt, normalizeTranslationText } from './textUtils';
 
-describe('textUtils', () => {
+describe('normalizeTranslationText', () => {
     it('should normalize CRLF/CR to LF', () => {
         const input = 'P1 - a\r\nP2 - b\rP3 - c';
         const out = normalizeTranslationText(input);
@@ -33,3 +33,13 @@ describe('textUtils', () => {
     });
 });
 
+describe('extractTranslationIds', () => {
+    it('should format segments with prompt prefix', () => {
+        const segments = [
+            { id: 'P1', text: 'Arabic 1' },
+            { id: 'P2', text: 'Arabic 2' },
+        ];
+        const result = formatExcerptsForPrompt(segments, 'Translate:');
+        expect(result).toBe('Translate:\n\nP1 - Arabic 1\n\nP2 - Arabic 2');
+    });
+});

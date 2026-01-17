@@ -53,3 +53,9 @@ export const ARCHAIC_WORDS = [
     'saith',
     'behold',
 ] as const;
+
+export const MAX_EMPTY_PARENTHESES = 3;
+export const MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK = 50;
+export const MIN_TRANSLATION_RATIO = 0.25;
+
+export const COLON_PATTERN = /[:：]/g;
