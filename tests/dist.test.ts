@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test';
-// @ts-expect-error - Importing from dist which might not be typed yet in the IDE's view
 import * as lib from '../dist/index.js';
 
 describe('Distribution Integration Test', () => {
@@ -12,11 +11,7 @@ describe('Distribution Integration Test', () => {
     });
 
     it('should export all expected validation functions', () => {
-        expect(lib.validateTranslations).toBeDefined();
-        expect(lib.detectArabicScript).toBeDefined();
-        expect(lib.detectDuplicateIds).toBeDefined();
-        expect(lib.detectInventedIds).toBeDefined();
-        expect(lib.detectTruncatedSegments).toBeDefined();
+        expect(lib.validateTranslationResponse).toBeDefined();
     });
 
     it('should be able to retrieve the master prompt from the bundle', () => {
@@ -33,11 +28,15 @@ describe('Distribution Integration Test', () => {
         expect(stacked).toContain('ISNAD VERBS:');
     });
 
-    it('should successfully run a validation from the built module', () => {
-        const textWithArabic = 'P100 - This is Arabic: الله';
-        const warnings = lib.detectArabicScript(textWithArabic);
-        expect(warnings.length).toBeGreaterThan(0);
-        expect(warnings[0].message).toContain('Arabic script');
+    it('should successfully run the response validator from the built module', () => {
+        const segments = [
+            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
+            { id: 'P2', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
+        ];
+        const response = 'P1 - Clean translation.\nP2 - Another clean translation.';
+        const result = lib.validateTranslationResponse(segments, response);
+        expect(result.parsedIds).toEqual(['P1', 'P2']);
+        expect(Array.isArray(result.errors)).toBe(true);
     });
 
     it('should recognize the new anti-hallucination rules in the bundle', () => {
@@ -66,39 +65,11 @@ describe('Distribution Integration Test', () => {
         }
     });
 
-    it('should find invented IDs that are not in the source list', () => {
-        const outputIds = ['P1', 'P1a', 'P2'];
-        const sourceIds = ['P1', 'P2']; // P1a is invented
-        const error = lib.detectInventedIds(outputIds, sourceIds);
-        expect(error).toContain('P1a');
-        expect(error).toContain('Invented');
-    });
-
-    it('should detect segments marked as [INCOMPLETE]', () => {
-        const text = 'P1 - This is done.\nP2 - [INCOMPLETE]\nP3 - This is also done.';
-        const error = lib.detectTruncatedSegments(text);
-        expect(error).toContain('P2');
-        expect(error).toContain('Truncated');
-    });
-
-    it('should find unmatched translation IDs between two lists', () => {
-        const translationIds = ['P1', 'P99'];
-        const storeIds = ['P1', 'P2', 'P3'];
-        const unmatched = lib.findUnmatchedTranslationIds(translationIds, storeIds);
-        expect(unmatched).toEqual(['P99']);
-    });
-
-    it('should detect out-of-order segments using the built-in validator', () => {
-        const ids = ['P1', 'P3', 'P2'];
-        const error = lib.validateNumericOrder(ids);
-        expect(error).toContain('P2');
-        expect(error).toContain('order');
-    });
-
-    it('should accurately extract IDs with complex suffixes from text', () => {
-        const text = 'P11622a - Text\nB100j - More text';
-        const ids = lib.extractTranslationIds(text);
-        expect(ids).toEqual(['P11622a', 'B100j']);
+    it('should detect arabic leak using the response validator', () => {
+        const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
+        const response = 'P1 - Quote: الله';
+        const result = lib.validateTranslationResponse(segments, response);
+        expect(result.errors.some((e: any) => e.type === 'arabic_leak')).toBe(true);
     });
 
     it('should preserve semantic casing rules in the bundled master prompt', () => {
@@ -108,9 +79,10 @@ describe('Distribution Integration Test', () => {
         expect(master).toContain('sunnah (lowercase)');
     });
 
-    it('should allow valid Prophet salutations in the Arabic script detector', () => {
-        const textWithSalutation = 'Muḥammad ﷺ said...';
-        const warnings = lib.detectArabicScript(textWithSalutation);
-        expect(warnings.length).toBe(0); // ﷺ is the only allowed Arabic character
+    it('should allow valid Prophet salutations in text (no arabic leak detected)', () => {
+        const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
+        const response = 'P1 - Muḥammad ﷺ said...';
+        const result = lib.validateTranslationResponse(segments, response);
+        expect(result.errors.some((e: any) => e.type === 'arabic_leak')).toBe(false);
     });
 });

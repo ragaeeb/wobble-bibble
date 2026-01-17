@@ -1,459 +1,685 @@
-import { MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
+import { ARCHAIC_WORDS, MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
+import { extractTranslationIds, normalizeTranslationText } from './textUtils';
+import type { Segment, ValidationError, ValidationErrorType } from './types';
 
 /**
- * Warning types for soft validation issues
- */
-export type ValidationWarningType = 'arabic_leak' | 'wrong_diacritics';
-
-/**
- * A soft validation warning (not a hard error)
- */
-export type ValidationWarning = {
-    /** The type of warning */
-    type: ValidationWarningType;
-    /** Human-readable warning message */
-    message: string;
-    /** The offending text match */
-    match?: string;
-};
-
-/**
- * Result of translation validation
- */
-export type TranslationValidationResult = {
-    /** Whether validation passed */
-    isValid: boolean;
-    /** Error message if validation failed */
-    error?: string;
-    /** Normalized/fixed text (with merged markers split onto separate lines) */
-    normalizedText: string;
-    /** List of parsed translation IDs in order */
-    parsedIds: string[];
-    /** Soft warnings (issues that don't fail validation) */
-    warnings?: ValidationWarning[];
-};
-
-/**
- * Detects Arabic script in text (except allowed ﷺ symbol).
- * This is a SOFT warning - Arabic leak is bad but not a hard failure.
+ * Human-readable descriptions for each `ValidationErrorType`, intended for client UIs and logs.
  *
- * @param text - The text to scan for Arabic script
- * @returns Array of validation warnings if Arabic is found
+ * @example
+ * VALIDATION_ERROR_TYPE_INFO.arabic_leak.description
  */
-export const detectArabicScript = (text: string): ValidationWarning[] => {
-    const warnings: ValidationWarning[] = [];
-    // Arabic Unicode range: \u0600-\u06FF, \u0750-\u077F, \uFB50-\uFDFF, \uFE70-\uFEFF
-    // Exclude ﷺ (U+FDFA)
-    const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDF9\uFDFB-\uFDFF\uFE70-\uFEFF]+/g;
-    const matches = text.match(arabicPattern);
+export const VALIDATION_ERROR_TYPE_INFO = {
+    all_caps: {
+        description: 'ALL CAPS “shouting” word detected (5+ letters).',
+    },
+    arabic_leak: {
+        description: 'Arabic script was detected in output (except ﷺ).',
+    },
+    archaic_register: {
+        description: 'Archaic/Biblical English detected (e.g., thou, verily, shalt).',
+    },
+    duplicate_id: {
+        description: 'The same segment ID appears more than once in the response.',
+    },
+    empty_parentheses: {
+        description: 'Excessive "()" patterns detected, often indicating failed/empty term-pairs.',
+    },
+    forbidden_term: {
+        description: 'A forbidden glossary “gravity well” spelling was detected (e.g., "Sheikh" instead of "Shaykh").',
+    },
+    implicit_continuation: {
+        description: 'The response includes continuation/meta phrasing (e.g., "continued:", "implicit continuation").',
+    },
+    invalid_marker_format: {
+        description: 'A segment marker line is malformed (e.g., wrong ID shape or missing content after the dash).',
+    },
+    invented_id: {
+        description: 'The response contains a segment ID that does not exist in the provided source corpus.',
+    },
+    length_mismatch: {
+        description: 'Translation appears too short relative to Arabic source (heuristic truncation check).',
+    },
+    meta_talk: {
+        description: 'The response includes translator/editor notes instead of pure translation.',
+    },
+    mismatched_colons: {
+        description:
+            'Per-segment colon count mismatch between Arabic segment text and its translation chunk (counts ":" and "：").',
+    },
+    missing_id_gap: {
+        description:
+            'A gap was detected: the response includes two IDs whose corpus order implies one or more intermediate IDs are missing.',
+    },
+    multiword_translit_without_gloss: {
+        description: 'A multi-word transliteration phrase was detected without an immediate parenthetical gloss.',
+    },
+    newline_after_id: {
+        description: 'The response used "ID -\\nText" instead of "ID - Text" (newline immediately after the marker).',
+    },
+    no_valid_markers: {
+        description: 'No valid "ID - ..." markers were found anywhere in the response.',
+    },
+    truncated_segment: {
+        description: 'A segment appears truncated (e.g., only "…", "...", or "[INCOMPLETE]").',
+    },
+    wrong_diacritics: {
+        description: 'Wrong diacritics like â/ã/á were detected (should use macrons like ā ī ū).',
+    },
+} as const satisfies Record<ValidationErrorType, { description: string }>;
 
-    if (matches) {
-        for (const match of matches) {
-            warnings.push({
-                match,
-                message: `Arabic script detected: "${match}"`,
-                type: 'arabic_leak',
-            });
-        }
+const MAX_EMPTY_PARENTHESES = 3;
+const MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK = 50;
+const MIN_TRANSLATION_RATIO = 0.25;
+
+const COLON_PATTERN = /[:：]/g;
+
+/**
+ * Validate an LLM translation response against a set of Arabic source segments.
+ *
+ * Rules are expressed as a list of typed errors. The caller decides severity.
+ * The validator normalizes the response first (marker splitting + line endings).
+ *
+ * Important: `segments` may be the full corpus. The validator reduces to only
+ * those IDs parsed from the response (plus detects missing-ID gaps between IDs).
+ *
+ * @example
+ * // Pass (no errors)
+ * validateTranslationResponse(
+ *   [{ id: 'P1', content: 'نص عربي طويل...' }],
+ *   'P1 - A complete translation.'
+ * ).errors.length === 0
+ *
+ * @example
+ * // Fail (invented ID)
+ * validateTranslationResponse(
+ *   [{ id: 'P1', content: 'نص عربي طويل...' }],
+ *   'P2 - This ID is not in the corpus.'
+ * ).errors.some(e => e.type === 'invented_id') === true
+ */
+export const validateTranslationResponse = (segments: Segment[], response: string) => {
+    const normalizedResponse = normalizeTranslationText(response);
+    const parsedIds = extractTranslationIds(normalizedResponse);
+
+    if (parsedIds.length === 0) {
+        return {
+            errors: [{ message: 'No valid translation markers found', type: 'no_valid_markers' }],
+            normalizedResponse,
+            parsedIds: [],
+        };
     }
 
-    return warnings;
-};
-
-/**
- * Detects wrong diacritics (â/ã/á instead of correct macrons ā/ī/ū).
- * This is a SOFT warning - wrong diacritics are bad but not a hard failure.
- *
- * @param text - The text to scan for incorrect diacritics
- * @returns Array of validation warnings if wrong diacritics are found
- */
-export const detectWrongDiacritics = (text: string): ValidationWarning[] => {
-    const warnings: ValidationWarning[] = [];
-    // Wrong diacritics: circumflex (â/ê/î/ô/û), tilde (ã/ñ), acute (á/é/í/ó/ú)
-    const wrongPattern = /[âêîôûãñáéíóú]/gi;
-    const matches = text.match(wrongPattern);
-
-    if (matches) {
-        const uniqueMatches = [...new Set(matches)];
-        for (const match of uniqueMatches) {
-            warnings.push({
-                match,
-                message: `Wrong diacritic "${match}" detected - use macrons (ā, ī, ū) instead`,
-                type: 'wrong_diacritics',
-            });
-        }
+    const segmentById = new Map<string, Segment>();
+    for (const s of segments) {
+        segmentById.set(s.id, s);
     }
 
-    return warnings;
-};
+    const responseById = splitResponseById(normalizedResponse);
 
-/**
- * Detects newline immediately after segment ID (the "Gemini bug").
- * Format should be "P1234 - Text" not "P1234\nText".
- *
- * @param text - The text to validate
- * @returns Error message if bug is detected, otherwise undefined
- */
-export const detectNewlineAfterId = (text: string): string | undefined => {
-    const pattern = new RegExp(`^${MARKER_ID_PATTERN}\\n`, 'm');
-    const match = text.match(pattern);
-
-    if (match) {
-        return `Invalid format: newline after ID "${match[0].trim()}" - use "ID - Text" format`;
-    }
-};
-
-/**
- * Detects forbidden terms from the locked glossary.
- * These are common "gravity well" spellings that should be avoided.
- *
- * @param text - The text to scan for forbidden terms
- * @returns Error message if a forbidden term is found, otherwise undefined
- */
-export const detectForbiddenTerms = (text: string): string | undefined => {
-    const forbidden: Array<{ term: RegExp; correct: string }> = [
-        { correct: 'Shaykh', term: /\bSheikh\b/i },
-        { correct: 'Qurʾān', term: /\bKoran\b/i },
-        { correct: 'ḥadīth', term: /\bHadith\b/ }, // Case-sensitive: Hadith without dots
-        { correct: 'Islām', term: /\bIslam\b/ }, // Case-sensitive: Islam without macron
-        { correct: 'Salafīyyah', term: /\bSalafism\b/i },
+    const errors: ValidationError[] = [
+        ...validateMarkerFormat(normalizedResponse),
+        ...validateNewlineAfterId(normalizedResponse),
+        ...validateTruncatedSegments(normalizedResponse),
+        ...validateImplicitContinuation(normalizedResponse),
+        ...validateMetaTalk(normalizedResponse),
+        ...validateForbiddenTerms(normalizedResponse),
+        ...validateDuplicateIds(parsedIds),
+        ...validateInventedIds(parsedIds, segmentById),
+        ...validateMissingIdGaps(parsedIds, segmentById, segments),
+        ...validateArabicLeak(normalizedResponse),
+        ...validateWrongDiacritics(normalizedResponse),
+        ...validateEmptyParentheses(normalizedResponse),
+        ...validateTranslationLengthsForResponse(parsedIds, segmentById, responseById),
+        ...validateAllCaps(normalizedResponse),
+        ...validateArchaicRegister(normalizedResponse),
+        ...validateMismatchedColons(parsedIds, segmentById, responseById),
+        ...validateMultiwordTranslitWithoutGloss(parsedIds, responseById),
     ];
 
-    for (const { term, correct } of forbidden) {
-        const match = text.match(term);
-        if (match) {
-            return `Forbidden term "${match[0]}" detected - use "${correct}" instead`;
-        }
-    }
+    return { errors, normalizedResponse, parsedIds };
 };
 
 /**
- * Detects implicit continuation text that LLMs add when hallucinating.
+ * Split the response into a per-ID map. Values contain translation content only (prefix removed).
  *
- * @param text - The text to scan for continuation markers
- * @returns Error message if continuation text is found, otherwise undefined
+ * @example
+ * splitResponseById('P1 - a\\nP2 - b').get('P1') === 'a'
  */
-export const detectImplicitContinuation = (text: string): string | undefined => {
-    const patterns = [/implicit continuation/i, /\bcontinuation:/i, /\bcontinued:/i];
+const splitResponseById = (text: string) => {
+    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
+    const headerPattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}\\s*`, 'gm');
+    const matches = [...text.matchAll(headerPattern)];
 
-    for (const pattern of patterns) {
-        const match = text.match(pattern);
-        if (match) {
-            return `Detected "${match[0]}" - do not add implicit continuation text`;
-        }
+    const map = new Map<string, string>();
+    for (let i = 0; i < matches.length; i++) {
+        const id = matches[i][1];
+        const start = matches[i].index ?? 0;
+        const nextStart = i + 1 < matches.length ? (matches[i + 1].index ?? text.length) : text.length;
+        const chunk = text.slice(start, nextStart).trimEnd();
+        const prefixPattern = new RegExp(`^${id}${optionalSpace}${dashes}\\s*`);
+        map.set(id, chunk.replace(prefixPattern, '').trim());
     }
+    return map;
 };
 
 /**
- * Detects meta-talk (translator notes, editor comments) that violate NO META-TALK.
+ * Validate translation marker format (single-line errors).
  *
- * @param text - The text to scan for meta-talk
- * @returns Error message if meta-talk is found, otherwise undefined
+ * @example
+ * // Fail: malformed marker
+ * validateMarkerFormat('B1234$5 - x')[0]?.type === 'invalid_marker_format'
  */
-export const detectMetaTalk = (text: string): string | undefined => {
-    const patterns = [/\(note:/i, /\(translator'?s? note:/i, /\[editor:/i, /\[note:/i, /\(ed\.:/i, /\(trans\.:/i];
-
-    for (const pattern of patterns) {
-        const match = text.match(pattern);
-        if (match) {
-            return `Detected meta-talk "${match[0]}" - output translation only, no translator/editor notes`;
-        }
-    }
-};
-
-/**
- * Detects duplicate segment IDs in the output.
- *
- * @param ids - List of IDs extracted from the translation
- * @returns Error message if duplicates are found, otherwise undefined
- */
-export const detectDuplicateIds = (ids: string[]): string | undefined => {
-    const seen = new Set<string>();
-    for (const id of ids) {
-        if (seen.has(id)) {
-            return `Duplicate ID "${id}" detected - each segment should appear only once`;
-        }
-        seen.add(id);
-    }
-};
-
-/**
- * Detects IDs in the output that were not in the source (invented/hallucinated IDs).
- * @param outputIds - IDs extracted from LLM output
- * @param sourceIds - IDs that were present in the source input
- * @returns Error message if invented IDs found, undefined if all IDs are valid
- */
-export const detectInventedIds = (outputIds: string[], sourceIds: string[]): string | undefined => {
-    const sourceSet = new Set(sourceIds);
-    const invented = outputIds.filter((id) => !sourceSet.has(id));
-
-    if (invented.length > 0) {
-        return `Invented ID(s) detected: ${invented.map((id) => `"${id}"`).join(', ')} - these IDs do not exist in the source`;
-    }
-};
-
-/**
- * Detects segments that appear truncated (just "…" or very short with no real content).
- * @param text - The full LLM output text
- * @returns Error message if truncated segments found, undefined if all segments have content
- */
-export const detectTruncatedSegments = (text: string): string | undefined => {
-    // Pattern to match segment lines
-    const segmentPattern = /^([A-Z]\d+[a-j]?)\s*[-–—]\s*(.*)$/gm;
-    const truncated: string[] = [];
-
-    for (const match of text.matchAll(segmentPattern)) {
-        const id = match[1];
-        const content = match[2].trim();
-
-        // Check for truncated content: empty, just ellipsis, or [INCOMPLETE]
-        if (!content || content === '…' || content === '...' || content === '[INCOMPLETE]') {
-            truncated.push(id);
-        }
-    }
-
-    if (truncated.length > 0) {
-        return `Truncated segment(s) detected: ${truncated.map((id) => `"${id}"`).join(', ')} - segments must be fully translated`;
-    }
-};
-
-/**
- * Validates translation marker format and returns error message if invalid.
- * Catches common AI hallucinations like malformed reference IDs.
- *
- * @param text - Raw translation text to validate
- * @returns Error message if invalid, undefined if valid
- */
-export const validateTranslationMarkers = (text: string): string | undefined => {
+const validateMarkerFormat = (text: string): ValidationError[] => {
     const { markers, digits, suffix, dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
 
-    // Check for invalid reference format (with dash but wrong structure)
-    // This catches cases like B12a34 -, P1x2y3 -, P2247$2 -, etc.
-    // Requires at least one digit after the marker to be considered a potential reference
     const invalidRefPattern = new RegExp(
         `^${markers}(?=${digits})(?=.*${dashes})(?!${digits}${suffix}*${optionalSpace}${dashes})[^\\s-–—]+${optionalSpace}${dashes}`,
         'm',
     );
     const invalidRef = text.match(invalidRefPattern);
-
     if (invalidRef) {
-        return `Invalid reference format "${invalidRef[0].trim()}" - expected format is letter + numbers + optional suffix (a-j) + dash`;
+        return [
+            {
+                message: `Invalid reference format "${invalidRef[0].trim()}" - expected format is letter + numbers + optional suffix (a-j) + dash`,
+                type: 'invalid_marker_format',
+            },
+        ];
     }
 
-    // Check for space before reference with multi-letter suffix (e.g., " P123ab -")
     const spaceBeforePattern = new RegExp(` ${markers}${digits}${suffix}+${optionalSpace}${dashes}`, 'm');
-
-    // Check for reference with single letter suffix but no dash after (e.g., "P123a without")
     const suffixNoDashPattern = new RegExp(`^${markers}${digits}${suffix}(?! ${dashes})`, 'm');
-
-    const match = text.match(spaceBeforePattern) || text.match(suffixNoDashPattern);
-
-    if (match) {
-        return `Suspicious reference found: "${match[0]}"`;
+    const suspicious = text.match(spaceBeforePattern) || text.match(suffixNoDashPattern);
+    if (suspicious) {
+        return [
+            {
+                match: suspicious[0],
+                message: `Suspicious reference found: "${suspicious[0]}"`,
+                type: 'invalid_marker_format',
+            },
+        ];
     }
 
-    // Check for references with dash but no content after (e.g., "P123 -")
     const emptyAfterDashPattern = new RegExp(`^${MARKER_ID_PATTERN}${optionalSpace}${dashes}\\s*$`, 'm');
     const emptyAfterDash = text.match(emptyAfterDashPattern);
-
     if (emptyAfterDash) {
-        return `Reference "${emptyAfterDash[0].trim()}" has dash but no content after it`;
+        return [
+            {
+                match: emptyAfterDash[0].trim(),
+                message: `Reference "${emptyAfterDash[0].trim()}" has dash but no content after it`,
+                type: 'invalid_marker_format',
+            },
+        ];
     }
 
-    // Check for $ character in references (invalid format like B1234$5)
     const dollarSignPattern = new RegExp(`^${markers}${digits}\\$${digits}`, 'm');
     const dollarSignRef = text.match(dollarSignPattern);
-
     if (dollarSignRef) {
-        return `Invalid reference format "${dollarSignRef[0]}" - contains $ character`;
+        return [
+            {
+                match: dollarSignRef[0],
+                message: `Invalid reference format "${dollarSignRef[0]}" - contains $ character`,
+                type: 'invalid_marker_format',
+            },
+        ];
     }
+
+    return [];
 };
 
 /**
- * Normalizes translation text by splitting merged markers onto separate lines.
- * LLMs sometimes put multiple translations on the same line.
+ * Detect newline after an ID line (formatting bug).
  *
- * @param content - Raw translation text
- * @returns Normalized text with each marker on its own line
+ * @example
+ * // Fail: newline after "P1 -"
+ * validateNewlineAfterId('P1 -\\nText')[0]?.type === 'newline_after_id'
  */
-export const normalizeTranslationText = (content: string): string => {
-    const mergedMarkerPattern = new RegExp(
-        ` (${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
-        'gm',
+const validateNewlineAfterId = (text: string): ValidationError[] => {
+    const pattern = new RegExp(
+        `^${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes}\\s*\\n`,
+        'm',
     );
-
-    return content.replace(mergedMarkerPattern, '\n$1').replace(/\\\[/gm, '[');
+    const match = text.match(pattern);
+    return match
+        ? [
+              {
+                  match: match[0].trim(),
+                  message: `Invalid format: newline after ID "${match[0].trim()}" - use "ID - Text" format`,
+                  type: 'newline_after_id',
+              },
+          ]
+        : [];
 };
 
 /**
- * Extracts translation IDs from text in order of appearance.
+ * Detect duplicated IDs in the parsed ID list.
  *
- * @param text - Translation text
- * @returns Array of IDs in order
+ * @example
+ * validateDuplicateIds(['P1','P1'])[0]?.type === 'duplicate_id'
  */
-export const extractTranslationIds = (text: string): string[] => {
-    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
-    const pattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}`, 'gm');
-    const ids: string[] = [];
-
-    for (const match of text.matchAll(pattern)) {
-        ids.push(match[1]);
-    }
-
-    return ids;
-};
-
-/**
- * Extracts the numeric portion from an excerpt ID.
- * E.g., "P11622a" -> 11622, "C123" -> 123, "B45b" -> 45
- *
- * @param id - Excerpt ID
- * @returns Numeric portion of the ID
- */
-export const extractIdNumber = (id: string): number => {
-    const match = id.match(/\d+/);
-    return match ? Number.parseInt(match[0], 10) : 0;
-};
-
-/**
- * Extracts the prefix (type) from an excerpt ID.
- * E.g., "P11622a" -> "P", "C123" -> "C", "B45" -> "B"
- *
- * @param id - Excerpt ID
- * @returns Single character prefix
- */
-export const extractIdPrefix = (id: string): string => {
-    return id.charAt(0);
-};
-
-/**
- * Validates that translation IDs appear in ascending numeric order within the same prefix type.
- * This catches LLM errors where translations are output in wrong order (e.g., P12659 before P12651).
- *
- * @param translationIds - IDs from pasted translations
- * @returns Error message if order issue detected, undefined if valid
- */
-export const validateNumericOrder = (translationIds: string[]): string | undefined => {
-    if (translationIds.length < 2) {
-        return;
-    }
-
-    // Track last seen number for each prefix type
-    const lastNumberByPrefix = new Map<string, { id: string; num: number }>();
-
-    for (const id of translationIds) {
-        const prefix = extractIdPrefix(id);
-        const num = extractIdNumber(id);
-
-        const last = lastNumberByPrefix.get(prefix);
-
-        if (last && num < last.num) {
-            // Out of numeric order within the same prefix type
-            return `Numeric order error: "${id}" (${num}) appears after "${last.id}" (${last.num}) but should come before it`;
+const validateDuplicateIds = (ids: string[]): ValidationError[] => {
+    const seen = new Set<string>();
+    for (const id of ids) {
+        if (seen.has(id)) {
+            return [
+                {
+                    id,
+                    message: `Duplicate ID "${id}" detected - each segment should appear only once`,
+                    type: 'duplicate_id',
+                },
+            ];
         }
-
-        lastNumberByPrefix.set(prefix, { id, num });
+        seen.add(id);
     }
+    return [];
 };
 
 /**
- * Validates translation order against expected excerpt order from the store.
- * Allows pasting in multiple blocks where each block is internally ordered.
- * Resets (position going backwards) are allowed between blocks.
- * Errors only when there's disorder WITHIN a block (going backwards then forwards).
+ * Detect IDs in the response that do not exist in the passed segment corpus.
  *
- * @param translationIds - IDs from pasted translations
- * @param expectedIds - IDs from store excerpts/headings/footnotes in order
- * @returns Error message if order issue detected, undefined if valid
+ * @example
+ * validateInventedIds(['P1','P2'], new Map([['P1',{id:'P1',text:'x'}]]) )[0]?.type === 'invented_id'
  */
-export const validateTranslationOrder = (translationIds: string[], expectedIds: string[]): string | undefined => {
-    if (translationIds.length === 0 || expectedIds.length === 0) {
-        return;
+const validateInventedIds = (outputIds: string[], segmentById: Map<string, Segment>): ValidationError[] => {
+    const invented = outputIds.filter((id) => !segmentById.has(id));
+    return invented.length > 0
+        ? [
+              {
+                  match: invented.join(','),
+                  message: `Invented ID(s) detected: ${invented.map((id) => `"${id}"`).join(', ')} - these IDs do not exist in the source`,
+                  type: 'invented_id',
+              },
+          ]
+        : [];
+};
+
+/**
+ * Detect a “gap”: response contains IDs A and C, but the corpus order includes B between them.
+ * This only checks for missing IDs between consecutive IDs within each response-ordered block.
+ *
+ * @example
+ * // Corpus: P1, P2, P3. Response: P1, P3 => missing_id_gap includes P2
+ */
+const validateMissingIdGaps = (
+    parsedIds: string[],
+    segmentById: Map<string, Segment>,
+    segments: Segment[],
+): ValidationError[] => {
+    const indexById = new Map<string, number>();
+    for (let i = 0; i < segments.length; i++) {
+        indexById.set(segments[i].id, i);
     }
 
-    // Build a map of expected ID positions for O(1) lookup
-    const expectedPositions = new Map<string, number>();
-    for (let i = 0; i < expectedIds.length; i++) {
-        expectedPositions.set(expectedIds[i], i);
-    }
+    const parsedIdSet = new Set(parsedIds);
+    const missing = new Set<string>();
 
-    // Track position within current block
-    // When position goes backwards, we start a new block
-    // Error only if we go backwards THEN forwards within the same conceptual sequence
-    let lastExpectedPosition = -1;
-    let blockStartPosition = -1;
-    let lastFoundId: string | null = null;
+    const collectMissingBetween = (startIdx: number, endIdx: number) => {
+        for (let j = startIdx + 1; j < endIdx; j++) {
+            const midId = segments[j]?.id;
+            if (midId && segmentById.has(midId) && !parsedIdSet.has(midId)) {
+                missing.add(midId);
+            }
+        }
+    };
 
-    for (const translationId of translationIds) {
-        const expectedPosition = expectedPositions.get(translationId);
-
-        if (expectedPosition === undefined) {
-            // ID not found in expected list - skip
+    for (let i = 0; i < parsedIds.length - 1; i++) {
+        const a = parsedIds[i];
+        const b = parsedIds[i + 1];
+        if (!segmentById.has(a) || !segmentById.has(b)) {
             continue;
         }
 
-        if (lastFoundId !== null) {
-            if (expectedPosition < lastExpectedPosition) {
-                // Reset detected - starting a new block
-                // This is allowed, just track the new block's start
-                blockStartPosition = expectedPosition;
-            } else if (expectedPosition < blockStartPosition && blockStartPosition !== -1) {
-                // Within the current block, we went backwards - this is an error
-                // This catches: A, B, C (block 1), D, E, C (error: C < E but we're in block starting at D)
-                return `Order error: "${translationId}" appears after "${lastFoundId}" but comes before it in the excerpts. This suggests a duplicate or misplaced translation.`;
-            }
-        } else {
-            blockStartPosition = expectedPosition;
+        const ia = indexById.get(a);
+        const ib = indexById.get(b);
+        if (ia == null || ib == null) {
+            continue;
         }
 
-        lastExpectedPosition = expectedPosition;
-        lastFoundId = translationId;
+        // Reset blocks when order goes backwards (block pasting)
+        if (ib < ia) {
+            continue;
+        }
+
+        collectMissingBetween(ia, ib);
+    }
+
+    const uniqueMissing = [...missing];
+    return uniqueMissing.length > 0
+        ? [
+              {
+                  match: uniqueMissing.join(','),
+                  message: `Missing segment ID(s) detected between translated IDs: ${uniqueMissing.map((id) => `"${id}"`).join(', ')}`,
+                  type: 'missing_id_gap',
+              },
+          ]
+        : [];
+};
+
+/**
+ * Detect segments that appear truncated (just "…" / "..." / "[INCOMPLETE]").
+ *
+ * @example
+ * validateTruncatedSegments('P1 - …')[0]?.type === 'truncated_segment'
+ */
+const validateTruncatedSegments = (text: string): ValidationError[] => {
+    const segmentPattern = /^([A-Z]\d+[a-j]?)\s*[-–—]\s*(.*)$/gm;
+    const truncated: string[] = [];
+    for (const match of text.matchAll(segmentPattern)) {
+        const id = match[1];
+        const content = match[2].trim();
+        if (!content || content === '…' || content === '...' || content === '[INCOMPLETE]') {
+            truncated.push(id);
+        }
+    }
+    return truncated.length > 0
+        ? [
+              {
+                  match: truncated.join(','),
+                  message: `Truncated segment(s) detected: ${truncated.map((id) => `"${id}"`).join(', ')} - segments must be fully translated`,
+                  type: 'truncated_segment',
+              },
+          ]
+        : [];
+};
+
+/**
+ * Detect implicit continuation markers.
+ *
+ * @example
+ * validateImplicitContinuation('P1 - continued: ...')[0]?.type === 'implicit_continuation'
+ */
+const validateImplicitContinuation = (text: string): ValidationError[] => {
+    const patterns = [/implicit continuation/i, /\bcontinuation:/i, /\bcontinued:/i];
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+            return [
+                {
+                    match: match[0],
+                    message: `Detected "${match[0]}" - do not add implicit continuation text`,
+                    type: 'implicit_continuation',
+                },
+            ];
+        }
+    }
+    return [];
+};
+
+/**
+ * Detect meta-talk (translator/editor notes).
+ *
+ * @example
+ * validateMetaTalk("P1 - (Translator's note: ...)")[0]?.type === 'meta_talk'
+ */
+const validateMetaTalk = (text: string): ValidationError[] => {
+    const patterns = [/\(note:/i, /\(translator'?s? note:/i, /\[editor:/i, /\[note:/i, /\(ed\.:/i, /\(trans\.:/i];
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+            return [
+                {
+                    match: match[0],
+                    message: `Detected meta-talk "${match[0]}" - output translation only, no translator/editor notes`,
+                    type: 'meta_talk',
+                },
+            ];
+        }
+    }
+    return [];
+};
+
+/**
+ * Detect common “gravity well” spellings that violate locked glossary rules.
+ *
+ * @example
+ * validateForbiddenTerms('P1 - Sheikh said...')[0]?.type === 'forbidden_term'
+ */
+const validateForbiddenTerms = (text: string): ValidationError[] => {
+    const forbidden: Array<{ term: RegExp; correct: string }> = [
+        { correct: 'Shaykh', term: /\bSheikh\b/i },
+        { correct: 'Qurʾān', term: /\bKoran\b/i },
+        { correct: 'ḥadīth', term: /\bHadith\b/ },
+        { correct: 'Islām', term: /\bIslam\b/ },
+        { correct: 'Salafīyyah', term: /\bSalafism\b/i },
+    ];
+    for (const { term, correct } of forbidden) {
+        const match = text.match(term);
+        if (match) {
+            return [
+                {
+                    match: match[0],
+                    message: `Forbidden term "${match[0]}" detected - use "${correct}" instead`,
+                    type: 'forbidden_term',
+                },
+            ];
+        }
+    }
+    return [];
+};
+
+/**
+ * Detect Arabic script characters (except ﷺ).
+ *
+ * @example
+ * validateArabicLeak('P1 - الله')[0]?.type === 'arabic_leak'
+ *
+ * @example
+ * // Pass: ﷺ allowed
+ * validateArabicLeak('P1 - Muḥammad ﷺ said...').length === 0
+ */
+const validateArabicLeak = (text: string): ValidationError[] => {
+    const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDF9\uFDFB-\uFDFF\uFE70-\uFEFF]+/g;
+    const matches = text.match(arabicPattern) ?? [];
+
+    // Allow ﷺ (U+FDFD) as an explicit exception.
+    const normalized = matches
+        .map((m) => m.replace(/ﷺ/g, ''))
+        .map((m) => m.trim())
+        .filter((m) => m.length > 0);
+
+    return normalized.map((match) => ({ match, message: `Arabic script detected: "${match}"`, type: 'arabic_leak' }));
+};
+
+/**
+ * Detect wrong diacritics (â/ã/á) that indicate failed ALA-LC macrons.
+ *
+ * @example
+ * validateWrongDiacritics('kâfir')[0]?.type === 'wrong_diacritics'
+ */
+const validateWrongDiacritics = (text: string): ValidationError[] => {
+    const wrongPattern = /[âêîôûãñáéíóú]/gi;
+    const matches = text.match(wrongPattern) ?? [];
+    const unique = [...new Set(matches)];
+    return unique.map((m) => ({
+        match: m,
+        message: `Wrong diacritic "${m}" detected - use macrons (ā, ī, ū) instead`,
+        type: 'wrong_diacritics',
+    }));
+};
+
+/**
+ * Detect excessive empty parentheses "()" which often indicates failed transliterations.
+ *
+ * @example
+ * // Fail: too many "()"
+ * validateEmptyParentheses('() () () ()')[0]?.type === 'empty_parentheses'
+ */
+const validateEmptyParentheses = (text: string): ValidationError[] => {
+    const count = text.match(/\(\)/g)?.length ?? 0;
+    return count > MAX_EMPTY_PARENTHESES
+        ? [
+              {
+                  message: `Found ${count} empty parentheses "()" - this usually indicates failed transliterations. Please check if the LLM omitted Arabic/transliterated terms.`,
+                  type: 'empty_parentheses',
+              },
+          ]
+        : [];
+};
+
+/**
+ * Detect truncated translation vs Arabic source (ratio-based).
+ *
+ * @example
+ * // Fail: long Arabic + very short translation
+ * detectTruncatedTranslation('نص عربي طويل ... (50+ chars)', 'Short') !== undefined
+ */
+const detectTruncatedTranslation = (arabicText: string, translationText: string) => {
+    const arabic = (arabicText || '').trim();
+    const translation = (translationText || '').trim();
+
+    if (arabic.length < MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK) {
+        return;
+    }
+    if (translation.length === 0) {
+        return `Translation appears empty but Arabic text has ${arabic.length} characters`;
+    }
+
+    const ratio = translation.length / arabic.length;
+    if (ratio < MIN_TRANSLATION_RATIO) {
+        const expectedMinLength = Math.round(arabic.length * MIN_TRANSLATION_RATIO);
+        return `Translation appears truncated: ${translation.length} chars for ${arabic.length} char Arabic text (expected at least ~${expectedMinLength} chars)`;
     }
 };
 
 /**
- * Performs comprehensive validation on translation text.
- * Validates markers, normalizes text, and checks order against expected IDs.
+ * Validate per-ID translation lengths (response subset only).
  *
- * @param rawText - Raw translation text from user input
- * @param expectedIds - Expected IDs from store (excerpts + headings + footnotes)
- * @returns Validation result with normalized text and any errors
+ * @example
+ * // Produces a length_mismatch error for the first truncated segment found
  */
-export const validateTranslations = (rawText: string, expectedIds: string[]): TranslationValidationResult => {
-    // First normalize the text (split merged markers)
-    const normalizedText = normalizeTranslationText(rawText);
-
-    // Validate marker formats
-    const markerError = validateTranslationMarkers(normalizedText);
-    if (markerError) {
-        return { error: markerError, isValid: false, normalizedText, parsedIds: [] };
+const validateTranslationLengthsForResponse = (
+    parsedIds: string[],
+    segmentById: Map<string, Segment>,
+    responseById: Map<string, string>,
+) => {
+    for (const id of parsedIds) {
+        const seg = segmentById.get(id);
+        const translation = responseById.get(id);
+        if (!seg || translation == null) {
+            continue;
+        }
+        const error = detectTruncatedTranslation(seg.text, translation);
+        if (error) {
+            const e = {
+                id,
+                message: `Translation for "${id}" ${error.replace('Translation ', '').toLowerCase()}`,
+                type: 'length_mismatch',
+            } as const satisfies ValidationError;
+            return [e];
+        }
     }
-
-    // Extract IDs from normalized text
-    const parsedIds = extractTranslationIds(normalizedText);
-
-    if (parsedIds.length === 0) {
-        return { error: 'No valid translation markers found', isValid: false, normalizedText, parsedIds: [] };
-    }
-
-    // Validate order against expected IDs
-    const orderError = validateTranslationOrder(parsedIds, expectedIds);
-    if (orderError) {
-        return { error: orderError, isValid: false, normalizedText, parsedIds };
-    }
-
-    return { isValid: true, normalizedText, parsedIds };
+    return [] as ValidationError[];
 };
 
 /**
- * Finds translation IDs that don't exist in the expected store IDs.
- * Used to validate that all pasted translations can be matched before committing.
+ * Detect “shouting” ALL CAPS words.
  *
- * @param translationIds - IDs from parsed translations
- * @param expectedIds - IDs from store (excerpts + headings + footnotes)
- * @returns Array of IDs that exist in translations but not in the store
+ * @example
+ * validateAllCaps('THIS IS LOUD')[0]?.type === 'all_caps'
  */
-export const findUnmatchedTranslationIds = (translationIds: string[], expectedIds: string[]): string[] => {
-    const expectedSet = new Set(expectedIds);
-    return translationIds.filter((id) => !expectedSet.has(id));
+const validateAllCaps = (text: string): ValidationError[] => {
+    const matches = text.match(/\b[A-Z]{5,}\b/g) ?? [];
+    const unique = [...new Set(matches)];
+    return unique.map((m) => ({ match: m, message: `ALL CAPS detected: "${m}"`, type: 'all_caps' }));
+};
+
+/**
+ * Detect archaic/Biblical register tokens.
+ *
+ * @example
+ * validateArchaicRegister('verily thou shalt')[0]?.type === 'archaic_register'
+ */
+const validateArchaicRegister = (text: string): ValidationError[] => {
+    const found: string[] = [];
+    for (const w of ARCHAIC_WORDS) {
+        const re = new RegExp(`\\b${w}\\b`, 'i');
+        const m = text.match(re);
+        if (m) {
+            found.push(m[0]);
+        }
+    }
+    return [...new Set(found)].map((m) => ({
+        match: m,
+        message: `Archaic/Biblical register word detected: "${m}"`,
+        type: 'archaic_register',
+    }));
+};
+
+/**
+ * Detect per-segment mismatch in colon counts between Arabic segment text and its translation chunk.
+ *
+ * This is intentionally heuristic and avoids hardcoding speaker label tokens.
+ *
+ * @example
+ * // Arabic: "الشيخ: ... السائل: ..." => 2 colons
+ * // Translation: "The Shaykh: ..." => 1 colon => mismatched_colons
+ */
+const validateMismatchedColons = (
+    parsedIds: string[],
+    segmentById: Map<string, Segment>,
+    responseById: Map<string, string>,
+): ValidationError[] => {
+    const errors: ValidationError[] = [];
+
+    for (const id of parsedIds) {
+        const seg = segmentById.get(id);
+        const translation = responseById.get(id);
+        if (!seg || !translation) {
+            continue;
+        }
+
+        const arabicCount = seg.text.match(COLON_PATTERN)?.length ?? 0;
+        const englishCount = translation.match(COLON_PATTERN)?.length ?? 0;
+
+        if (arabicCount === englishCount) {
+            continue;
+        }
+
+        errors.push({
+            id,
+            match: `${arabicCount} vs ${englishCount}`,
+            message: `Colon count mismatch in "${id}": Arabic has ${arabicCount} ":" but translation has ${englishCount}. This may indicate dropped/moved speaker turns or formatting drift.`,
+            type: 'mismatched_colons',
+        });
+    }
+
+    return errors;
+};
+
+/**
+ * Detect multi-word transliteration patterns without immediate parenthetical gloss.
+ *
+ * @example
+ * // Fail: "al-hajr fi al-madajīʿ" without "(English ...)" nearby
+ * // => multiword_translit_without_gloss
+ */
+const validateMultiwordTranslitWithoutGloss = (
+    parsedIds: string[],
+    responseById: Map<string, string>,
+): ValidationError[] => {
+    const errors: ValidationError[] = [];
+    const phrasePattern = /\b(al-[a-zʿʾāīūḥṣḍṭẓ-]+)\s+fi\s+(al-[a-zʿʾāīūḥṣḍṭẓ-]+)\b/gi;
+
+    for (const id of parsedIds) {
+        const text = responseById.get(id);
+        if (!text) {
+            continue;
+        }
+
+        for (const m of text.matchAll(phrasePattern)) {
+            const phrase = `${m[1]} fi ${m[2]}`;
+            const idx = m.index ?? -1;
+            if (idx >= 0) {
+                const after = text.slice(idx, Math.min(text.length, idx + phrase.length + 25));
+                if (!after.includes('(')) {
+                    errors.push({
+                        id,
+                        match: phrase,
+                        message: `Multi-word transliteration without immediate gloss in "${id}": "${phrase}"`,
+                        type: 'multiword_translit_without_gloss',
+                    });
+                }
+            }
+        }
+    }
+
+    return errors;
 };

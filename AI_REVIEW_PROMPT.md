@@ -24,14 +24,21 @@ Perform a critical peer review of the attached codebase/prompts. Focus on:
 ---
 
 ### Attachment Information
-The following file is provided:
-- **`PEER_REVIEW_CONTEXT.txt`**: Contains `README.md`, `AGENTS.md`, `REFINEMENT_GUIDE.md`, the synthesis/research reports, and all `prompts/` templates.
+Peer review is done per “round”. You will usually be given a small, token-lean packet rather than the entire repo.
+
+Common attachments (round-based):
+- `bug_reports/<round>/prompt.txt`: copy/paste instruction prompt (plain text)
+- `bug_reports/<round>/02_peer_review_packet.md`: context + proposal + questions (often includes BEFORE/AFTER for large changes)
+- `bug_reports/<round>/examples_consolidated.txt`: small evidence bundle distilled from many reports
+- The specific `prompts/*.md` files being changed (and sometimes the current baseline versions for comparison)
 
 ---
 
 ### Analysis Tasks
-1.  **Score the current system (1-10)** on logic consistency and academic rigor.
-2.  **Highlight the top 3 weaknesses** (e.g., where "blobbing" or "mode-locking" might still occur).
-3.  **Propose 3-5 specific "Negation Rules"** (Do NOT...) that would strengthen the system.
-4.  **Review the `encyclopedia_mixed.md` prompt** for its ability to handle sudden genre-switching without "meta-talk" or "mode-locking."
-5.  **Check for "Backtick/Formatting" noise** that might invite the LLM to use markdown in its output.
+1.  **Score the proposal (1-10)** on logic consistency and academic rigor.
+2.  **Find instruction collisions / loopholes** introduced by the proposed change (master vs add-on, exceptions vs bans).
+3.  **Regression risk assessment**: list the top 3–5 likely regressions and why.
+4.  **Token efficiency**: propose safe ways to reduce tokens without weakening “Golden Rules”.
+5.  **Negation hardening**: propose 3–5 compact “Do NOT …” rules that close known failure modes.
+6.  **Structure robustness**: check that Q&A triggers do not cause invented labels, newline drift, or ID reprinting.
+7.  **Blobbing test**: ensure the system prevents bare transliteration of common nouns/objects while allowing translit-only for proper names.

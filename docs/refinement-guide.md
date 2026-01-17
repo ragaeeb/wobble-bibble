@@ -50,13 +50,44 @@ Use these labels when filing an issue. Check all that apply.
 | `diacritics_drop` | Lazy transliteration (e.g., *Uthman* instead of *ʿUthmān*) |
 
 ## 4) Triage → Fix Workflow
-1. **File the Issue** using the template above
-2. **Batch similar cases** (5–20) by shared failure types
-3. **Make one minimal prompt change** to fix one failure mode:
-   - Prefer negations: "Do NOT …" beats repeating a rule
-4. **Sibling Check**: If fixing a structural issue in one prompt, check sibling prompts for the same bug
-5. **Regression Check**: Re-run 2–3 older cases likely impacted (same genre, different content)
-6. **Close the Issue** with a link to the PR that fixes it
+This repo uses a “round-based” refinement loop. Each round corresponds to one batch of reports for one (or a small set of related) failure modes.
+
+### Round workflow (the process to follow)
+1. **Collect reports**
+   - Reports live under `bug_reports/<category>/` as `.txt` dumps.
+   - Each dump typically contains: (a) stacked prompt text, (b) Arabic input, (c) model output, (d) reasoning (if available).
+2. **Synthesize + diagnose**
+   - Read every report and validate what *actually* broke (don’t trust the user blurb blindly).
+   - Extract repeated failure patterns and likely triggers.
+   - Identify instruction collisions (master vs add-on) and “escape hatches” (idioms, formatting defaults, etc.).
+3. **Create the round artifacts (in the same `bug_reports/<category>/` folder)**
+   - `01_synthesis.md`: diagnosis + proposed fix + minimal diffs (and/or proposed rewritten blocks).
+   - `02_peer_review_packet.md`: reviewer context + proposal + questions. Include BEFORE/AFTER full prompt text if the change is large; otherwise include a diff.
+   - `examples_consolidated.txt`: small evidence bundle distilled from many reports (token-lean attachment).
+   - `prompt.txt`: plain-text reviewer prompt for copy/paste to agents.
+   - `reviews/`: drop peer-review notes here as `*.md` files.
+4. **Peer review**
+   - Send the reviewer `prompt.txt` plus the small attachments:
+     - `02_peer_review_packet.md`
+     - `examples_consolidated.txt`
+     - the specific `prompts/*.md` files being changed (and, for big refactors, BEFORE + AFTER text in the packet).
+5. **Update synthesis with reviews**
+   - Append an addendum section to `01_synthesis.md` (do NOT delete the original synthesis):
+     - Collective agreement (what most reviewers converge on)
+     - Unique points (one-off suggestions)
+     - Explicit AGREE / DISAGREE / OUT OF SCOPE decisions (with rationale)
+     - Updated final proposal and next steps
+6. **Implement the fix**
+   - Apply the agreed prompt edits in `prompts/`.
+   - If the proposal is risky/large, create **sandbox variants** for trial runs (do not ship as canonical IDs):
+     - `bug_reports/<category>/master_prompt_new.md`
+     - `bug_reports/<category>/<addon>_new.md`
+7. **Regenerate + regression-check**
+   - Run `bun run generate` to refresh the bundled prompt output.
+   - Run `bun test` to ensure prompt bundling and validators still pass.
+   - Re-run 2–3 older cases likely impacted (same genre, different content).
+8. **Close the loop**
+   - If this was tracked as an issue: link the change and record the round folder as evidence.
 
 ### Standard Fix Patterns
 - **For Arabic Leakage**: Define `Transliteration` as `Latin Only`
