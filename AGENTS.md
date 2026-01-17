@@ -16,10 +16,11 @@ See **[REFINEMENT_GUIDE.md](refinement-guide.md)** for the SOP on prompt analysi
 
 ### Source Code (`src/`)
 - **`index.ts`** - Public API exports
-- **`validation.ts`** - LLM output validation (marker format, order, hallucination detection)
+- **`validation.ts`** - Unified LLM translation response validation (IDs, gaps, invented/duplicate IDs, Arabic leak, speaker label drift, etc.)
 - **`prompts.ts`** - API for accessing and stacking prompts
-- **`formatting.ts`** - Format segments for LLM input
+- **`textUtils.ts`** - Text utilities (format segments for LLM input, normalize/extract markers)
 - **`constants.ts`** - Marker patterns and enums
+- **`types.ts`** - Shared library types (Segment, validation result shapes)
 
 ### Test Suite (`src/*.test.ts` and `tests/`)
 - **Unit Tests (`src/*.test.ts`)**: Fast feedback on internal logic.
@@ -42,6 +43,11 @@ This library externalizes prompt text files (`prompts/*.md`) from the code.
 - **Build Step**: During `bun run generate` (part of `npm run build`), a script reads the MD files and generates a single TypeScript file in `.generated/prompts.ts`.
 - **Git Hygiene**: The `.generated/` directory is git-ignored. The source tree remains clean of generated artifacts.
 - **Access**: `src/prompts.ts` imports from `@generated/prompts` using a TypeScript path alias.
+
+### Prompt Refinement Workflow (Round-based)
+Prompt development is an iterative research loop driven by real failure cases:
+- **SOP**: See `docs/refinement-guide.md` for the round workflow, required artifacts, and regression checklist.
+- **Peer review**: Use `AI_REVIEW_PROMPT.md` as the high-level reviewer template; round packets usually live under `bug_reports/<category>/` when running a refinement cycle.
 
 ## Directory Map for Agents
 

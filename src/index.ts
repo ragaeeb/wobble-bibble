@@ -1,5 +1,5 @@
 export { MARKER_ID_PATTERN, Markers, TRANSLATION_MARKER_PARTS } from './constants';
-export { formatExcerptsForPrompt } from './formatting';
+export { extractTranslationIds, formatExcerptsForPrompt, normalizeTranslationText } from './textUtils';
 export type { PromptId, PromptMetadata, StackedPrompt } from './prompts';
 
 export {
@@ -11,24 +11,5 @@ export {
     stackPrompts,
 } from './prompts';
 
-export type { TranslationValidationResult, ValidationWarning, ValidationWarningType } from './validation';
-
-export {
-    detectArabicScript,
-    detectDuplicateIds,
-    detectImplicitContinuation,
-    detectInventedIds,
-    detectMetaTalk,
-    detectNewlineAfterId,
-    detectTruncatedSegments,
-    detectWrongDiacritics,
-    extractIdNumber,
-    extractIdPrefix,
-    extractTranslationIds,
-    findUnmatchedTranslationIds,
-    normalizeTranslationText,
-    validateNumericOrder,
-    validateTranslationMarkers,
-    validateTranslationOrder,
-    validateTranslations,
-} from './validation';
+export type { Segment, ValidationError, ValidationErrorType, ValidationResponseResult } from './types';
+export { VALIDATION_ERROR_TYPE_INFO, validateTranslationResponse } from './validation';

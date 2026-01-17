@@ -51,24 +51,18 @@ const ids = getPromptIds(); // ['master_prompt', 'hadith', 'fiqh', ...]
 ### Validate LLM Output
 
 ```typescript
-import {
-    validateTranslations,
-    detectArabicScript,
-    detectNewlineAfterId,
-} from 'wobble-bibble';
+import { validateTranslationResponse } from 'wobble-bibble';
+
+const segments = [
+    { id: 'P1234', text: '... Arabic source for P1234 ...' },
+    { id: 'P1235', text: '... Arabic source for P1235 ...' },
+];
 
 const llmOutput = `P1234 - Translation of first segment
 P1235 - Translation of second segment`;
 
-// Full validation pipeline
-const result = validateTranslations(llmOutput, ['P1234', 'P1235']);
-if (!result.isValid) {
-    console.error('Error:', result.error);
-}
-
-// Individual detectors
-const arabicWarnings = detectArabicScript(llmOutput); // Soft warnings
-const newlineError = detectNewlineAfterId(llmOutput); // Hard error
+const result = validateTranslationResponse(segments, llmOutput);
+if (result.errors.length > 0) console.error(result.errors);
 ```
 
 ## API Reference
@@ -84,32 +78,20 @@ const newlineError = detectNewlineAfterId(llmOutput); // Hard error
 | `getPromptIds()` | Get list of available prompt IDs |
 | `stackPrompts(master, addon)` | Manually combine prompts |
 
-### Validation (Hard Errors)
+### Validation
 
 | Function | Description |
 |----------|-------------|
-| `validateTranslations(text, expectedIds)` | Full validation pipeline |
-| `validateTranslationMarkers(text)` | Check for malformed IDs (e.g., `P123$4`) |
-| `detectNewlineAfterId(text)` | Catch `P1234\nText` (Gemini bug) |
-| `detectImplicitContinuation(text)` | Catch "implicit continuation" text |
-| `detectMetaTalk(text)` | Catch "(Note:", "[Editor:" |
-| `detectDuplicateIds(ids)` | Catch same ID appearing twice |
-
-### Validation (Soft Warnings)
-
-| Function | Description |
-|----------|-------------|
-| `detectArabicScript(text)` | Detect Arabic characters (except ﷺ) |
-| `detectWrongDiacritics(text)` | Detect â/ã/á instead of macrons |
+| `validateTranslationResponse(segments, response)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, etc.) |
+| `VALIDATION_ERROR_TYPE_INFO` | Human-readable descriptions for each `ValidationErrorType` (for UI/logging) |
 
 ### Utilities
 
 | Function | Description |
 |----------|-------------|
-| `extractTranslationIds(text)` | Extract all segment IDs from text |
-| `normalizeTranslationText(text)` | Split merged markers onto separate lines |
-| `findUnmatchedTranslationIds(ids, expected)` | Find IDs not in expected list |
 | `formatExcerptsForPrompt(segments, prompt)` | Format segments for LLM input |
+| `normalizeTranslationText(text)` | Normalize newlines and split merged markers onto separate lines |
+| `extractTranslationIds(text)` | Extract all segment IDs from "ID - ..." markers |
 
 ## Available Prompts
 
@@ -126,7 +108,8 @@ const newlineError = detectNewlineAfterId(llmOutput); // Hard error
 
 ## Prompt Development
 
-See [REFINEMENT_GUIDE.md](docs/refinement-guide.md) for the methodology used to develop and test these prompts.
+See `docs/refinement-guide.md` for the methodology used to develop and test these prompts.
+See `AI_REVIEW_PROMPT.md` for the peer-review prompt template used when sending round packets to external agents.
 
 ## License
 

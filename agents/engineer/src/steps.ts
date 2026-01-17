@@ -1,10 +1,11 @@
 /**
  * Engineer Agent Steps
  */
-import { getModel, sanitizeJson } from '@wobble-bibble/agents-shared';
+
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { getModel } from '@wobble-bibble/agents-shared';
 import { readPromptFile } from './data.js';
-import type { EngineerState, EngineeringPlan, PromptDiff } from './types.js';
+import type { EngineeringPlan, EngineerState, PromptDiff } from './types.js';
 
 interface RunnableLike {
     invoke: (input: any) => Promise<any>;
@@ -12,7 +13,7 @@ interface RunnableLike {
 
 export async function createPlan(
     synthesisReport: EngineerState['synthesisReport'],
-    model?: RunnableLike
+    model?: RunnableLike,
 ): Promise<EngineeringPlan[]> {
     const plans: EngineeringPlan[] = [];
     const llm = model || getModel();
@@ -37,8 +38,8 @@ export async function createPlan(
 
         // In production, use structured output mode
         const result = await llm.invoke([
-            new SystemMessage("You are a prompt engineer. Output valid JSON only."),
-            new HumanMessage(prompt)
+            new SystemMessage('You are a prompt engineer. Output valid JSON only.'),
+            new HumanMessage(prompt),
         ]);
 
         try {
@@ -53,18 +54,17 @@ export async function createPlan(
     return plans;
 }
 
-export async function generateDiffs(
-    plans: EngineeringPlan[],
-    model?: RunnableLike
-): Promise<PromptDiff[]> {
+export async function generateDiffs(plans: EngineeringPlan[], model?: RunnableLike) {
     const diffs: PromptDiff[] = [];
     const llm = model || getModel();
 
     for (const plan of plans) {
-        if (plan.proposedAction === 'NO_OP') continue;
+        if (plan.proposedAction === 'NO_OP') {
+            continue;
+        }
 
         const content = await readPromptFile(plan.targetFile);
-        
+
         const prompt = `
         Apply the following changes to the file.
         
@@ -87,8 +87,8 @@ export async function generateDiffs(
         `;
 
         const result = await llm.invoke([
-            new SystemMessage("You are a code generation assistant. Output valid JSON."),
-            new HumanMessage(prompt)
+            new SystemMessage('You are a code generation assistant. Output valid JSON.'),
+            new HumanMessage(prompt),
         ]);
 
         try {

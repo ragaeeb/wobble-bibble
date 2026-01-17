@@ -4,8 +4,8 @@ import { consolidateFindings } from './steps.js';
 describe('Consolidator Steps', () => {
     it('should reject if validation fails', async () => {
         const state: any = {
+            failureReason: 'Tests failed',
             validationStatus: 'FAIL',
-            failureReason: 'Tests failed'
         };
         const result = await consolidateFindings(state);
         expect(result.finalDecision).toBe('REJECT');
@@ -14,8 +14,8 @@ describe('Consolidator Steps', () => {
 
     it('should approve and generate PR description if validation passes', async () => {
         const state: any = {
+            diffs: [{ diff: '+ changes', file: 'test.md' }],
             validationStatus: 'PASS',
-            diffs: [{ file: 'test.md', diff: '+ changes' }]
         };
 
         const mockModel = {
@@ -23,9 +23,9 @@ describe('Consolidator Steps', () => {
                 content: JSON.stringify({
                     decision: 'APPROVE',
                     description: 'PR Description',
-                    reason: 'LGTM'
-                })
-            }))
+                    reason: 'LGTM',
+                }),
+            })),
         };
 
         const result = await consolidateFindings(state, mockModel);
