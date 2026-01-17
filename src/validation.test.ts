@@ -182,6 +182,80 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
     });
 
+    it('should detect mismatched colons when a speaker label line is dropped (report repro)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'الشيخ: نعم\nالطالب: نعم\nالشيخ: حسنًا',
+            },
+        ];
+        const response = `P1 - The Shaykh: Yes.\nThe Shaykh: All right.`;
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+    });
+
+    it('should detect mismatched colons when mid-segment speaker lines are dropped (P251685 repro)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: السؤال الأخير...\nالشيخ: التأويل\nالسائل: بعض التأويل، فهل يجوز؟',
+            },
+        ];
+        const response = `P1 - Questioner: The final question...`;
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+    });
+
+    it('should detect mismatched colons when English adds a speaker label not present in Arabic (report repro)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السلام عليكم ورحمة الله',
+            },
+        ];
+        const response = `P1 - Questioner: Peace be upon you.`;
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+    });
+
+    it('should not flag when extra narrative colons appear mid-line (no speaker drift)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: نعم\nالشيخ: هذا صحيح',
+            },
+        ];
+        const response = `P1 - Questioner: Yes.\nThe Shaykh: This is correct, firstly: it is sound.`;
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+    });
+
+    it('should not flag when narrative colons appear inside replies (P254944 repro)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: نعم\nالشيخ: هذه أولاً مثل البيعات الجماعات والأحزاب كلها هي غير مشروعة.',
+            },
+        ];
+        const response =
+            'P1 - Questioner: Yes.\nThe Shaykh: This, firstly: pledges of groups and parties, all of them are illegitimate.';
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+    });
+
+    it('should not flag when label counts match even with extra mid-line colons (P251955a style)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'الطالب: نعم\nالشيخ: أنا بقول دائما: تستدين إذا كنت تعرف أنك قادر على الوفاء',
+            },
+        ];
+        const response =
+            'P1 - Student: Yes.\nThe Shaykh: I always say: you borrow if you know that you are able to repay.';
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+    });
+
     it('should not flag mismatched colons when colon counts match for the same segment', () => {
         const segments = [
             {

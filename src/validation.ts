@@ -549,6 +549,46 @@ const validateArchaicRegister = (text: string): ValidationError[] => {
     }));
 };
 
+type LineStartLabelCounts = {
+    total: number;
+    prefixes: Map<string, number>;
+};
+
+const getLineStartLabelCounts = (text: string): LineStartLabelCounts => {
+    const prefixes = new Map<string, number>();
+    const lines = text.split(/\n/);
+    const maxPrefixLength = 28;
+    const maxWords = 3;
+
+    for (const rawLine of lines) {
+        const line = rawLine.trimStart();
+        if (!line) {
+            continue;
+        }
+        const colonIdx = line.search(/[:：]/);
+        if (colonIdx <= 0) {
+            continue;
+        }
+        const prefix = line.slice(0, colonIdx).trim();
+        if (!prefix || prefix.length > maxPrefixLength) {
+            continue;
+        }
+        const words = prefix.split(/\s+/);
+        if (words.length > maxWords) {
+            continue;
+        }
+        const count = prefixes.get(prefix) ?? 0;
+        prefixes.set(prefix, count + 1);
+    }
+
+    let total = 0;
+    for (const count of prefixes.values()) {
+        total += count;
+    }
+
+    return { prefixes, total };
+};
+
 /**
  * Detect per-segment mismatch in colon counts between Arabic segment text and its translation chunk.
  *
@@ -572,19 +612,20 @@ const validateMismatchedColons = (
             continue;
         }
 
-        const arabicCount = seg.text.match(COLON_PATTERN)?.length ?? 0;
-        const englishCount = translation.match(COLON_PATTERN)?.length ?? 0;
-
-        if (arabicCount === englishCount) {
+        const arabicLabels = getLineStartLabelCounts(seg.text);
+        if (arabicLabels.total < 2) {
             continue;
         }
+        const englishLabels = getLineStartLabelCounts(translation);
 
-        errors.push({
-            id,
-            match: `${arabicCount} vs ${englishCount}`,
-            message: `Colon count mismatch in "${id}": Arabic has ${arabicCount} ":" but translation has ${englishCount}. This may indicate dropped/moved speaker turns or formatting drift.`,
-            type: 'mismatched_colons',
-        });
+        if (arabicLabels.total !== englishLabels.total) {
+            errors.push({
+                id,
+                match: `${arabicLabels.total} vs ${englishLabels.total}`,
+                message: `Speaker label count mismatch in "${id}": Arabic has ${arabicLabels.total} line-start labels but translation has ${englishLabels.total}. This may indicate dropped/moved speaker turns or formatting drift.`,
+                type: 'mismatched_colons',
+            });
+        }
     }
 
     return errors;
