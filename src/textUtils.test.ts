@@ -3,7 +3,6 @@ import {
     extractTranslationIds,
     formatExcerptsForPrompt,
     normalizeTranslationText,
-    parseTranslationLine,
     parseTranslations,
     parseTranslationsInOrder,
 } from './textUtils';
@@ -51,22 +50,6 @@ describe('extractTranslationIds', () => {
     });
 });
 
-describe('parseTranslationLine', () => {
-    it('should parse a valid "ID - text" line', () => {
-        const parsed = parseTranslationLine('P12b - Hello world');
-        expect(parsed).toEqual({ id: 'P12b', translation: 'Hello world' });
-    });
-
-    it('should return null for empty translation content', () => {
-        expect(parseTranslationLine('P1 -')).toBeNull();
-        expect(parseTranslationLine('P1 -   ')).toBeNull();
-    });
-
-    it('should return null for non-marker lines', () => {
-        expect(parseTranslationLine('Not a marker')).toBeNull();
-    });
-});
-
 describe('parseTranslations', () => {
     it('should build a map for O(1) lookup', () => {
         const { count, translationMap } = parseTranslations('P1 - a\nP2 - b');
@@ -87,6 +70,86 @@ describe('parseTranslations', () => {
         const { count, translationMap } = parseTranslations(input);
         expect(count).toBe(1);
         expect(translationMap.get('P1')).toBe('a');
+    });
+
+    it('parses multiple translation entries into a Map', () => {
+        const input = `P11622a - First translation
+C11623 - Second translation`;
+
+        const result = parseTranslations(input);
+
+        expect(result.count).toBe(2);
+        expect(result.translationMap.get('P11622a')).toBe('First translation');
+        expect(result.translationMap.get('C11623')).toBe('Second translation');
+    });
+
+    it('handles multi-line translations', () => {
+        const input = `P11622a - First line of translation
+Second line continues here
+Third line as well
+
+C11623 - New translation`;
+
+        const result = parseTranslations(input);
+
+        expect(result.count).toBe(2);
+        expect(result.translationMap.get('P11622a')).toBe(
+            'First line of translation\nSecond line continues here\nThird line as well',
+        );
+        expect(result.translationMap.get('C11623')).toBe('New translation');
+    });
+
+    it('skips empty lines', () => {
+        const input = `P123 - Translation
+
+
+C456 - Another`;
+
+        const result = parseTranslations(input);
+
+        expect(result.count).toBe(2);
+    });
+
+    it('returns empty Map for empty input', () => {
+        const result = parseTranslations('');
+        expect(result.count).toBe(0);
+        expect(result.translationMap.size).toBe(0);
+    });
+
+    it('ignores lines without valid markers that come before first translation', () => {
+        const input = `Some random text
+P123 - Actual translation`;
+
+        const result = parseTranslations(input);
+
+        expect(result.count).toBe(1);
+        expect(result.translationMap.get('P123')).toBe('Actual translation');
+    });
+
+    it('handles large number of translations efficiently', () => {
+        // Generate 1000 translations
+        const lines: string[] = [];
+        for (let i = 0; i < 1000; i++) {
+            lines.push(`P${i} - Translation number ${i}`);
+        }
+        const input = lines.join('\n');
+
+        const start = performance.now();
+        const result = parseTranslations(input);
+        const elapsed = performance.now() - start;
+
+        expect(result.count).toBe(1000);
+        expect(elapsed).toBeLessThan(100); // Should complete in under 100ms
+    });
+
+    it('overwrites duplicate IDs with last occurrence', () => {
+        const input = `P123 - First version
+P123 - Second version`;
+
+        const result = parseTranslations(input);
+
+        expect(result.count).toBe(1);
+        expect(result.translationMap.get('P123')).toBe('Second version');
     });
 });
 

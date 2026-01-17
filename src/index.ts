@@ -12,7 +12,6 @@ export {
     extractTranslationIds,
     formatExcerptsForPrompt,
     normalizeTranslationText,
-    parseTranslationLine,
     parseTranslations,
     parseTranslationsInOrder,
 } from './textUtils';

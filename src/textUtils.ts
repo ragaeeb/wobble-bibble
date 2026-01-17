@@ -60,26 +60,6 @@ export const extractTranslationIds = (text: string) => {
 };
 
 /**
- * Parse a single translation line in the form "ID - translation".
- *
- * Note: This returns a translation entry shape, not an Arabic source `Segment`.
- *
- * @param line - Single line to parse
- * @returns `{ id, translation }` when valid; otherwise `null`
- *
- * @example
- * parseTranslationLine('P1 - Hello')?.id === 'P1'
- */
-export const parseTranslationLine = (line: string) => {
-    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
-    const pattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}(.*)$`);
-    const match = line.match(pattern);
-    const [, id, rest] = match || [];
-    const translation = typeof rest === 'string' ? rest.trim() : '';
-    return id && translation ? { id, translation } : null;
-};
-
-/**
  * Parses bulk translation text into a Map for efficient O(1) lookup.
  *
  * Handles multi-line translations: subsequent non-marker lines belong to the previous ID.
