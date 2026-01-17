@@ -50,7 +50,7 @@
         "url": "git+https://github.com/ragaeeb/wobble-bibble.git"
     },
     "scripts": {
-        "build": "bun run generate && bunx tsc -p tsconfig.json --noEmit && tsdown",
+        "build": "bun run generate && bunx tsc -p tsconfig.build.json --noEmit && tsdown",
         "generate": "bun run scripts/generate-prompts.ts",
         "lint": "biome check .",
         "test": "bun test src/ tests/",
