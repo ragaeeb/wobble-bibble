@@ -60,24 +60,83 @@ export const extractTranslationIds = (text: string) => {
 };
 
 /**
+ * Parse a single translation line in the form "ID - translation".
+ *
+ * Note: This returns a translation entry shape, not an Arabic source `Segment`.
+ *
+ * @param line - Single line to parse
+ * @returns `{ id, translation }` when valid; otherwise `null`
+ *
+ * @example
+ * parseTranslationLine('P1 - Hello')?.id === 'P1'
+ */
+export const parseTranslationLine = (line: string) => {
+    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
+    const pattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}(.*)$`);
+    const match = line.match(pattern);
+    const [, id, rest] = match || [];
+    const translation = typeof rest === 'string' ? rest.trim() : '';
+    return id && translation ? { id, translation } : null;
+};
+
+/**
+ * Parses bulk translation text into a Map for efficient O(1) lookup.
+ *
+ * Handles multi-line translations: subsequent non-marker lines belong to the previous ID.
+ *
+ * @param rawText - Raw text containing translations in format "ID - Translation text"
+ * @returns An object with `count` and `translationMap`
+ *
+ * @example
+ * parseTranslations('P1 - a\\nP2 - b').count === 2
+ */
+export const parseTranslations = (rawText: string) => {
+    const normalized = normalizeTranslationText(rawText);
+    const translationMap = splitResponseById(normalized);
+    return { count: translationMap.size, translationMap };
+};
+
+/**
+ * Parse translations into an ordered array (preserving the original response order).
+ *
+ * This differs from `parseTranslations()` which returns a Map and therefore cannot represent
+ * duplicates as separate entries.
+ *
+ * @param rawText - Raw text containing translations in format "ID - Translation text"
+ * @returns Array of `{ id, translation }` entries in appearance order
+ *
+ * @example
+ * parseTranslationsInOrder('P1 - a\\nP2 - b').map((e) => e.id) // => ['P1', 'P2']
+ */
+export const parseTranslationsInOrder = (rawText: string) => {
+    const normalized = normalizeTranslationText(rawText);
+    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
+    const headerPattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}\\s*`, 'gm');
+    const matches = [...normalized.matchAll(headerPattern)];
+
+    const entries: Array<{ id: string; translation: string }> = [];
+    for (let i = 0; i < matches.length; i++) {
+        const id = matches[i][1];
+        const start = matches[i].index ?? 0;
+        const nextStart = i + 1 < matches.length ? (matches[i + 1].index ?? normalized.length) : normalized.length;
+        const chunk = normalized.slice(start, nextStart).trimEnd();
+        const prefixPattern = new RegExp(`^${id}${optionalSpace}${dashes}\\s*`);
+        const translation = chunk.replace(prefixPattern, '').trim();
+        entries.push({ id, translation });
+    }
+    return entries;
+};
+
+/**
  * Split the response into a per-ID map. Values contain translation content only (prefix removed).
  *
  * @example
  * splitResponseById('P1 - a\\nP2 - b').get('P1') === 'a'
  */
 export const splitResponseById = (text: string) => {
-    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
-    const headerPattern = new RegExp(`^(${MARKER_ID_PATTERN})${optionalSpace}${dashes}\\s*`, 'gm');
-    const matches = [...text.matchAll(headerPattern)];
-
     const map = new Map<string, string>();
-    for (let i = 0; i < matches.length; i++) {
-        const id = matches[i][1];
-        const start = matches[i].index ?? 0;
-        const nextStart = i + 1 < matches.length ? (matches[i + 1].index ?? text.length) : text.length;
-        const chunk = text.slice(start, nextStart).trimEnd();
-        const prefixPattern = new RegExp(`^${id}${optionalSpace}${dashes}\\s*`);
-        map.set(id, chunk.replace(prefixPattern, '').trim());
+    for (const entry of parseTranslationsInOrder(text)) {
+        map.set(entry.id, entry.translation);
     }
     return map;
 };

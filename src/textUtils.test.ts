@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { extractTranslationIds, formatExcerptsForPrompt, normalizeTranslationText } from './textUtils';
+import {
+    extractTranslationIds,
+    formatExcerptsForPrompt,
+    normalizeTranslationText,
+    parseTranslationLine,
+    parseTranslations,
+    parseTranslationsInOrder,
+} from './textUtils';
 
 describe('normalizeTranslationText', () => {
     it('should normalize CRLF/CR to LF', () => {
@@ -41,5 +48,61 @@ describe('extractTranslationIds', () => {
         ];
         const result = formatExcerptsForPrompt(segments, 'Translate:');
         expect(result).toBe('Translate:\n\nP1 - Arabic 1\n\nP2 - Arabic 2');
+    });
+});
+
+describe('parseTranslationLine', () => {
+    it('should parse a valid "ID - text" line', () => {
+        const parsed = parseTranslationLine('P12b - Hello world');
+        expect(parsed).toEqual({ id: 'P12b', translation: 'Hello world' });
+    });
+
+    it('should return null for empty translation content', () => {
+        expect(parseTranslationLine('P1 -')).toBeNull();
+        expect(parseTranslationLine('P1 -   ')).toBeNull();
+    });
+
+    it('should return null for non-marker lines', () => {
+        expect(parseTranslationLine('Not a marker')).toBeNull();
+    });
+});
+
+describe('parseTranslations', () => {
+    it('should build a map for O(1) lookup', () => {
+        const { count, translationMap } = parseTranslations('P1 - a\nP2 - b');
+        expect(count).toBe(2);
+        expect(translationMap.get('P1')).toBe('a');
+        expect(translationMap.get('P2')).toBe('b');
+    });
+
+    it('should associate multi-line content with the previous ID', () => {
+        const input = ['P1 - Line 1', 'Line 2', 'P2 - Next'].join('\n');
+        const { translationMap } = parseTranslations(input);
+        expect(translationMap.get('P1')).toBe('Line 1\nLine 2');
+        expect(translationMap.get('P2')).toBe('Next');
+    });
+
+    it('should ignore content before the first marker', () => {
+        const input = ['preface', 'P1 - a'].join('\n');
+        const { count, translationMap } = parseTranslations(input);
+        expect(count).toBe(1);
+        expect(translationMap.get('P1')).toBe('a');
+    });
+});
+
+describe('parseTranslationsInOrder', () => {
+    it('should preserve translated order', () => {
+        const entries = parseTranslationsInOrder('P1 - a\nP2 - b\nP3 - c');
+        expect(entries.map((e) => e.id)).toEqual(['P1', 'P2', 'P3']);
+    });
+
+    it('should preserve duplicates as separate entries', () => {
+        const input = ['P1 - first', 'P2 - mid', 'P1 - second'].join('\n');
+        const entries = parseTranslationsInOrder(input);
+        expect(entries).toEqual([
+            { id: 'P1', translation: 'first' },
+            { id: 'P2', translation: 'mid' },
+            { id: 'P1', translation: 'second' },
+        ]);
     });
 });
