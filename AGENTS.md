@@ -81,8 +81,8 @@ If you are asked to generate a translation or refine a prompt, use these as your
     *   **Fix**: Explicitly redefine "Transliteration" = "Latin letters only". Explicitly ban Arabic "inside brackets/quotes".
 2.  **Gravity Wells**: Common English spellings (`Sheikh`, `Sunnah`, `Hadith`) act as gravity wells, pulling models away from strict ALA-LC.
     *   **Fix**: Use "Locked Glossary Anchors" (Explicitly forbidden vs. required forms) for these specific high-frequency terms.
-3.  **Structural Rigidity**: Q&A labels prone to drift (inserting newlines).
-    *   **Fix**: Enforce "Label and Text must be on SAME LINE" explicitly.
+3.  **Structural Rigidity**: Q&A labels prone to drift (merged turns or line-break loss).
+    *   **Fix**: Preserve source line breaks around speaker turns; never merge two source lines into one.
 4.  **Round 2 Drift Anchors**: High-frequency terms drift to plain English spellings or wrong casing.
     *   **Fix**: Lock anchors explicitly (examples): Shaykh (not Sheikh), Muḥammad (not Muhammad), Qurʾān (not Quran), muṣḥaf (not mushaf), Salafīyyah (not Salafism), Ṭāʾifah (not Ta'ifah).
 5.  **Sunnah Ambiguity**: `sunnah/Sunnah` meanings collide (corpus/source vs legal status vs generic practice).
@@ -100,8 +100,8 @@ If you are asked to generate a translation or refine a prompt, use these as your
     *   **Failure**: "Blobbing" (transliterating *miḥrāb* as just *Miḥrāb*).
     *   **Fix**: Explicitly split rules: Proper Names = Translit Only; Common Nouns = Must Define (`translit (English)`).
 2.  **Structure Over Mapping**:
-    *   **Failure**: Q&A labels buried in paragraphs.
-    *   **Fix**: Use "Force NEWLINE" commands for structural triggers (`Al-Sāʾil`, `Qāla`), rather than simple `Term=Translation` maps.
+    *   **Failure**: Q&A labels buried in paragraphs or collapsed onto one line.
+    *   **Fix**: Preserve source line breaks around speaker turns; keep Label+Text on the same line and avoid merging turns.
 3.  **Sibling Check**:
     *   **Fix**: If you fix a logic bug in `mixed` (e.g., Q&A format), always audit `fatawa.md` for the same bug.
 
