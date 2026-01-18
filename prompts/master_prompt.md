@@ -5,7 +5,7 @@ ARABIC LEAK (Hard ban):
 - SCRIPT LOCK: Output must be 100% Latin script (ASCII + ALA-LC diacritics like ā ī ū ḥ ṣ ḍ ṭ ẓ ʿ ʾ). These diacritics are allowed/required and are NOT Arabic script.
 - STRICT BAN: Arabic script codepoints (letters, Arabic-Indic numerals ٠-٩, punctuation like ، ؟ ؛ « » , tatweel ـ, and Arabic presentation forms) are forbidden everywhere in output (even inside quotes/brackets/parentheses/citations), except ﷺ.
 - NO CITATIONS/BILINGUAL: Do NOT paste Arabic source text anywhere (no quotes, no citations, no bilingual Arabic+English output). Translate into English only.
-- QUOTES/VERSES: Even if the source includes Arabic Qurʾān/ḥadīth/quoted Arabic text (e.g., «...») or parenthetical Arabic, you must NOT copy Arabic. Translate the meaning fully into English only.
+- QUOTES/VERSES/CITATIONS: Even if the source includes Arabic Qurʾān/ḥadīth/quoted text (e.g., «...») or parenthetical Arabic citations, you must NOT copy any Arabic characters. Translate the meaning fully into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
 - ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite until none remain.
 - HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
@@ -73,10 +73,10 @@ ID INTEGRITY (Check First):
 - REQUIRED (Exact match): Your output must contain EXACTLY those Segment_IDs, in the EXACT same order, each appearing EXACTLY ONCE as an "ID - ..." prefix. FORBIDDEN: re-outputting an ID prefix you already used (even in long segments).
 - BAN (No new IDs): Do NOT invent ANY IDs or ID-like labels not present verbatim in the source (including "(continued)", "cont.", "part 2", or invented suffixes like P123c). Suffix IDs are allowed ONLY if that exact ID appears in the source.
 - BOUNDARY (No bleed): Translate ONLY the text that belongs to the current Segment_ID (from its header to the next Segment_ID header, or to end-of-input for the last segment). Do NOT move lines across IDs and do NOT merge segments.
-- INCOMPLETE (Strict): Use "ID - [INCOMPLETE]" ONLY if the provided source text under that ID is truly unreadable/untranslatable. NEVER use "[INCOMPLETE]" for ellipses (…) or long segments. Translate all available text.
+- ELLIPSIS: If the source contains … or ..., translate it literally as "..." and continue. If the source ends mid-sentence, end the translation abruptly. NEVER output "[INCOMPLETE]".
 MULTI-LINE SEGMENTS (e.g., internal Q&A): Output the Segment_ID and " - " ONLY ONCE on the first line. Do NOT repeat the Segment_ID on subsequent lines; subsequent lines must start directly with the speaker label/text (no "ID - " prefix).
 SEGMENT BOUNDARIES (Anti-hallucination): Start a NEW segment ONLY when the source explicitly provides a Segment_ID. If the source continues with extra lines (including speaker labels like "Questioner:"/"The Shaykh:"/"السائل:"/"الشيخ:") WITHOUT a new Segment_ID, treat them as part of the CURRENT segment (multi-line under the current Segment_ID). Do NOT invent a new ID (including alphabetic suffixes like "P5803c") to label such continuation.
-OUTPUT COMPLETENESS: Translate ALL content in EVERY segment. Do not truncate, summarize, or skip content. The "…" symbol in the source indicates an audio gap in the original recording — it is NOT an instruction to omit content. Every segment must be fully translated. If you cannot complete a segment, output "ID - [INCOMPLETE]" instead of just "…".
+OUTPUT COMPLETENESS: Translate ALL content in EVERY segment. Do not truncate, summarize, or skip content.
 OUTPUT UNIQUENESS: Each Segment_ID from the source must appear in your output EXACTLY ONCE as an "ID - ..." prefix. Do NOT output the same Segment_ID header twice, even after blank lines or long text blocks within a segment. If a segment is long or has multiple speaker turns, continue translating under that single ID header without re-stating it.
 NEGATIVE CONSTRAINTS: Do NOT output "implicit continuation", summaries, or extra paragraphs. Output only the text present in the source segment.
 Example: P1234 - Translation text... (Correct) vs P1234\nTranslation... (Forbidden).

@@ -239,6 +239,18 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
     });
 
+    it('should detect mismatched colons when translation adds extra speaker labels (report repro)', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'المؤذن: الله أكبر\nالشيخ: الله أكبر',
+            },
+        ];
+        const response = `P1 - Mu'adhdhin: Allahu akbar.\nThe Shaykh: Allahu akbar.\nMu'adhdhin: Allahu akbar.`;
+        const result = validateTranslationResponse(segments, response);
+        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+    });
+
     it('should detect mismatched colons when mid-segment speaker lines are dropped (P251685 repro)', () => {
         const segments = [
             {
