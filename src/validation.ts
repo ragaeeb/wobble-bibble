@@ -507,7 +507,7 @@ const validateMissingIdGaps = (context: ValidationContext): ValidationError[] =>
                 makeErrorFromRawRange(
                     'missing_id_gap',
                     `Missing segment ID detected between translated IDs: "${midId}"`,
-                    midId,
+                    context.rawResponse.slice(b.rawStart, b.rawEnd),
                     { end: b.rawEnd, start: b.rawStart },
                     midId,
                 ),
@@ -533,7 +533,7 @@ const validateTruncatedSegments = (context: ValidationContext): ValidationError[
                 makeErrorFromRawRange(
                     'truncated_segment',
                     `Truncated segment detected: "${marker.id}" - segments must be fully translated`,
-                    content || marker.headerText,
+                    context.rawResponse.slice(marker.rawTranslationStart, marker.rawTranslationEnd),
                     { end: marker.rawTranslationEnd, start: marker.rawTranslationStart },
                     marker.id,
                 ),

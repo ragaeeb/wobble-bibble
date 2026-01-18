@@ -103,7 +103,7 @@ const error: ValidationError = {
 |----------|-------------|
 | `validateTranslationResponse(segments, response, options?)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, etc.) |
 | `VALIDATION_ERROR_TYPE_INFO` | Human-readable descriptions for each `ValidationErrorType` (for UI/logging) |
-| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a raw-to-normalized index map |
+| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a normalized-index → raw-index map |
 
 ### Utilities
 
@@ -111,7 +111,7 @@ const error: ValidationError = {
 |----------|-------------|
 | `formatExcerptsForPrompt(segments, prompt)` | Format segments for LLM input |
 | `normalizeTranslationText(text)` | Normalize newlines and split merged markers onto separate lines |
-| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a raw-to-normalized index map |
+| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a normalized-index → raw-index map |
 | `extractTranslationIds(text)` | Extract all segment IDs from "ID - ..." markers |
 
 ## Available Prompts
