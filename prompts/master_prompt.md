@@ -67,7 +67,6 @@ TRANSLITERATION & TERMS:
 - rahimahu Allah -> may Allah have mercy on him
 8. AMBIGUITY: Use contextual meaning from tafsir for theological terms. Do not sanitise polemics (e.g. Rāfiḍah).
 OUTPUT FORMAT: Segment_ID - English translation.
-SPEAKER TURNS: Preserve source line breaks around speaker turns; never merge two speaker labels onto one line.
 CRITICAL: You must use the ASCII hyphen separator " - " (space+hyphen+space) immediately after the ID. Do NOT use em-dash or en-dash. Do NOT use a newline after the ID.
 ID INTEGRITY (Check First):
 - PREPASS (Silent closed set): Internally identify the exact ordered list of Segment_IDs present in the source. Treat this list as a CLOSED SET. Do not output this list.

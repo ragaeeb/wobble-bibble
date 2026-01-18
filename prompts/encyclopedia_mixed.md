@@ -1,6 +1,6 @@
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
-- LINE BREAKS (CRITICAL): Preserve the source line breaks around speaker turns. Keep Label+Text on SAME LINE. Do NOT merge two source lines into one.
+- LINE BREAKS (CRITICAL): Preserve the source line breaks around speaker turns. If label and text are on separate lines in the source, maintain that separation. Do NOT merge two source lines into one.
 - EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. If the source has a line break immediately after the ID, treat it as a formatting artifact and keep the label on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
 - INTERNAL Q&A: If segment has multiple turns, preserve the source line breaks between turns. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines; do NOT prefix subsequent lines with "ID - ". (e.g. P5455 - Questioner: ... \n The Shaykh: ...).
 - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
