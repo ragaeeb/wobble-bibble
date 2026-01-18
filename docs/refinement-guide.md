@@ -71,6 +71,32 @@ This repo uses a “round-based” refinement loop. Each round corresponds to on
      - `02_peer_review_packet.md`
      - `examples_consolidated.txt`
      - the specific `prompts/*.md` files being changed (and, for big refactors, BEFORE + AFTER text in the packet).
+   - If you want a single-file bundle, generate a `peer_review_context.txt` instead (see below).
+
+### Single-file peer review bundle (recommended)
+Use this when you want one file that includes the reviewer prompt + evidence + project context.
+
+1. Ensure the round artifacts exist:
+   - `bug_reports/<round>/prompt.txt`
+   - `bug_reports/<round>/01_synthesis.md`
+   - `bug_reports/<round>/examples_consolidated.txt`
+2. Ensure project overview exists:
+   - `docs/project_context.md`
+3. Include the exact prompt stack files used in the cases (example: `master_prompt.md` + `encyclopedia_mixed.md`).
+4. Run `code2prompt` with this exact command shape:
+```bash
+code2prompt -O bug_reports/<round>/peer_review_context.txt \
+  -i "bug_reports/<round>/prompt.txt" \
+  -i "bug_reports/<round>/01_synthesis.md" \
+  -i "bug_reports/<round>/examples_consolidated.txt" \
+  -i "docs/project_context.md" \
+  -i "prompts/master_prompt.md" \
+  -i "prompts/encyclopedia_mixed.md" \
+  .
+```
+Notes:
+- Do NOT include `docs/refinement-guide.md` in the peer review bundle (process docs, not review context).
+- Keep the bundle lean; include only the prompts actually used in the reported cases.
 5. **Update synthesis with reviews**
    - Append an addendum section to `01_synthesis.md` (do NOT delete the original synthesis):
      - Collective agreement (what most reviewers converge on)

@@ -544,7 +544,10 @@ const validateTruncatedSegments = (context: ValidationContext): ValidationError[
     const errors: ValidationError[] = [];
     for (const marker of context.markers) {
         const content = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd).trim();
-        if (!content || content === '…' || content === '...' || content === '[INCOMPLETE]') {
+        const isEllipsis = content === '…' || content === '...';
+        const sourceText = context.segmentById.get(marker.id)?.text ?? '';
+        const sourceHasEllipsis = /…|\.{3}/.test(sourceText);
+        if (!content || content === '[INCOMPLETE]' || (isEllipsis && !sourceHasEllipsis)) {
             errors.push(
                 makeErrorFromRawRange(
                     'truncated_segment',
