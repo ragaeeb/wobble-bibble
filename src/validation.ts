@@ -15,6 +15,7 @@ import type {
     ValidationContext,
     ValidationError,
     ValidationErrorType,
+    ValidationResponseResult,
     ValidationRule,
 } from './types';
 
@@ -249,7 +250,7 @@ export const validateTranslationResponse = (
     segments: Segment[],
     response: string,
     options?: { rules?: ValidationRule[]; config?: Partial<ValidationConfig> },
-) => {
+): ValidationResponseResult => {
     const config = { ...DEFAULT_VALIDATION_CONFIG, ...options?.config };
     const context = buildValidationContext(segments, response, config);
     if (context.parsedIds.length === 0) {
