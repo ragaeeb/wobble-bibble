@@ -61,8 +61,27 @@ const segments = [
 const llmOutput = `P1234 - Translation of first segment
 P1235 - Translation of second segment`;
 
-const result = validateTranslationResponse(segments, llmOutput);
+const result = validateTranslationResponse(segments, llmOutput, {
+    config: {
+        allCapsWordRunThreshold: 5,
+    },
+});
 if (result.errors.length > 0) console.error(result.errors);
+```
+
+### Validation Error Ranges
+
+Every validation error now includes a `range` with `start`/`end` indices pointing into the **raw response string** you passed in, plus `matchText` for precise highlighting.
+
+```typescript
+import type { ValidationError } from 'wobble-bibble';
+
+const error: ValidationError = {
+    type: 'arabic_leak',
+    message: 'Arabic script detected: "الله"',
+    matchText: 'الله',
+    range: { start: 14, end: 18 }, // raw response indices (end is exclusive)
+};
 ```
 
 ## API Reference
@@ -82,8 +101,9 @@ if (result.errors.length > 0) console.error(result.errors);
 
 | Function | Description |
 |----------|-------------|
-| `validateTranslationResponse(segments, response)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, etc.) |
+| `validateTranslationResponse(segments, response, options?)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, etc.) |
 | `VALIDATION_ERROR_TYPE_INFO` | Human-readable descriptions for each `ValidationErrorType` (for UI/logging) |
+| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a normalized-index → raw-index map |
 
 ### Utilities
 
@@ -91,6 +111,7 @@ if (result.errors.length > 0) console.error(result.errors);
 |----------|-------------|
 | `formatExcerptsForPrompt(segments, prompt)` | Format segments for LLM input |
 | `normalizeTranslationText(text)` | Normalize newlines and split merged markers onto separate lines |
+| `normalizeTranslationTextWithMap(text)` | Normalize response text and return a normalized-index → raw-index map |
 | `extractTranslationIds(text)` | Extract all segment IDs from "ID - ..." markers |
 
 ## Available Prompts
@@ -110,6 +131,7 @@ if (result.errors.length > 0) console.error(result.errors);
 
 See `docs/refinement-guide.md` for the methodology used to develop and test these prompts.
 See `AI_REVIEW_PROMPT.md` for the peer-review prompt template used when sending round packets to external agents.
+See `docs/migration-guide.md` for breaking validation API changes and upgrade steps.
 
 ## License
 

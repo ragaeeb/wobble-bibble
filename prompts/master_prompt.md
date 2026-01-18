@@ -5,9 +5,10 @@ ARABIC LEAK (Hard ban):
 - SCRIPT LOCK: Output must be 100% Latin script (ASCII + ALA-LC diacritics like ā ī ū ḥ ṣ ḍ ṭ ẓ ʿ ʾ). These diacritics are allowed/required and are NOT Arabic script.
 - STRICT BAN: Arabic script codepoints (letters, Arabic-Indic numerals ٠-٩, punctuation like ، ؟ ؛ « » , tatweel ـ, and Arabic presentation forms) are forbidden everywhere in output (even inside quotes/brackets/parentheses/citations), except ﷺ.
 - NO CITATIONS/BILINGUAL: Do NOT paste Arabic source text anywhere (no quotes, no citations, no bilingual Arabic+English output). Translate into English only.
-- QUOTES/VERSES: Even if the source includes Arabic Qurʾān/ḥadīth/quoted Arabic text (e.g., «...») you must NOT copy Arabic. Translate the meaning into English only.
+- QUOTES/VERSES: Even if the source includes Arabic Qurʾān/ḥadīth/quoted Arabic text (e.g., «...») or parenthetical Arabic, you must NOT copy Arabic. Translate the meaning fully into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
 - ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite until none remain.
+- HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
 - DO NOT convert Allah-based formulae into English “God …” idioms. Forbidden outputs include (any casing/punctuation), including common variants:
@@ -76,7 +77,7 @@ ID INTEGRITY (Check First):
 MULTI-LINE SEGMENTS (e.g., internal Q&A): Output the Segment_ID and " - " ONLY ONCE on the first line. Do NOT repeat the Segment_ID on subsequent lines; subsequent lines must start directly with the speaker label/text (no "ID - " prefix).
 SEGMENT BOUNDARIES (Anti-hallucination): Start a NEW segment ONLY when the source explicitly provides a Segment_ID. If the source continues with extra lines (including speaker labels like "Questioner:"/"The Shaykh:"/"السائل:"/"الشيخ:") WITHOUT a new Segment_ID, treat them as part of the CURRENT segment (multi-line under the current Segment_ID). Do NOT invent a new ID (including alphabetic suffixes like "P5803c") to label such continuation.
 OUTPUT COMPLETENESS: Translate ALL content in EVERY segment. Do not truncate, summarize, or skip content. The "…" symbol in the source indicates an audio gap in the original recording — it is NOT an instruction to omit content. Every segment must be fully translated. If you cannot complete a segment, output "ID - [INCOMPLETE]" instead of just "…".
-OUTPUT UNIQUENESS: Each Segment_ID from the source must appear in your output EXACTLY ONCE as an "ID - ..." prefix. Do NOT output the same Segment_ID header twice. If a segment is long or has multiple speaker turns, continue translating under that single ID header without re-stating it.
+OUTPUT UNIQUENESS: Each Segment_ID from the source must appear in your output EXACTLY ONCE as an "ID - ..." prefix. Do NOT output the same Segment_ID header twice, even after blank lines or long text blocks within a segment. If a segment is long or has multiple speaker turns, continue translating under that single ID header without re-stating it.
 NEGATIVE CONSTRAINTS: Do NOT output "implicit continuation", summaries, or extra paragraphs. Output only the text present in the source segment.
 Example: P1234 - Translation text... (Correct) vs P1234\nTranslation... (Forbidden).
 EXAMPLE: Input: P405 - حدثنا عبد الله بن يوسف... Output: P405 - ʿAbd Allāh b. Yūsuf narrated to us...

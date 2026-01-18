@@ -1,8 +1,8 @@
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 STRUCTURE (Apply First):
-- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Start NEW LINE for speaker. Keep Label+Text on SAME LINE.
-- EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
-- INTERNAL Q&A: If segment has multiple turns, use new lines for speakers. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines; do NOT prefix subsequent lines with "ID - ". (e.g. P5455 - Questioner: ... \n The Shaykh: ...).
+- Q&A: Whenever "Al-Sāʾil:"/"Al-Shaykh:" appear: Preserve the source line breaks around speaker turns. Keep Label+Text on SAME LINE. Do NOT merge two source lines into one.
+- EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. If the source has a line break immediately after the ID, treat it as a formatting artifact and keep the label on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
+- INTERNAL Q&A: If segment has multiple turns, preserve the source line breaks between turns. Output Segment ID ONLY ONCE at the start of the first line. Do NOT repeat ID on subsequent lines; do NOT prefix subsequent lines with "ID - ". (e.g. P5455 - Questioner: ... \n The Shaykh: ...).
 - OUTPUT LABELS: Al-Sāʾil -> Questioner: ; Al-Shaykh -> The Shaykh:
 - SPEAKER LABELS (No invention): Output speaker labels ONLY when they appear in the source at that position. Do NOT add "Questioner:"/"The Shaykh:" to unlabeled text. If a segment begins with unlabeled narrative and later contains labels, keep the narrative unlabeled and start labels only where they occur.
 DEFINITIONS & CASING:

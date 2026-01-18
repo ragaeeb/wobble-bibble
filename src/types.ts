@@ -32,9 +32,56 @@ export type ValidationErrorType =
     | 'multiword_translit_without_gloss';
 
 /**
+ * A character index range in a string. End is exclusive.
+ */
+export type Range = { start: number; end: number };
+
+export type TranslationMarker = {
+    id: string;
+    headerText: string;
+    normalizedStart: number;
+    normalizedEnd: number;
+    rawStart: number;
+    rawEnd: number;
+    translationStart: number;
+    translationEnd: number;
+    rawTranslationStart: number;
+    rawTranslationEnd: number;
+};
+
+export type ValidationContext = {
+    rawResponse: string;
+    normalizedResponse: string;
+    indexMap: number[];
+    parsedIds: string[];
+    segments: Segment[];
+    segmentById: Map<string, Segment>;
+    responseById: Map<string, string>;
+    markers: TranslationMarker[];
+    config: ValidationConfig;
+};
+
+/**
  * A single validation error.
  */
-export type ValidationError = { type: ValidationErrorType; message: string; id?: string; match?: string };
+export type ValidationError = {
+    type: ValidationErrorType;
+    message: string;
+    range: Range;
+    matchText: string;
+    id?: string;
+    ruleId?: string;
+};
+
+export type ValidationRule = {
+    id: string;
+    type: ValidationErrorType;
+    run: (context: ValidationContext) => ValidationError[];
+};
+
+export type ValidationConfig = {
+    allCapsWordRunThreshold: number;
+};
 
 /**
  * Result of validating an LLM translation response against a set of source segments.
