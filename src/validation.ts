@@ -185,13 +185,28 @@ const makeErrorFromNormalized = (
     normalizedStart: number,
     normalizedEnd: number,
     id?: string,
-): ValidationError => ({
-    id,
-    matchText,
-    message,
-    range: toRawRange(normalizedStart, normalizedEnd, context.indexMap, context.rawResponse.length),
-    type,
-});
+): ValidationError => {
+    let resolvedId = id;
+    if (!resolvedId) {
+        // Try to find which marker contains this error range
+        for (const marker of context.markers) {
+            // Check if error falls within the translation content of a marker
+            // We use loose bounds to catch errors at boundaries
+            if (normalizedStart >= marker.translationStart && normalizedEnd <= marker.translationEnd) {
+                resolvedId = marker.id;
+                break;
+            }
+        }
+    }
+
+    return {
+        id: resolvedId,
+        matchText,
+        message,
+        range: toRawRange(normalizedStart, normalizedEnd, context.indexMap, context.rawResponse.length),
+        type,
+    };
+};
 
 const makeErrorFromRawRange = (
     type: ValidationErrorType,

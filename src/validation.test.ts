@@ -369,7 +369,9 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
     });
 
     it('should include match ranges for arabic_leak', () => {
-        const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
+        const segments = [
+            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
+        ];
         const response = 'P1 - Hello الله.';
         const result = validateTranslationResponse(segments, response);
         const err = result.errors.find((e) => e.type === 'arabic_leak');
@@ -381,7 +383,9 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
     });
 
     it('should include match ranges for invalid_marker_format', () => {
-        const segments = [{ id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' }];
+        const segments = [
+            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
+        ];
         const response = 'B12a34 - Invalid\nP1 - Ok';
         const result = validateTranslationResponse(segments, response);
         const err = result.errors.find((e) => e.type === 'invalid_marker_format');
@@ -405,5 +409,50 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         if (err) {
             expect(response.slice(err.range.start, err.range.end)).toBe('Short.');
         }
+    });
+
+    it('should associate IDs with global regex errors (archaic/all_caps/arabic_leak/etc)', () => {
+        const segments = [
+            { id: 'P1', text: 'نص عربي طويل' },
+            { id: 'P2', text: 'نص عربي طويل' },
+        ];
+        const response = `P1 - Verily this is bad.
+P2 - THIS IS VERY LOUD INDEED.
+P1 - And this has الله inside.
+P2 - (Note: meta talk here).
+P1 - Continued: implicit.
+P2 - kâfir diacritic.
+`;
+        const result = validateTranslationResponse(segments, response);
+
+        // Archaic in P1
+        const archaic = result.errors.find((e) => e.type === 'archaic_register');
+        expect(archaic).toBeDefined();
+        expect(archaic?.id).toBe('P1');
+
+        // All Caps in P2
+        const allCaps = result.errors.find((e) => e.type === 'all_caps');
+        expect(allCaps).toBeDefined();
+        expect(allCaps?.id).toBe('P2');
+
+        // Arabic in P1
+        const arabic = result.errors.find((e) => e.type === 'arabic_leak');
+        expect(arabic).toBeDefined();
+        expect(arabic?.id).toBe('P1');
+
+        // Meta Talk in P2
+        const meta = result.errors.find((e) => e.type === 'meta_talk');
+        expect(meta).toBeDefined();
+        expect(meta?.id).toBe('P2');
+
+        // Implicit Continuation in P1
+        const continuation = result.errors.find((e) => e.type === 'implicit_continuation');
+        expect(continuation).toBeDefined();
+        expect(continuation?.id).toBe('P1');
+
+        // Wrong Diacritics in P2
+        const diacritic = result.errors.find((e) => e.type === 'wrong_diacritics');
+        expect(diacritic).toBeDefined();
+        expect(diacritic?.id).toBe('P2');
     });
 });
