@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'bun:test';
+import type { ValidationErrorType } from './types';
 import { validateTranslationResponse } from './validation';
+
+const getErrorTypes = (result: ReturnType<typeof validateTranslationResponse>): ValidationErrorType[] =>
+    result.errors.map((e) => e.type).sort();
+
+const expectErrorTypes = (result: ReturnType<typeof validateTranslationResponse>, types: ValidationErrorType[]) => {
+    expect(getErrorTypes(result)).toEqual([...types].sort());
+};
 
 describe('validateTranslationResponse', () => {
     it('should return no errors for a basic valid response and should only validate IDs present in the response', () => {
@@ -18,143 +26,150 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
     });
 
     it('should detect marker format errors (invalid ref / suspicious ref / empty after dash / dollar sign)', () => {
-        const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
 
         // invalid format like B12a34 -
         const invalidRef = validateTranslationResponse(segments, 'B12a34 - Invalid format\nP1 - Ok');
-        expect(invalidRef.errors.some((e) => e.type === 'invalid_marker_format')).toBeTrue();
+        expectErrorTypes(invalidRef, ['invalid_marker_format', 'invalid_marker_format']);
 
         // suspicious multi-letter suffix with space before
         const suspicious = validateTranslationResponse(segments, 'Some text P123ab - Translation\nP1 - Ok');
-        expect(suspicious.errors.some((e) => e.type === 'invalid_marker_format')).toBeTrue();
+        expectErrorTypes(suspicious, ['invalid_marker_format']);
 
         // empty after dash
         const emptyAfterDash = validateTranslationResponse(segments, 'P1 -   ');
-        expect(emptyAfterDash.errors.some((e) => e.type === 'invalid_marker_format')).toBeTrue();
+        expectErrorTypes(emptyAfterDash, ['invalid_marker_format', 'truncated_segment']);
 
         // dollar sign
         const dollar = validateTranslationResponse(segments, 'B1234$5 - Invalid\nP1 - Ok');
-        expect(dollar.errors.some((e) => e.type === 'invalid_marker_format')).toBeTrue();
+        expectErrorTypes(dollar, ['invalid_marker_format', 'invalid_marker_format']);
     });
 
     it('should return no_valid_markers when there are no markers at all', () => {
         const segments = [{ id: 'P1', text: 'نص عربي' }];
         const result = validateTranslationResponse(segments, 'Just some text without markers');
         expect(result.parsedIds).toEqual([]);
-        expect(result.errors.some((e) => e.type === 'no_valid_markers')).toBeTrue();
+        expectErrorTypes(result, ['no_valid_markers']);
     });
 
     it('should detect invented IDs when response references IDs not present in the segment corpus', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - Valid translation.\nP2 - Invented.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'invented_id')).toBeTrue();
+        expectErrorTypes(result, ['invented_id']);
     });
 
     it('should detect duplicate IDs', () => {
-        const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - First.\nP1 - Second.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'duplicate_id')).toBeTrue();
+        expectErrorTypes(result, ['duplicate_id']);
     });
 
     it('should detect newline after ID', () => {
-        const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 -\nText`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'newline_after_id')).toBeTrue();
+        expectErrorTypes(result, ['invalid_marker_format', 'newline_after_id']);
     });
 
     it('should detect truncated segment content markers (…/...[INCOMPLETE])', () => {
         const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-            { id: 'P2', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-            { id: 'P3', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
+            { id: 'P1', text: 'نعم' },
+            { id: 'P2', text: 'نعم' },
+            { id: 'P3', text: 'نعم' },
         ];
         const response = `P1 - …\nP2 - ...\nP3 - [INCOMPLETE]`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'truncated_segment')).toBeTrue();
+        expectErrorTypes(result, ['truncated_segment', 'truncated_segment', 'truncated_segment']);
     });
 
     it('should detect implicit continuation and meta-talk', () => {
-        const segments = [
-            { id: 'P1', text: 'هذا نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
-        const response = `P1 - Continuation: (Translator's note: hi)`;
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - implicit continuation (Translator's note: hi)`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'implicit_continuation')).toBeTrue();
-        expect(result.errors.some((e) => e.type === 'meta_talk')).toBeTrue();
+        expectErrorTypes(result, ['implicit_continuation', 'meta_talk']);
+    });
+
+    it('should report multiple error types in a single segment', () => {
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - implicit continuation (Translator's note: hi) الله`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['arabic_leak', 'implicit_continuation', 'meta_talk']);
     });
 
     it('should detect Arabic leakage even inside quotes/brackets', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
-        const response = `P1 - He quoted: «واللاتي تخافون نشوزهن».`;
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - He quoted «واللاتي تخافون نشوزهن».`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'arabic_leak')).toBeTrue();
+        expectErrorTypes(result, ['arabic_leak']);
+    });
+
+    it('should report mixed speaker and Arabic leak errors together', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: نعم\nالشيخ: نعم',
+            },
+        ];
+        const response = `P1 - Questioner: Yes. الله`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['arabic_leak', 'mismatched_colons']);
     });
 
     it('should allow ﷺ without raising arabic_leak', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
-        const response = `P1 - Muḥammad ﷺ said...`;
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - Muḥammad ﷺ said many things today.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'arabic_leak')).toBeFalse();
+        expectErrorTypes(result, []);
+    });
+
+    it('should emit one arabic_leak error per segment (longest Arabic run)', () => {
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - الله الله الله الله الله.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['arabic_leak']);
     });
 
     it('should detect wrong diacritics', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
-        const response = `P1 - kâfir and Salãm and Imám`;
+        const segments = [{ id: 'P1', text: 'نعم' }];
+        const response = `P1 - kâfir.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'wrong_diacritics')).toBeTrue();
+        expectErrorTypes(result, ['wrong_diacritics']);
     });
 
     it('should detect wrong diacritics in real-world cases (cliché)', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - This cliché went away; in al-Muntaqá he says otherwise.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'wrong_diacritics')).toBeTrue();
+        expectErrorTypes(result, ['wrong_diacritics']);
     });
 
     it('should allow á for alif maqṣūra in transliteration', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - He cites al-Muntaqá as a title.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'wrong_diacritics')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should detect too many empty parentheses () as failed transliteration markers', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - One () two () three () four () five ().`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'empty_parentheses')).toBeTrue();
+        expectErrorTypes(result, [
+            'empty_parentheses',
+            'empty_parentheses',
+            'empty_parentheses',
+            'empty_parentheses',
+            'empty_parentheses',
+        ]);
     });
 
     it('should not flag empty parentheses when 3 or fewer occurrences', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - One () two () three ().`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'empty_parentheses')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should detect length mismatch for long Arabic with too-short translation (and skip for short Arabic)', () => {
@@ -166,53 +181,42 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - Short.\nP2 - Yes.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'length_mismatch')).toBeTrue();
+        expectErrorTypes(result, ['length_mismatch']);
     });
 
     it('should detect archaic register and ALL CAPS', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - VERILY, thou shalt go forth. THIS IS VERY VERY LOUD.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'all_caps')).toBeTrue();
-        expect(result.errors.some((e) => e.type === 'archaic_register')).toBeTrue();
+        expectErrorTypes(result, ['all_caps', 'archaic_register', 'archaic_register', 'archaic_register']);
     });
 
     it('should not flag archaic register for words that contain archaic substrings (without)', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - This is without any issue.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'archaic_register')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should not flag ALL CAPS for short acronyms', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - USA is fine.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'all_caps')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should not flag ALL CAPS for single acronyms like SABIC (caps report repro)', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - A company called SABIC operates there.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'all_caps')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should honor configurable ALL CAPS run threshold', () => {
-        const segments = [
-            { id: 'P1', text: 'نص عربي طويل يحتوي على محتوى كافٍ للترجمة وهو يمثل فقرة كاملة من النص العربي' },
-        ];
+        const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - THIS IS LOUD NOW`;
         const result = validateTranslationResponse(segments, response, { config: { allCapsWordRunThreshold: 4 } });
-        expect(result.errors.some((e) => e.type === 'all_caps')).toBeTrue();
+        expectErrorTypes(result, ['all_caps']);
     });
 
     it('should detect mismatched colons when Arabic has more line-start labels than translation', () => {
@@ -224,7 +228,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - The Shaykh: Yes.`; // only 1 colon in translation
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+        expectErrorTypes(result, ['mismatched_colons']);
     });
 
     it('should detect mismatched colons when a speaker label line is dropped (report repro)', () => {
@@ -236,7 +240,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - The Shaykh: Yes.\nThe Shaykh: All right.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+        expectErrorTypes(result, ['mismatched_colons']);
     });
 
     it('should detect mismatched colons when translation adds extra speaker labels (report repro)', () => {
@@ -248,7 +252,43 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - Mu'adhdhin: Allahu akbar.\nThe Shaykh: Allahu akbar.\nMu'adhdhin: Allahu akbar.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+        expectErrorTypes(result, ['mismatched_colons']);
+    });
+
+    it('should detect collapsed speaker labels when a line-start label exists in the segment', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: نعم\nالشيخ: نعم',
+            },
+        ];
+        const response = `P1 - Questioner: Yes.\nThe Shaykh: Yes. Questioner: Yes.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['collapsed_speakers']);
+    });
+
+    it('should not flag collapsed_speakers when no line-start labels exist', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'نعم',
+            },
+        ];
+        const response = `P1 - This is a sentence with The Shaykh: referenced in-line only.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, []);
+    });
+
+    it('should not flag collapsed_speakers when labels start on their own lines only', () => {
+        const segments = [
+            {
+                id: 'P1',
+                text: 'السائل: نعم\nالشيخ: نعم',
+            },
+        ];
+        const response = `P1 - Questioner: Yes.\nThe Shaykh: Yes.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, []);
     });
 
     it('should detect mismatched colons when mid-segment speaker lines are dropped (P251685 repro)', () => {
@@ -260,7 +300,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - Questioner: The final question...`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+        expectErrorTypes(result, ['mismatched_colons']);
     });
 
     it('should detect mismatched colons when English adds a speaker label not present in Arabic (report repro)', () => {
@@ -272,7 +312,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - Questioner: Peace be upon you.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeTrue();
+        expectErrorTypes(result, ['mismatched_colons']);
     });
 
     it('should not flag when extra narrative colons appear mid-line (no speaker drift)', () => {
@@ -284,7 +324,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - Questioner: Yes.\nThe Shaykh: This is correct, firstly: it is sound.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should not flag when narrative colons appear inside replies (P254944 repro)', () => {
@@ -297,7 +337,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response =
             'P1 - Questioner: Yes.\nThe Shaykh: This, firstly: pledges of groups and parties, all of them are illegitimate.';
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should not flag when label counts match even with extra mid-line colons (P251955a style)', () => {
@@ -310,7 +350,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response =
             'P1 - Student: Yes.\nThe Shaykh: I always say: you borrow if you know that you are able to repay.';
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should not flag mismatched colons when colon counts match for the same segment', () => {
@@ -322,26 +362,26 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - The Shaykh: Yes.\nQuestioner: Why?`; // 2 colons
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'mismatched_colons')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should detect multi-word transliteration without immediate gloss for common phrase shape (al-... fi al-...)', () => {
         const segments = [
             {
                 id: 'P1',
-                text: 'السائل: ...',
+                text: 'نص عربي',
             },
         ];
-        const response = `P1 - The Shaykh: He advised al-hajr fi al-madajīʿ.`;
+        const response = `P1 - He advised al-hajr fi al-madajīʿ.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'multiword_translit_without_gloss')).toBeTrue();
+        expectErrorTypes(result, ['multiword_translit_without_gloss']);
     });
 
     it('should not flag multi-word transliteration when a gloss follows quickly', () => {
-        const segments = [{ id: 'P1', text: 'السائل: ...' }];
+        const segments = [{ id: 'P1', text: 'نص عربي' }];
         const response = `P1 - He advised al-hajr fi al-madajīʿ (marital bed abandonment).`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'multiword_translit_without_gloss')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should detect missing ID gaps between translated IDs (P1 and P3 but missing P2)', () => {
@@ -352,7 +392,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P1 - A sufficiently long translation.\nP3 - A sufficiently long translation.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'missing_id_gap')).toBeTrue();
+        expectErrorTypes(result, ['missing_id_gap']);
         expect(result.errors.find((e) => e.type === 'missing_id_gap')?.message).toContain('P2');
     });
 
@@ -364,7 +404,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         ];
         const response = `P3 - A sufficiently long translation.\nP1 - A sufficiently long translation.`;
         const result = validateTranslationResponse(segments, response);
-        expect(result.errors.some((e) => e.type === 'missing_id_gap')).toBeFalse();
+        expectErrorTypes(result, []);
     });
 
     it('should normalize merged markers and remove escaped brackets', () => {
@@ -387,11 +427,8 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response = 'P1 - Hello الله.';
         const result = validateTranslationResponse(segments, response);
         const err = result.errors.find((e) => e.type === 'arabic_leak');
-        expect(err).toBeDefined();
         expect(err?.matchText).toBe('الله');
-        if (err) {
-            expect(response.slice(err.range.start, err.range.end)).toBe('الله');
-        }
+        expect(err ? response.slice(err.range.start, err.range.end) : undefined).toBe('الله');
     });
 
     it('should include match ranges for invalid_marker_format', () => {
@@ -401,10 +438,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response = 'B12a34 - Invalid\nP1 - Ok';
         const result = validateTranslationResponse(segments, response);
         const err = result.errors.find((e) => e.type === 'invalid_marker_format');
-        expect(err).toBeDefined();
-        if (err) {
-            expect(response.slice(err.range.start, err.range.end)).toBe(err.matchText);
-        }
+        expect(err ? response.slice(err.range.start, err.range.end) : undefined).toBe(err?.matchText);
     });
 
     it('should include match ranges for length_mismatch translation chunks', () => {
@@ -417,10 +451,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response = 'P1 - Short.';
         const result = validateTranslationResponse(segments, response);
         const err = result.errors.find((e) => e.type === 'length_mismatch');
-        expect(err).toBeDefined();
-        if (err) {
-            expect(response.slice(err.range.start, err.range.end)).toBe('Short.');
-        }
+        expect(err ? response.slice(err.range.start, err.range.end) : undefined).toBe('Short.');
     });
 
     it('should associate IDs with global regex errors (archaic/all_caps/arabic_leak/etc)', () => {
@@ -439,32 +470,26 @@ P2 - kâfir diacritic.
 
         // Archaic in P1
         const archaic = result.errors.find((e) => e.type === 'archaic_register');
-        expect(archaic).toBeDefined();
         expect(archaic?.id).toBe('P1');
 
         // All Caps in P2
         const allCaps = result.errors.find((e) => e.type === 'all_caps');
-        expect(allCaps).toBeDefined();
         expect(allCaps?.id).toBe('P2');
 
         // Arabic in P1
         const arabic = result.errors.find((e) => e.type === 'arabic_leak');
-        expect(arabic).toBeDefined();
         expect(arabic?.id).toBe('P1');
 
         // Meta Talk in P2
         const meta = result.errors.find((e) => e.type === 'meta_talk');
-        expect(meta).toBeDefined();
         expect(meta?.id).toBe('P2');
 
         // Implicit Continuation in P1
         const continuation = result.errors.find((e) => e.type === 'implicit_continuation');
-        expect(continuation).toBeDefined();
         expect(continuation?.id).toBe('P1');
 
         // Wrong Diacritics in P2
         const diacritic = result.errors.find((e) => e.type === 'wrong_diacritics');
-        expect(diacritic).toBeDefined();
         expect(diacritic?.id).toBe('P2');
     });
 });

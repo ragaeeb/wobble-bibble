@@ -20,6 +20,7 @@ export type ValidationErrorType =
     | 'invented_id'
     | 'missing_id_gap'
     | 'mismatched_colons'
+    | 'collapsed_speakers'
     | 'truncated_segment'
     | 'implicit_continuation'
     | 'meta_talk'
@@ -81,6 +82,35 @@ export type ValidationRule = {
 
 export type ValidationConfig = {
     allCapsWordRunThreshold: number;
+};
+
+/**
+ * Configuration for fixer helpers that repair common LLM formatting mistakes.
+ */
+export type FixConfig = {
+    /**
+     * Speaker labels to recognize when fixing collapsed speaker lines.
+     * Example: ["Questioner", "The Shaykh", "Mu'adhdhin"]
+     */
+    speakerLabels: string[];
+    /**
+     * Punctuation tokens that may appear before a collapsed speaker label.
+     * These are used to detect " ... The Shaykh:" and similar patterns.
+     */
+    leadingPunctuation?: string[];
+};
+
+export type FixResult = {
+    text: string;
+    applied: string[];
+    requested?: string[];
+    skipped?: string[];
+    counts: Record<string, number>;
+};
+
+export type FixAllOptions = {
+    types: ValidationErrorType[];
+    config?: FixConfig;
 };
 
 /**

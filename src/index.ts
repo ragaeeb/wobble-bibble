@@ -17,7 +17,12 @@ export {
     parseTranslationsInOrder,
 } from './textUtils';
 
+export { fixAll, fixCollapsedSpeakerLines } from './fix';
+
 export type {
+    FixConfig,
+    FixAllOptions,
+    FixResult,
     Range,
     Segment,
     TranslationMarker,

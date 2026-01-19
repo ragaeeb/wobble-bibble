@@ -35,6 +35,9 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     archaic_register: {
         description: 'Archaic/Biblical English detected (e.g., thou, verily, shalt).',
     },
+    collapsed_speakers: {
+        description: 'Speaker labels appear mid-line instead of starting on a new line.',
+    },
     duplicate_id: {
         description: 'The same segment ID appears more than once in the response.',
     },
@@ -632,21 +635,34 @@ const validateArabicLeak = (context: ValidationContext): ValidationError[] => {
     const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDF9\uFDFB-\uFDFF\uFE70-\uFEFF]+/g;
     const errors: ValidationError[] = [];
 
-    for (const match of context.normalizedResponse.matchAll(arabicPattern)) {
-        const matchText = match[0];
-        const cleaned = matchText.replace(/ﷺ/g, '').trim();
-        if (!cleaned) {
+    for (const marker of context.markers) {
+        const text = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd);
+        let longestMatch: RegExpMatchArray | undefined;
+        for (const match of text.matchAll(arabicPattern)) {
+            const matchText = match[0].replace(/ﷺ/g, '').trim();
+            if (!matchText) {
+                continue;
+            }
+            if (!longestMatch || matchText.length > longestMatch[0].replace(/ﷺ/g, '').trim().length) {
+                longestMatch = match;
+            }
+        }
+        if (!longestMatch) {
             continue;
         }
-        const idx = match.index ?? 0;
+        const matchText = longestMatch[0].replace(/ﷺ/g, '').trim();
+        const idx = longestMatch.index ?? 0;
+        const normalizedStart = marker.translationStart + idx;
+        const normalizedEnd = normalizedStart + longestMatch[0].length;
         errors.push(
             makeErrorFromNormalized(
                 context,
                 'arabic_leak',
-                `Arabic script detected: "${cleaned}"`,
-                cleaned,
-                idx,
-                idx + matchText.length,
+                `Arabic script detected: "${matchText}"`,
+                matchText,
+                normalizedStart,
+                normalizedEnd,
+                marker.id,
             ),
         );
     }
@@ -893,6 +909,65 @@ const validateMismatchedColons = (context: ValidationContext): ValidationError[]
 };
 
 /**
+ * Detect collapsed speaker labels that appear mid-line instead of at line start.
+ *
+ * This uses translation line-start labels as the reference set, then flags
+ * occurrences of those labels inside the same segment's text.
+ */
+const findCollapsedSpeakerLabel = (text: string) => {
+    const lineStartLabels = getLineStartLabelCounts(text).prefixes;
+    if (lineStartLabels.size === 0) {
+        return;
+    }
+    const labelPattern = [...lineStartLabels.keys()].map((label) => escapeRegExp(label)).join('|');
+    if (!labelPattern) {
+        return;
+    }
+    const lines = text.split('\n');
+    let offset = 0;
+    const pattern = new RegExp(`\\b(${labelPattern})\\s*:`, 'g');
+    for (const line of lines) {
+        for (const match of line.matchAll(pattern)) {
+            const idx = match.index ?? 0;
+            if (idx > 0) {
+                return { index: offset + idx, label: match[1] };
+            }
+        }
+        offset += line.length + 1;
+    }
+};
+
+const validateCollapsedSpeakers = (context: ValidationContext): ValidationError[] => {
+    const errors: ValidationError[] = [];
+
+    for (const marker of context.markers) {
+        const translation = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd);
+        if (!translation) {
+            continue;
+        }
+        const matched = findCollapsedSpeakerLabel(translation);
+        if (!matched) {
+            continue;
+        }
+        const normalizedStart = marker.translationStart + matched.index;
+        const normalizedEnd = normalizedStart + matched.label.length + 1;
+        errors.push(
+            makeErrorFromNormalized(
+                context,
+                'collapsed_speakers',
+                `Collapsed speaker label detected in "${marker.id}": "${matched.label}:" should start on a new line`,
+                `${matched.label}:`,
+                normalizedStart,
+                normalizedEnd,
+                marker.id,
+            ),
+        );
+    }
+
+    return errors;
+};
+
+/**
  * Detect multi-word transliteration patterns without immediate parenthetical gloss.
  *
  * @example
@@ -952,6 +1027,7 @@ const DEFAULT_RULES: ValidationRule[] = [
     { id: 'all_caps', run: validateAllCaps, type: 'all_caps' },
     { id: 'archaic_register', run: validateArchaicRegister, type: 'archaic_register' },
     { id: 'mismatched_colons', run: validateMismatchedColons, type: 'mismatched_colons' },
+    { id: 'collapsed_speakers', run: validateCollapsedSpeakers, type: 'collapsed_speakers' },
     {
         id: 'multiword_translit_without_gloss',
         run: validateMultiwordTranslitWithoutGloss,
