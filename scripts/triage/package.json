@@ -3,6 +3,7 @@
         "@langchain/core": "^1.1.15",
         "@langchain/google-genai": "^2.1.10",
         "@langchain/langgraph": "^1.0.15",
+        "@langchain/openai": "^1.2.2",
         "@octokit/rest": "^22.0.1",
         "openai": "^6.16.0"
     },
