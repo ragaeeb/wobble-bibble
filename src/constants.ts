@@ -59,3 +59,12 @@ export const MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK = 50;
 export const MIN_TRANSLATION_RATIO = 0.25;
 
 export const COLON_PATTERN = /[:：]/g;
+
+/**
+ * Heuristic pattern for inferring speaker labels in English translations.
+ * Matches 1-3 capitalized words ending with a colon (e.g., "Questioner:", "The Shaykh:").
+ */
+export const SPEAKER_LABEL_GUESS_PATTERN =
+    /(?:^|\n|\s)([A-Z][\p{L}'ʿʾāīūḥṣḍṭẓ-]*(?:\s+[A-Z][\p{L}'ʿʾāīūḥṣḍṭẓ-]*){0,2})\s*:/gu;
+
+export const DEFAULT_LEADING_PUNCTUATION = ['.', '?', '!', '…', '،', '؛', ':', '：', '-', '–', '—'];

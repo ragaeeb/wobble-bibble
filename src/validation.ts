@@ -44,6 +44,9 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     empty_parentheses: {
         description: 'Excessive "()" patterns detected, often indicating failed/empty term-pairs.',
     },
+    god_usage: {
+        description: 'Forbidden "God" usage detected where "Allah" should be used.',
+    },
     implicit_continuation: {
         description: 'The response includes continuation/meta phrasing (e.g., "continued:", "implicit continuation").',
     },
@@ -84,7 +87,8 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
 } as const satisfies Record<ValidationErrorType, { description: string }>;
 
-const ARCHAIC_PATTERNS = ARCHAIC_WORDS.map((w) => new RegExp(`\\b${escapeRegExp(w)}\\b`, 'gi'));
+const buildWordPattern = (words: readonly string[], flags = 'gi') =>
+    new RegExp(`\\b(?:${words.map((w) => escapeRegExp(w)).join('|')})\\b`, flags);
 
 const trimRange = (text: string, start: number, end: number) => {
     let s = start;
@@ -810,23 +814,58 @@ const validateAllCaps = (context: ValidationContext): ValidationError[] => {
  * validateArchaicRegister('verily thou shalt')[0]?.type === 'archaic_register'
  */
 const validateArchaicRegister = (context: ValidationContext): ValidationError[] => {
+    const pattern = buildWordPattern(ARCHAIC_WORDS);
     const errors: ValidationError[] = [];
-    for (const re of ARCHAIC_PATTERNS) {
-        for (const match of context.normalizedResponse.matchAll(re)) {
+    for (const match of context.normalizedResponse.matchAll(pattern)) {
+        const matchText = match[0];
+        const idx = match.index ?? 0;
+        errors.push(
+            makeErrorFromNormalized(
+                context,
+                'archaic_register',
+                `Archaic/Biblical register word detected: "${matchText}"`,
+                matchText,
+                idx,
+                idx + matchText.length,
+            ),
+        );
+    }
+    return errors;
+};
+
+/**
+ * Detect forbidden "God" usage when the source Arabic includes الله.
+ */
+const validateGodUsage = (context: ValidationContext): ValidationError[] => {
+    const errors: ValidationError[] = [];
+    const godPattern = /\bGod(?:'s|’s|s)?\b/g;
+    const allahPattern = /الله/;
+
+    for (const marker of context.markers) {
+        const seg = context.segmentById.get(marker.id);
+        if (!seg || !allahPattern.test(seg.text)) {
+            continue;
+        }
+        const translation = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd);
+        for (const match of translation.matchAll(godPattern)) {
             const matchText = match[0];
             const idx = match.index ?? 0;
+            const normalizedStart = marker.translationStart + idx;
+            const normalizedEnd = normalizedStart + matchText.length;
             errors.push(
                 makeErrorFromNormalized(
                     context,
-                    'archaic_register',
-                    `Archaic/Biblical register word detected: "${matchText}"`,
+                    'god_usage',
+                    `Forbidden "God" usage detected in "${marker.id}" - use "Allah" when the source contains الله`,
                     matchText,
-                    idx,
-                    idx + matchText.length,
+                    normalizedStart,
+                    normalizedEnd,
+                    marker.id,
                 ),
             );
         }
     }
+
     return errors;
 };
 
@@ -1026,6 +1065,7 @@ const DEFAULT_RULES: ValidationRule[] = [
     { id: 'length_mismatch', run: validateTranslationLengthsForResponse, type: 'length_mismatch' },
     { id: 'all_caps', run: validateAllCaps, type: 'all_caps' },
     { id: 'archaic_register', run: validateArchaicRegister, type: 'archaic_register' },
+    { id: 'god_usage', run: validateGodUsage, type: 'god_usage' },
     { id: 'mismatched_colons', run: validateMismatchedColons, type: 'mismatched_colons' },
     { id: 'collapsed_speakers', run: validateCollapsedSpeakers, type: 'collapsed_speakers' },
     {

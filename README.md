@@ -101,9 +101,18 @@ const error: ValidationError = {
 
 | Function | Description |
 |----------|-------------|
-| `validateTranslationResponse(segments, response, options?)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, etc.) |
+| `validateTranslationResponse(segments, response, options?)` | Unified validator for LLM translation responses (IDs, Arabic leak, invented IDs, gaps, speaker-label drift, Allah vs God usage, etc.) |
 | `VALIDATION_ERROR_TYPE_INFO` | Human-readable descriptions for each `ValidationErrorType` (for UI/logging) |
 | `normalizeTranslationTextWithMap(text)` | Normalize response text and return a normalized-index → raw-index map |
+
+### Fixers
+
+| Function | Description |
+|----------|-------------|
+| `fixCollapsedSpeakerLines(text, config?)` | Insert line breaks before mid-line speaker labels; infers labels if none provided |
+| `fixAll(text, options)` | Apply fixers for selected `ValidationErrorType`s (e.g., `collapsed_speakers`) |
+| `FixConfig` | Configuration for fixers (optional speaker labels, punctuation) |
+| `FixResult` | Fix output (fixed text, applied fixes, counts) |
 
 ### Utilities
 

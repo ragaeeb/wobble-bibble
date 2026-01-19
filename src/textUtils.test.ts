@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import {
+    buildLineStartLabelPattern,
+    buildPunctuationPattern,
+    buildSpeakerLabelPattern,
     extractTranslationIds,
     formatExcerptsForPrompt,
+    inferSpeakerLabels,
     normalizeTranslationText,
     parseTranslations,
     parseTranslationsInOrder,
@@ -18,24 +22,48 @@ describe('normalizeTranslationText', () => {
     it('should split merged markers (no space) onto a new line', () => {
         const input = 'helloP1 - x';
         const out = normalizeTranslationText(input);
-        expect(out).toContain('\nP1 -');
+        expect(out).toBe('hello\nP1 - x');
     });
 
     it('should split merged markers (with space) onto a new line', () => {
         const input = 'hello P1 - x';
         const out = normalizeTranslationText(input);
-        expect(out).toContain('\nP1 -');
+        expect(out).toBe('hello\nP1 - x');
     });
 
     it('should unescape bracket opener', () => {
         const input = 'P1 - One\\[two]';
         const out = normalizeTranslationText(input);
-        expect(out).toContain('One[two]');
+        expect(out).toBe('P1 - One[two]');
     });
 
     it('should extract translation ids', () => {
         const ids = extractTranslationIds('P1 - a\nP2b - b\nB100j - c');
         expect(ids).toEqual(['P1', 'P2b', 'B100j']);
+    });
+});
+
+describe('speaker label helpers', () => {
+    it('should build a speaker label alternation pattern', () => {
+        const pattern = buildSpeakerLabelPattern(['Questioner', 'The Shaykh']);
+        expect(pattern).toBe('(?:Questioner\\s*:|The Shaykh\\s*:)');
+    });
+
+    it('should build a punctuation alternation pattern', () => {
+        const pattern = buildPunctuationPattern(['.', '?', '—']);
+        expect(pattern).toBe('\\.|\\?|—');
+    });
+
+    it('should build a line-start label regex with optional ID prefix', () => {
+        const pattern = buildLineStartLabelPattern(['Questioner']);
+        expect(pattern.test('P1 - Questioner: Yes.')).toBeTrue();
+        expect(pattern.test('Questioner: Yes.')).toBeTrue();
+        expect(pattern.test('He said Questioner: Yes.')).toBeFalse();
+    });
+
+    it('should infer repeated speaker labels ordered by first appearance', () => {
+        const text = 'P1 - Questioner: Hi. The Shaykh: Hello. Questioner: Again. The Shaykh: Reply.';
+        expect(inferSpeakerLabels(text)).toEqual(['Questioner', 'The Shaykh']);
     });
 });
 

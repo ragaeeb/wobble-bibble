@@ -1,7 +1,7 @@
 /**
  * Segment type is shared across the library.
  */
-import { MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
+import { MARKER_ID_PATTERN, SPEAKER_LABEL_GUESS_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
 import type { Segment } from './types';
 
 /**
@@ -28,109 +28,112 @@ export const normalizeTranslationText = (content: string) => {
     return normalizeTranslationTextWithMap(content).normalized;
 };
 
-export const normalizeTranslationTextWithMap = (content: string) => {
-    const normalizeLineEndingsWithMap = (input: string) => {
-        let normalized = '';
-        const indexMap: number[] = [];
-        for (let i = 0; i < input.length; i++) {
-            const ch = input[i];
-            if (ch === '\r') {
-                if (input[i + 1] === '\n') {
-                    normalized += '\n';
-                    indexMap.push(i);
-                    i++;
-                    continue;
-                }
+const normalizeLineEndingsWithMap = (input: string) => {
+    let normalized = '';
+    const indexMap: number[] = [];
+    for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === '\r') {
+            if (input[i + 1] === '\n') {
                 normalized += '\n';
                 indexMap.push(i);
-                continue;
-            }
-            normalized += ch;
-            indexMap.push(i);
-        }
-        return { normalized, indexMap };
-    };
-
-    const insertNewlinesBeforeMergedMarkers = (text: string, map: number[]) => {
-        const mergedMarkerNoSpacePattern = new RegExp(
-            `([^\\s\\n])(${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
-            'g',
-        );
-        let normalized = '';
-        const indexMap: number[] = [];
-        let lastIndex = 0;
-        for (const match of text.matchAll(mergedMarkerNoSpacePattern)) {
-            const matchIndex = match.index ?? 0;
-            for (let i = lastIndex; i < matchIndex; i++) {
-                normalized += text[i];
-                indexMap.push(map[i]);
-            }
-            normalized += match[1];
-            indexMap.push(map[matchIndex]);
-            normalized += '\n';
-            indexMap.push(map[matchIndex]);
-            const marker = match[2];
-            for (let j = 0; j < marker.length; j++) {
-                normalized += marker[j];
-                indexMap.push(map[matchIndex + 1 + j]);
-            }
-            lastIndex = matchIndex + match[0].length;
-        }
-        for (let i = lastIndex; i < text.length; i++) {
-            normalized += text[i];
-            indexMap.push(map[i]);
-        }
-        return { normalized, indexMap };
-    };
-
-    const replaceSpaceBeforeMarkerWithNewline = (text: string, map: number[]) => {
-        const mergedMarkerWithSpacePattern = new RegExp(
-            ` (${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
-            'g',
-        );
-        let normalized = '';
-        const indexMap: number[] = [];
-        let lastIndex = 0;
-        for (const match of text.matchAll(mergedMarkerWithSpacePattern)) {
-            const matchIndex = match.index ?? 0;
-            for (let i = lastIndex; i < matchIndex; i++) {
-                normalized += text[i];
-                indexMap.push(map[i]);
-            }
-            normalized += '\n';
-            indexMap.push(map[matchIndex]);
-            const marker = match[1];
-            for (let j = 0; j < marker.length; j++) {
-                normalized += marker[j];
-                indexMap.push(map[matchIndex + 1 + j]);
-            }
-            lastIndex = matchIndex + match[0].length;
-        }
-        for (let i = lastIndex; i < text.length; i++) {
-            normalized += text[i];
-            indexMap.push(map[i]);
-        }
-        return { normalized, indexMap };
-    };
-
-    const removeEscapedBrackets = (text: string, map: number[]) => {
-        let normalized = '';
-        const indexMap: number[] = [];
-        for (let i = 0; i < text.length; i++) {
-            if (text[i] === '\\' && text[i + 1] === '[') {
                 i++;
-                normalized += '[';
-                indexMap.push(map[i]);
                 continue;
             }
+            normalized += '\n';
+            indexMap.push(i);
+            continue;
+        }
+        normalized += ch;
+        indexMap.push(i);
+    }
+    return { indexMap, normalized };
+};
+
+const insertNewlinesBeforeMergedMarkers = (text: string, map: number[]) => {
+    const mergedMarkerNoSpacePattern = new RegExp(
+        `([^\\s\\n])(${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
+        'g',
+    );
+    let normalized = '';
+    const indexMap: number[] = [];
+    let lastIndex = 0;
+    for (const match of text.matchAll(mergedMarkerNoSpacePattern)) {
+        const matchIndex = match.index ?? 0;
+        for (let i = lastIndex; i < matchIndex; i++) {
             normalized += text[i];
             indexMap.push(map[i]);
         }
-        return { normalized, indexMap };
-    };
+        normalized += match[1];
+        indexMap.push(map[matchIndex]);
+        normalized += '\n';
+        indexMap.push(map[matchIndex]);
+        const marker = match[2];
+        for (let j = 0; j < marker.length; j++) {
+            normalized += marker[j];
+            indexMap.push(map[matchIndex + 1 + j]);
+        }
+        lastIndex = matchIndex + match[0].length;
+    }
+    for (let i = lastIndex; i < text.length; i++) {
+        normalized += text[i];
+        indexMap.push(map[i]);
+    }
+    return { indexMap, normalized };
+};
 
+const replaceSpaceBeforeMarkerWithNewline = (text: string, map: number[]) => {
+    const mergedMarkerWithSpacePattern = new RegExp(
+        ` (${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes})`,
+        'g',
+    );
+    let normalized = '';
+    const indexMap: number[] = [];
+    let lastIndex = 0;
+    for (const match of text.matchAll(mergedMarkerWithSpacePattern)) {
+        const matchIndex = match.index ?? 0;
+        for (let i = lastIndex; i < matchIndex; i++) {
+            normalized += text[i];
+            indexMap.push(map[i]);
+        }
+        normalized += '\n';
+        indexMap.push(map[matchIndex]);
+        const marker = match[1];
+        for (let j = 0; j < marker.length; j++) {
+            normalized += marker[j];
+            indexMap.push(map[matchIndex + 1 + j]);
+        }
+        lastIndex = matchIndex + match[0].length;
+    }
+    for (let i = lastIndex; i < text.length; i++) {
+        normalized += text[i];
+        indexMap.push(map[i]);
+    }
+    return { indexMap, normalized };
+};
+
+const removeEscapedBrackets = (text: string, map: number[]) => {
+    let normalized = '';
+    const indexMap: number[] = [];
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === '\\' && text[i + 1] === '[') {
+            i++;
+            normalized += '[';
+            indexMap.push(map[i]);
+            continue;
+        }
+        normalized += text[i];
+        indexMap.push(map[i]);
+    }
+    return { indexMap, normalized };
+};
+
+export const normalizeTranslationTextWithMap = (content: string) => {
     const lineEndingNormalized = normalizeLineEndingsWithMap(content);
-    const insertedNewlines = insertNewlinesBeforeMergedMarkers(lineEndingNormalized.normalized, lineEndingNormalized.indexMap);
+    const insertedNewlines = insertNewlinesBeforeMergedMarkers(
+        lineEndingNormalized.normalized,
+        lineEndingNormalized.indexMap,
+    );
     const spaceReplaced = replaceSpaceBeforeMarkerWithNewline(insertedNewlines.normalized, insertedNewlines.indexMap);
     return removeEscapedBrackets(spaceReplaced.normalized, spaceReplaced.indexMap);
 };
@@ -213,4 +216,70 @@ export const splitResponseById = (text: string) => {
     return map;
 };
 
+/**
+ * Build a regex alternation for speaker labels (with trailing colon).
+ *
+ * @param labels - Speaker labels without trailing colons
+ * @returns Regex alternation string (no flags)
+ */
+export const buildSpeakerLabelPattern = (labels: string[]) => {
+    const parts = labels.map((label) => `${escapeRegExp(label)}\\s*:`).join('|');
+    return `(?:${parts})`;
+};
+
+/**
+ * Build a regex alternation for punctuation tokens.
+ *
+ * @param punctuation - Punctuation tokens to include
+ * @returns Regex alternation string (no flags)
+ */
+export const buildPunctuationPattern = (punctuation: string[]) =>
+    punctuation.map((token) => escapeRegExp(token)).join('|');
+
+/**
+ * Build a line-start regex for speaker labels, accounting for optional "ID - " prefix.
+ *
+ * @param labels - Speaker labels without trailing colons
+ * @returns RegExp that matches line-start labels (with optional ID prefix)
+ */
+export const buildLineStartLabelPattern = (labels: string[]) => {
+    const labelPattern = buildSpeakerLabelPattern(labels);
+    const { dashes, optionalSpace } = TRANSLATION_MARKER_PARTS;
+    return new RegExp(`^(?:${MARKER_ID_PATTERN}${optionalSpace}${dashes}\\s*)?(${labelPattern})`);
+};
+
+/**
+ * Infer repeated speaker labels from the text (only labels that appear 2+ times).
+ *
+ * @param text - Full translation text
+ * @returns Labels ordered by first appearance
+ */
+export const inferSpeakerLabels = (text: string) => {
+    const counts = new Map<string, { count: number; firstIndex: number }>();
+
+    for (const match of text.matchAll(SPEAKER_LABEL_GUESS_PATTERN)) {
+        const label = match[1];
+        if (!label) {
+            continue;
+        }
+        const entry = counts.get(label);
+        if (entry) {
+            entry.count += 1;
+        } else {
+            counts.set(label, { count: 1, firstIndex: match.index ?? 0 });
+        }
+    }
+
+    return [...counts.entries()]
+        .filter(([, info]) => info.count >= 2)
+        .sort((a, b) => a[1].firstIndex - b[1].firstIndex)
+        .map(([label]) => label);
+};
+
+/**
+ * Escape special regex characters in a literal string.
+ *
+ * @param s - Raw string to escape
+ * @returns Escaped string safe for RegExp construction
+ */
 export const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

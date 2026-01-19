@@ -30,6 +30,7 @@ export type ValidationErrorType =
     | 'length_mismatch'
     | 'all_caps'
     | 'archaic_register'
+    | 'god_usage'
     | 'multiword_translit_without_gloss';
 
 /**
@@ -71,6 +72,9 @@ export type ValidationError = {
     range: Range;
     matchText: string;
     id?: string;
+    /**
+     * Stable rule identifier for tooling/triage; may be more specific than type.
+     */
     ruleId?: string;
 };
 
@@ -92,7 +96,7 @@ export type FixConfig = {
      * Speaker labels to recognize when fixing collapsed speaker lines.
      * Example: ["Questioner", "The Shaykh", "Mu'adhdhin"]
      */
-    speakerLabels: string[];
+    speakerLabels?: string[];
     /**
      * Punctuation tokens that may appear before a collapsed speaker label.
      * These are used to detect " ... The Shaykh:" and similar patterns.

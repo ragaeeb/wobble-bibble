@@ -124,6 +124,20 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         expectErrorTypes(result, []);
     });
 
+    it('should detect forbidden God usage when the source contains Allah', () => {
+        const segments = [{ id: 'P1', text: 'قال الله' }];
+        const response = `P1 - God said.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['god_usage']);
+    });
+
+    it('should not flag God usage when the source does not contain Allah', () => {
+        const segments = [{ id: 'P1', text: 'قال إله' }];
+        const response = `P1 - God is mentioned.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, []);
+    });
+
     it('should emit one arabic_leak error per segment (longest Arabic run)', () => {
         const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - الله الله الله الله الله.`;
@@ -393,7 +407,9 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response = `P1 - A sufficiently long translation.\nP3 - A sufficiently long translation.`;
         const result = validateTranslationResponse(segments, response);
         expectErrorTypes(result, ['missing_id_gap']);
-        expect(result.errors.find((e) => e.type === 'missing_id_gap')?.message).toContain('P2');
+        expect(result.errors.find((e) => e.type === 'missing_id_gap')?.message).toBe(
+            'Missing segment ID detected between translated IDs: "P2"',
+        );
     });
 
     it('should not detect missing-ID gaps when response order resets (P3 then P1)', () => {
@@ -417,7 +433,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const response = `helloP1 - One\\[two]\nP2 - Two`;
         const result = validateTranslationResponse(segments, response);
         expect(result.parsedIds).toEqual(['P1', 'P2']);
-        expect(result.normalizedResponse).toContain('One[two]');
+        expect(result.normalizedResponse).toBe('hello\nP1 - One[two]\nP2 - Two');
     });
 
     it('should include match ranges for arabic_leak', () => {
