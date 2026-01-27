@@ -1,4 +1,5 @@
 export { MARKER_ID_PATTERN, Markers, TRANSLATION_MARKER_PARTS } from './constants';
+export { fixAll, fixCollapsedSpeakerLines } from './fix';
 export type { PromptId, PromptMetadata, StackedPrompt } from './prompts';
 export {
     getMasterPrompt,
@@ -17,19 +18,17 @@ export {
     parseTranslationsInOrder,
 } from './textUtils';
 
-export { fixAll, fixCollapsedSpeakerLines } from './fix';
-
 export type {
-    FixConfig,
     FixAllOptions,
+    FixConfig,
     FixResult,
     Range,
     Segment,
     TranslationMarker,
+    ValidationConfig,
     ValidationContext,
     ValidationError,
     ValidationErrorType,
-    ValidationConfig,
     ValidationResponseResult,
     ValidationRule,
 } from './types';

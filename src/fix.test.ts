@@ -64,7 +64,7 @@ describe('fixAll', () => {
         const input = `P1 - Questioner: Hi. The Shaykh: Hello.`;
         const result = fixAll(input, {
             config: { speakerLabels: ['Questioner', 'The Shaykh'] },
-            types: ['mismatched_colons'],
+            types: ['collapsed_speakers'],
         });
         expect(result.text).toBe(`P1 - Questioner: Hi.\nThe Shaykh: Hello.`);
         expect(result.counts.fixCollapsedSpeakerLines).toBe(1);

@@ -6,12 +6,14 @@
     "dependencies": {},
     "description": "TypeScript library for Islamic text translation prompts with LLM output validation and prompt stacking utilities.",
     "devDependencies": {
-        "@biomejs/biome": "^2.3.11",
+        "@biomejs/biome": "^2.3.13",
         "@types/bun": "^1.3.6",
-        "@types/node": "^25.0.9",
+        "@types/node": "^25.0.10",
         "semantic-release": "^25.0.2",
-        "tsdown": "^0.20.0-beta.3",
-        "typescript": "^5.9.3"
+        "ts-to-zod": "^5.1.0",
+        "tsdown": "^0.20.1",
+        "typescript": "^5.9.3",
+        "zod": "^4.3.6"
     },
     "engines": {
         "bun": ">=1.3.6",
@@ -50,6 +52,7 @@
     "scripts": {
         "build": "bun run generate && bunx tsc -p tsconfig.build.json --noEmit && tsdown",
         "generate": "bun run scripts/generate-prompts.ts",
+        "generate:schemas": "ts-to-zod scripts/types/chatgpt.ts src/schemas/chatgpt.zod.ts && ts-to-zod src/types/gemini.ts src/schemas/gemini.zod.ts && ts-to-zod src/types/grok.ts src/schemas/grok.zod.ts",
         "lint": "biome check .",
         "test": "bun test src/ tests/",
         "test:dist": "bun run build && bun test tests/dist.test.ts"
@@ -58,7 +61,7 @@
     "source": "src/index.ts",
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "workspaces": [
         "agents/*",
         "scripts/*"

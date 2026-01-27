@@ -44,12 +44,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     empty_parentheses: {
         description: 'Excessive "()" patterns detected, often indicating failed/empty term-pairs.',
     },
-    god_usage: {
-        description: 'Forbidden "God" usage detected where "Allah" should be used.',
-    },
-    implicit_continuation: {
-        description: 'The response includes continuation/meta phrasing (e.g., "continued:", "implicit continuation").',
-    },
     invalid_marker_format: {
         description: 'A segment marker line is malformed (e.g., wrong ID shape or missing content after the dash).',
     },
@@ -58,13 +52,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
     length_mismatch: {
         description: 'Translation appears too short relative to Arabic source (heuristic truncation check).',
-    },
-    meta_talk: {
-        description: 'The response includes translator/editor notes instead of pure translation.',
-    },
-    mismatched_colons: {
-        description:
-            'Per-segment mismatch between Arabic and translation line-start speaker labels (detected as line-start prefixes ending in ":").',
     },
     missing_id_gap: {
         description:
@@ -81,9 +68,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
     truncated_segment: {
         description: 'A segment appears truncated (e.g., only "…", "...", or "[INCOMPLETE]").',
-    },
-    wrong_diacritics: {
-        description: 'Wrong diacritics like â/ã/á were detected (should use macrons like ā ī ū).',
     },
 } as const satisfies Record<ValidationErrorType, { description: string }>;
 
@@ -570,62 +554,6 @@ const validateTruncatedSegments = (context: ValidationContext): ValidationError[
 };
 
 /**
- * Detect implicit continuation markers.
- *
- * @example
- * validateImplicitContinuation('P1 - continued: ...')[0]?.type === 'implicit_continuation'
- */
-const validateImplicitContinuation = (context: ValidationContext): ValidationError[] => {
-    const patterns = [/implicit continuation/gi, /\bcontinuation:/gi, /\bcontinued:/gi];
-    const errors: ValidationError[] = [];
-    for (const pattern of patterns) {
-        for (const match of context.normalizedResponse.matchAll(pattern)) {
-            const matchText = match[0];
-            const idx = match.index ?? 0;
-            errors.push(
-                makeErrorFromNormalized(
-                    context,
-                    'implicit_continuation',
-                    `Detected "${matchText}" - do not add implicit continuation text`,
-                    matchText,
-                    idx,
-                    idx + matchText.length,
-                ),
-            );
-        }
-    }
-    return errors;
-};
-
-/**
- * Detect meta-talk (translator/editor notes).
- *
- * @example
- * validateMetaTalk("P1 - (Translator's note: ...)")[0]?.type === 'meta_talk'
- */
-const validateMetaTalk = (context: ValidationContext): ValidationError[] => {
-    const patterns = [/\(note:/gi, /\(translator'?s? note:/gi, /\[editor:/gi, /\[note:/gi, /\(ed\.:/gi, /\(trans\.:/gi];
-    const errors: ValidationError[] = [];
-    for (const pattern of patterns) {
-        for (const match of context.normalizedResponse.matchAll(pattern)) {
-            const matchText = match[0];
-            const idx = match.index ?? 0;
-            errors.push(
-                makeErrorFromNormalized(
-                    context,
-                    'meta_talk',
-                    `Detected meta-talk "${matchText}" - output translation only, no translator/editor notes`,
-                    matchText,
-                    idx,
-                    idx + matchText.length,
-                ),
-            );
-        }
-    }
-    return errors;
-};
-
-/**
  * Detect Arabic script characters (except ﷺ).
  *
  * @example
@@ -671,32 +599,6 @@ const validateArabicLeak = (context: ValidationContext): ValidationError[] => {
         );
     }
 
-    return errors;
-};
-
-/**
- * Detect wrong diacritics (â/ã/á) that indicate failed ALA-LC macrons.
- *
- * @example
- * validateWrongDiacritics('kâfir')[0]?.type === 'wrong_diacritics'
- */
-const validateWrongDiacritics = (context: ValidationContext): ValidationError[] => {
-    const wrongPattern = /[âêîôûãñéíóú]/gi;
-    const errors: ValidationError[] = [];
-    for (const match of context.normalizedResponse.matchAll(wrongPattern)) {
-        const matchText = match[0];
-        const idx = match.index ?? 0;
-        errors.push(
-            makeErrorFromNormalized(
-                context,
-                'wrong_diacritics',
-                `Wrong diacritic "${matchText}" detected - use macrons (ā, ī, ū) instead`,
-                matchText,
-                idx,
-                idx + matchText.length,
-            ),
-        );
-    }
     return errors;
 };
 
@@ -833,42 +735,6 @@ const validateArchaicRegister = (context: ValidationContext): ValidationError[] 
     return errors;
 };
 
-/**
- * Detect forbidden "God" usage when the source Arabic includes الله.
- */
-const validateGodUsage = (context: ValidationContext): ValidationError[] => {
-    const errors: ValidationError[] = [];
-    const godPattern = /\bGod(?:'s|’s|s)?\b/g;
-    const allahPattern = /الله/;
-
-    for (const marker of context.markers) {
-        const seg = context.segmentById.get(marker.id);
-        if (!seg || !allahPattern.test(seg.text)) {
-            continue;
-        }
-        const translation = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd);
-        for (const match of translation.matchAll(godPattern)) {
-            const matchText = match[0];
-            const idx = match.index ?? 0;
-            const normalizedStart = marker.translationStart + idx;
-            const normalizedEnd = normalizedStart + matchText.length;
-            errors.push(
-                makeErrorFromNormalized(
-                    context,
-                    'god_usage',
-                    `Forbidden "God" usage detected in "${marker.id}" - use "Allah" when the source contains الله`,
-                    matchText,
-                    normalizedStart,
-                    normalizedEnd,
-                    marker.id,
-                ),
-            );
-        }
-    }
-
-    return errors;
-};
-
 type LineStartLabelCounts = {
     total: number;
     prefixes: Map<string, number>;
@@ -910,44 +776,6 @@ const getLineStartLabelCounts = (text: string): LineStartLabelCounts => {
 };
 
 /**
- * Detect per-segment mismatch in colon counts between Arabic segment text and its translation chunk.
- *
- * This is intentionally heuristic and avoids hardcoding speaker label tokens.
- *
- * @example
- * // Arabic: "الشيخ: ... السائل: ..." => 2 colons
- * // Translation: "The Shaykh: ..." => 1 colon => mismatched_colons
- */
-const validateMismatchedColons = (context: ValidationContext): ValidationError[] => {
-    const errors: ValidationError[] = [];
-
-    for (const marker of context.markers) {
-        const seg = context.segmentById.get(marker.id);
-        if (!seg) {
-            continue;
-        }
-
-        const arabicLabels = getLineStartLabelCounts(seg.text);
-        const translation = context.normalizedResponse.slice(marker.translationStart, marker.translationEnd);
-        const englishLabels = getLineStartLabelCounts(translation);
-
-        if (arabicLabels.total !== englishLabels.total && (arabicLabels.total > 0 || englishLabels.total > 0)) {
-            errors.push(
-                makeErrorFromRawRange(
-                    'mismatched_colons',
-                    `Speaker label count mismatch in "${marker.id}": Arabic has ${arabicLabels.total} line-start labels but translation has ${englishLabels.total}. This may indicate dropped/moved speaker turns or formatting drift.`,
-                    translation.trim(),
-                    { end: marker.rawTranslationEnd, start: marker.rawTranslationStart },
-                    marker.id,
-                ),
-            );
-        }
-    }
-
-    return errors;
-};
-
-/**
  * Detect collapsed speaker labels that appear mid-line instead of at line start.
  *
  * This uses translation line-start labels as the reference set, then flags
@@ -958,7 +786,8 @@ const findCollapsedSpeakerLabel = (text: string) => {
     if (lineStartLabels.size === 0) {
         return;
     }
-    const labelPattern = [...lineStartLabels.keys()].map((label) => escapeRegExp(label)).join('|');
+    const detectedLabels = [...lineStartLabels.keys()];
+    const labelPattern = detectedLabels.map((label) => escapeRegExp(label)).join('|');
     if (!labelPattern) {
         return;
     }
@@ -969,7 +798,7 @@ const findCollapsedSpeakerLabel = (text: string) => {
         for (const match of line.matchAll(pattern)) {
             const idx = match.index ?? 0;
             if (idx > 0) {
-                return { index: offset + idx, label: match[1] };
+                return { detectedLabels, index: offset + idx, label: match[1] };
             }
         }
         offset += line.length + 1;
@@ -990,11 +819,13 @@ const validateCollapsedSpeakers = (context: ValidationContext): ValidationError[
         }
         const normalizedStart = marker.translationStart + matched.index;
         const normalizedEnd = normalizedStart + matched.label.length + 1;
+        const detectedLabelList =
+            matched.detectedLabels && matched.detectedLabels.length > 0 ? matched.detectedLabels.join(', ') : 'none';
         errors.push(
             makeErrorFromNormalized(
                 context,
                 'collapsed_speakers',
-                `Collapsed speaker label detected in "${marker.id}": "${matched.label}:" should start on a new line`,
+                `Collapsed speaker label detected in "${marker.id}": "${matched.label}:" should start on a new line. Detected line-start labels: ${detectedLabelList}`,
                 `${matched.label}:`,
                 normalizedStart,
                 normalizedEnd,
@@ -1050,27 +881,23 @@ const validateMultiwordTranslitWithoutGloss = (context: ValidationContext): Vali
     return errors;
 };
 
-const DEFAULT_RULES: ValidationRule[] = [
-    { id: 'invalid_marker_format', run: validateMarkerFormat, type: 'invalid_marker_format' },
-    { id: 'newline_after_id', run: validateNewlineAfterId, type: 'newline_after_id' },
-    { id: 'truncated_segment', run: validateTruncatedSegments, type: 'truncated_segment' },
-    { id: 'implicit_continuation', run: validateImplicitContinuation, type: 'implicit_continuation' },
-    { id: 'meta_talk', run: validateMetaTalk, type: 'meta_talk' },
-    { id: 'duplicate_id', run: validateDuplicateIds, type: 'duplicate_id' },
-    { id: 'invented_id', run: validateInventedIds, type: 'invented_id' },
-    { id: 'missing_id_gap', run: validateMissingIdGaps, type: 'missing_id_gap' },
-    { id: 'arabic_leak', run: validateArabicLeak, type: 'arabic_leak' },
-    { id: 'wrong_diacritics', run: validateWrongDiacritics, type: 'wrong_diacritics' },
-    { id: 'empty_parentheses', run: validateEmptyParentheses, type: 'empty_parentheses' },
-    { id: 'length_mismatch', run: validateTranslationLengthsForResponse, type: 'length_mismatch' },
-    { id: 'all_caps', run: validateAllCaps, type: 'all_caps' },
-    { id: 'archaic_register', run: validateArchaicRegister, type: 'archaic_register' },
-    { id: 'god_usage', run: validateGodUsage, type: 'god_usage' },
-    { id: 'mismatched_colons', run: validateMismatchedColons, type: 'mismatched_colons' },
-    { id: 'collapsed_speakers', run: validateCollapsedSpeakers, type: 'collapsed_speakers' },
-    {
-        id: 'multiword_translit_without_gloss',
-        run: validateMultiwordTranslitWithoutGloss,
-        type: 'multiword_translit_without_gloss',
-    },
+const DEFAULT_RULE_DEFS: ReadonlyArray<{
+    id: ValidationErrorType;
+    run: (context: ValidationContext) => ValidationError[];
+}> = [
+    { id: 'invalid_marker_format', run: validateMarkerFormat },
+    { id: 'newline_after_id', run: validateNewlineAfterId },
+    { id: 'truncated_segment', run: validateTruncatedSegments },
+    { id: 'duplicate_id', run: validateDuplicateIds },
+    { id: 'invented_id', run: validateInventedIds },
+    { id: 'missing_id_gap', run: validateMissingIdGaps },
+    { id: 'arabic_leak', run: validateArabicLeak },
+    { id: 'empty_parentheses', run: validateEmptyParentheses },
+    { id: 'length_mismatch', run: validateTranslationLengthsForResponse },
+    { id: 'all_caps', run: validateAllCaps },
+    { id: 'archaic_register', run: validateArchaicRegister },
+    { id: 'collapsed_speakers', run: validateCollapsedSpeakers },
+    { id: 'multiword_translit_without_gloss', run: validateMultiwordTranslitWithoutGloss },
 ];
+
+const DEFAULT_RULES: ValidationRule[] = DEFAULT_RULE_DEFS.map((rule) => ({ ...rule, type: rule.id }));
