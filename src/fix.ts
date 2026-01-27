@@ -87,7 +87,6 @@ export const fixCollapsedSpeakerLines = (text: string, config?: FixConfig): FixR
 
 const FIXERS_BY_TYPE: Partial<Record<ValidationErrorType, (text: string, config?: FixConfig) => FixResult>> = {
     collapsed_speakers: fixCollapsedSpeakerLines,
-    mismatched_colons: fixCollapsedSpeakerLines,
 };
 
 /**

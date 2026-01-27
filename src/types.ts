@@ -19,18 +19,13 @@ export type ValidationErrorType =
     | 'duplicate_id'
     | 'invented_id'
     | 'missing_id_gap'
-    | 'mismatched_colons'
     | 'collapsed_speakers'
     | 'truncated_segment'
-    | 'implicit_continuation'
-    | 'meta_talk'
     | 'arabic_leak'
-    | 'wrong_diacritics'
     | 'empty_parentheses'
     | 'length_mismatch'
     | 'all_caps'
     | 'archaic_register'
-    | 'god_usage'
     | 'multiword_translit_without_gloss';
 
 /**
