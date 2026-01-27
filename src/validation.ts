@@ -48,7 +48,7 @@ export const VALIDATION_ERROR_TYPE_INFO = {
         description: 'Forbidden "God" usage detected where "Allah" should be used.',
     },
     implicit_continuation: {
-        description: 'The response includes continuation/meta phrasing (e.g., "continued:", "implicit continuation").',
+        description: 'Text appears to continue a previous segment without an explicit ID marker.',
     },
     invalid_marker_format: {
         description: 'A segment marker line is malformed (e.g., wrong ID shape or missing content after the dash).',
@@ -570,34 +570,6 @@ const validateTruncatedSegments = (context: ValidationContext): ValidationError[
 };
 
 /**
- * Detect implicit continuation markers.
- *
- * @example
- * validateImplicitContinuation('P1 - continued: ...')[0]?.type === 'implicit_continuation'
- */
-const validateImplicitContinuation = (context: ValidationContext): ValidationError[] => {
-    const patterns = [/implicit continuation/gi, /\bcontinuation:/gi, /\bcontinued:/gi];
-    const errors: ValidationError[] = [];
-    for (const pattern of patterns) {
-        for (const match of context.normalizedResponse.matchAll(pattern)) {
-            const matchText = match[0];
-            const idx = match.index ?? 0;
-            errors.push(
-                makeErrorFromNormalized(
-                    context,
-                    'implicit_continuation',
-                    `Detected "${matchText}" - do not add implicit continuation text`,
-                    matchText,
-                    idx,
-                    idx + matchText.length,
-                ),
-            );
-        }
-    }
-    return errors;
-};
-
-/**
  * Detect meta-talk (translator/editor notes).
  *
  * @example
@@ -1054,7 +1026,6 @@ const DEFAULT_RULES: ValidationRule[] = [
     { id: 'invalid_marker_format', run: validateMarkerFormat, type: 'invalid_marker_format' },
     { id: 'newline_after_id', run: validateNewlineAfterId, type: 'newline_after_id' },
     { id: 'truncated_segment', run: validateTruncatedSegments, type: 'truncated_segment' },
-    { id: 'implicit_continuation', run: validateImplicitContinuation, type: 'implicit_continuation' },
     { id: 'meta_talk', run: validateMetaTalk, type: 'meta_talk' },
     { id: 'duplicate_id', run: validateDuplicateIds, type: 'duplicate_id' },
     { id: 'invented_id', run: validateInventedIds, type: 'invented_id' },
@@ -1070,6 +1041,7 @@ const DEFAULT_RULES: ValidationRule[] = [
     { id: 'collapsed_speakers', run: validateCollapsedSpeakers, type: 'collapsed_speakers' },
     {
         id: 'multiword_translit_without_gloss',
+
         run: validateMultiwordTranslitWithoutGloss,
         type: 'multiword_translit_without_gloss',
     },

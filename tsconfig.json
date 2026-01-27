@@ -28,5 +28,5 @@
         "verbatimModuleSyntax": true
     },
     "exclude": ["node_modules"],
-    "include": ["src/**/*", ".generated/**/*", "tests/**/*"]
+    "include": ["src/**/*", ".generated/**/*", "tests/**/*", "scripts/llm-json-parser/**/*"]
 }

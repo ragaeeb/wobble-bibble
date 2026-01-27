@@ -11,7 +11,7 @@ export default defineConfig({
         '@generated': path.resolve(__dirname, '.generated'),
     },
     clean: true,
-    // dts: true,
+    dts: true,
     entry: ['src/index.ts'],
     // Prevent treating unresolved as external
     external: [],

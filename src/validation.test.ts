@@ -84,20 +84,6 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         expectErrorTypes(result, ['truncated_segment', 'truncated_segment', 'truncated_segment']);
     });
 
-    it('should detect implicit continuation and meta-talk', () => {
-        const segments = [{ id: 'P1', text: 'نعم' }];
-        const response = `P1 - implicit continuation (Translator's note: hi)`;
-        const result = validateTranslationResponse(segments, response);
-        expectErrorTypes(result, ['implicit_continuation', 'meta_talk']);
-    });
-
-    it('should report multiple error types in a single segment', () => {
-        const segments = [{ id: 'P1', text: 'نعم' }];
-        const response = `P1 - implicit continuation (Translator's note: hi) الله`;
-        const result = validateTranslationResponse(segments, response);
-        expectErrorTypes(result, ['arabic_leak', 'implicit_continuation', 'meta_talk']);
-    });
-
     it('should detect Arabic leakage even inside quotes/brackets', () => {
         const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - He quoted «واللاتي تخافون نشوزهن».`;
@@ -479,7 +465,6 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
 P2 - THIS IS VERY LOUD INDEED.
 P1 - And this has الله inside.
 P2 - (Note: meta talk here).
-P1 - Continued: implicit.
 P2 - kâfir diacritic.
 `;
         const result = validateTranslationResponse(segments, response);
@@ -499,10 +484,6 @@ P2 - kâfir diacritic.
         // Meta Talk in P2
         const meta = result.errors.find((e) => e.type === 'meta_talk');
         expect(meta?.id).toBe('P2');
-
-        // Implicit Continuation in P1
-        const continuation = result.errors.find((e) => e.type === 'implicit_continuation');
-        expect(continuation?.id).toBe('P1');
 
         // Wrong Diacritics in P2
         const diacritic = result.errors.find((e) => e.type === 'wrong_diacritics');
