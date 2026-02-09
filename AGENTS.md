@@ -119,7 +119,7 @@ If using **single‑packet mode** with `prompt.txt`, ensure the prompt lists ONL
 
 **Option A: General Health Check (All Prompts)**
 ```bash
-code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "docs/agents.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
 ```
 
 **Option B: Specific Proposal Review (Targeted)**
@@ -129,7 +129,7 @@ Use this when asking agents to review a specific fix. You MUST include the relev
 ```bash
 code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
   -i "README.md" \
-  -i "docs/agents.md" \
+  -i "AGENTS.md" \
   -i "docs/refinement-guide.md" \
   -i "prompts/master_prompt.md" \
   -i "prompts/encyclopedia_mixed.md" \

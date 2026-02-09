@@ -61,9 +61,5 @@
     "source": "src/index.ts",
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "1.5.2",
-    "workspaces": [
-        "agents/*",
-        "scripts/*"
-    ]
+    "version": "1.5.2"
 }
