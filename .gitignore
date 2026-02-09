@@ -6,6 +6,7 @@ node_modules
 # production
 /tmp
 /bugs
+/extracted_bugs
 
 # misc
 .DS_Store

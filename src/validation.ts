@@ -1,5 +1,4 @@
 import {
-    ARCHAIC_WORDS,
     MARKER_ID_PATTERN,
     MAX_EMPTY_PARENTHESES,
     MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK,
@@ -31,9 +30,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
     },
     arabic_leak: {
         description: 'Arabic script was detected in output (except ﷺ).',
-    },
-    archaic_register: {
-        description: 'Archaic/Biblical English detected (e.g., thou, verily, shalt).',
     },
     collapsed_speakers: {
         description: 'Speaker labels appear mid-line instead of starting on a new line.',
@@ -70,9 +66,6 @@ export const VALIDATION_ERROR_TYPE_INFO = {
         description: 'A segment appears truncated (e.g., only "…", "...", or "[INCOMPLETE]").',
     },
 } as const satisfies Record<ValidationErrorType, { description: string }>;
-
-const buildWordPattern = (words: readonly string[], flags = 'gi') =>
-    new RegExp(`\\b(?:${words.map((w) => escapeRegExp(w)).join('|')})\\b`, flags);
 
 const trimRange = (text: string, start: number, end: number) => {
     let s = start;
@@ -709,32 +702,6 @@ const validateAllCaps = (context: ValidationContext): ValidationError[] => {
     return errors;
 };
 
-/**
- * Detect archaic/Biblical register tokens.
- *
- * @example
- * validateArchaicRegister('verily thou shalt')[0]?.type === 'archaic_register'
- */
-const validateArchaicRegister = (context: ValidationContext): ValidationError[] => {
-    const pattern = buildWordPattern(ARCHAIC_WORDS);
-    const errors: ValidationError[] = [];
-    for (const match of context.normalizedResponse.matchAll(pattern)) {
-        const matchText = match[0];
-        const idx = match.index ?? 0;
-        errors.push(
-            makeErrorFromNormalized(
-                context,
-                'archaic_register',
-                `Archaic/Biblical register word detected: "${matchText}"`,
-                matchText,
-                idx,
-                idx + matchText.length,
-            ),
-        );
-    }
-    return errors;
-};
-
 type LineStartLabelCounts = {
     total: number;
     prefixes: Map<string, number>;
@@ -744,7 +711,7 @@ const getLineStartLabelCounts = (text: string): LineStartLabelCounts => {
     const prefixes = new Map<string, number>();
     const lines = text.split(/\n/);
     const maxPrefixLength = 28;
-    const maxWords = 3;
+    const maxWords = 2;
 
     for (const rawLine of lines) {
         const line = rawLine.trimStart();
@@ -895,7 +862,6 @@ const DEFAULT_RULE_DEFS: ReadonlyArray<{
     { id: 'empty_parentheses', run: validateEmptyParentheses },
     { id: 'length_mismatch', run: validateTranslationLengthsForResponse },
     { id: 'all_caps', run: validateAllCaps },
-    { id: 'archaic_register', run: validateArchaicRegister },
     { id: 'collapsed_speakers', run: validateCollapsedSpeakers },
     { id: 'multiword_translit_without_gloss', run: validateMultiwordTranslitWithoutGloss },
 ];

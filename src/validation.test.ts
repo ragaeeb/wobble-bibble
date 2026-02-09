@@ -141,7 +141,7 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
         const segments = [{ id: 'P1', text: 'نعم' }];
         const response = `P1 - VERILY, thou shalt go forth. THIS IS VERY VERY LOUD.`;
         const result = validateTranslationResponse(segments, response);
-        expectErrorTypes(result, ['all_caps', 'archaic_register', 'archaic_register', 'archaic_register']);
+        expectErrorTypes(result, ['all_caps']);
     });
 
     it('should not flag archaic register for words that contain archaic substrings (without)', () => {
@@ -206,6 +206,35 @@ P2 - This is also a sufficiently long English translation to avoid truncation ch
             },
         ];
         const response = `P1 - Questioner: Yes.\nThe Shaykh: Yes.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, []);
+    });
+
+    it('should ignore 3+ word prefixes even if they look like speaker labels (e.g. "Then he said:")', () => {
+        const segments = [{ id: 'P1', text: 'قال ثم: نعم' }];
+        // "Then he said:" is 3 words -> should be ignored
+        const response = `P1 - Then he said: This is a sentence.\nAnd here also Then he said: it appears mid-line.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, []);
+    });
+
+    it('should flag 1-word prefixes as speaker labels (e.g. "Shaykh:")', () => {
+        const segments = [{ id: 'P1', text: 'الشيخ: نعم' }];
+        const response = `P1 - Shaykh: Yes.\nThis is a sentence Shaykh: appears collapsed here.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['collapsed_speakers']);
+    });
+
+    it('should flag 2-word prefixes as speaker labels (e.g. "The Shaykh:")', () => {
+        const segments = [{ id: 'P1', text: 'الشيخ: نعم' }];
+        const response = `P1 - The Shaykh: Yes.\nThis is a sentence The Shaykh: appears collapsed here.`;
+        const result = validateTranslationResponse(segments, response);
+        expectErrorTypes(result, ['collapsed_speakers']);
+    });
+
+    it('should ignore 3-word prefixes like "He said that:" regardless of line position', () => {
+        const segments = [{ id: 'P1', text: 'قال ذلك: نعم' }];
+        const response = `P1 - He said that: Start line.\nMid line usage of He said that: test.`;
         const result = validateTranslationResponse(segments, response);
         expectErrorTypes(result, []);
     });
@@ -362,10 +391,6 @@ P1 - And this has الله inside.
 P2 - kâfir diacritic.
 `;
         const result = validateTranslationResponse(segments, response);
-
-        // Archaic in P1
-        const archaic = result.errors.find((e) => e.type === 'archaic_register');
-        expect(archaic?.id).toBe('P1');
 
         // All Caps in P2
         const allCaps = result.errors.find((e) => e.type === 'all_caps');

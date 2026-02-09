@@ -141,6 +141,7 @@ const error: ValidationError = {
 See `docs/refinement-guide.md` for the methodology used to develop and test these prompts.
 See `AI_REVIEW_PROMPT.md` for the peer-review prompt template used when sending round packets to external agents.
 See `docs/migration-guide.md` for breaking validation API changes and upgrade steps.
+This repository is now a single-package library (no workspace subpackages).
 
 ## License
 

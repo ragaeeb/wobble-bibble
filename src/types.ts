@@ -25,7 +25,6 @@ export type ValidationErrorType =
     | 'empty_parentheses'
     | 'length_mismatch'
     | 'all_caps'
-    | 'archaic_register'
     | 'multiword_translit_without_gloss';
 
 /**

@@ -72,6 +72,10 @@ This repo uses a “round-based” refinement loop. Each round corresponds to on
      - `examples_consolidated.txt`
      - the specific `prompts/*.md` files being changed (and, for big refactors, BEFORE + AFTER text in the packet).
    - If you want a single-file bundle, generate a `peer_review_context.txt` instead (see below).
+   - **Single‑packet mode (no prompt files attached)**: If reviewers will only receive `prompt.txt` + `02_peer_review_packet.md` + `01_synthesis.md` + `examples_consolidated.txt`, then `02_peer_review_packet.md` MUST be self‑contained:
+     - include minimal project context,
+     - include the exact prompt stack under review,
+     - include BEFORE/AFTER excerpts (or a diff) for every changed line.
 
 ### Single-file peer review bundle (recommended)
 Use this when you want one file that includes the reviewer prompt + evidence + project context.

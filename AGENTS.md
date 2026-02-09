@@ -110,10 +110,16 @@ To ensure the robustness of these prompts, we periodically run a "Peer Review" c
 
 ### 1. Generating Review Context
 We use `code2prompt` to bundle the entire project logic and instructions for the reviewing agents.
+**Critical**: If the review will only receive a **single packet file** (plus examples), that packet MUST be self-contained:
+- Include a **short project context** (mission + output format + core constraints like “no Arabic except ﷺ,” ID integrity, no Markdown).
+- Include the **exact prompt stack under review** and **BEFORE/AFTER excerpts** (or a diff) for every line being changed.
+- Include the **why** (failure patterns) and **evidence pointers**.
+Do not assume the reviewer knows what “master prompt” or “add-on” means.
+If using **single‑packet mode** with `prompt.txt`, ensure the prompt lists ONLY the attachments actually sent (typically: `02_peer_review_packet.md`, `01_synthesis.md`, `examples_consolidated.txt`). Do not mention `prompts/*.md` unless they are included.
 
 **Option A: General Health Check (All Prompts)**
 ```bash
-code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "docs/agents.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
+code2prompt -O PEER_REVIEW_CONTEXT.txt -i "README.md" -i "AGENTS.md" -i "docs/refinement-guide.md" -i "archive/reports/**" -i "prompts/*.md" .
 ```
 
 **Option B: Specific Proposal Review (Targeted)**
@@ -123,7 +129,7 @@ Use this when asking agents to review a specific fix. You MUST include the relev
 ```bash
 code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
   -i "README.md" \
-  -i "docs/agents.md" \
+  -i "AGENTS.md" \
   -i "docs/refinement-guide.md" \
   -i "prompts/master_prompt.md" \
   -i "prompts/encyclopedia_mixed.md" \
