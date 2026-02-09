@@ -10,13 +10,12 @@ const OUTPUT_DIR = path.resolve(process.cwd(), 'extracted_bugs');
  * Dynamically scans subdirectories in bugs/ and mirrors the structure in extracted_bugs/.
  */
 async function main() {
-    if (!fs.existsSync(OUTPUT_DIR)) {
-        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    }
-
     if (!fs.existsSync(BUGS_DIR)) {
         console.error(`Bugs directory not found at: ${BUGS_DIR}`);
         process.exit(1);
+    }
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
 
     // Get all subdirectories in the bugs folder
