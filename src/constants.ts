@@ -12,7 +12,7 @@ export enum Markers {
     Chapter = 'C',
     /** N - Note reference */
     Note = 'N',
-    /** P - Translation/Plain segment */
+    /** P - Plain segment */
     Plain = 'P',
 }
 
@@ -25,7 +25,7 @@ export const TRANSLATION_MARKER_PARTS = {
     /** Numeric portion of the reference */
     digits: '\\d+',
     /** Valid marker prefixes (Book, Chapter, Footnote, Translation, Page) */
-    markers: `[${Markers.Book}${Markers.Chapter}${Markers.Footnote}${Markers.Heading}${Markers.Plain}${Markers.Note}]`,
+    markers: `[${Object.values(Markers).join('')}]`,
     /** Optional whitespace before dash */
     optionalSpace: '\\s?',
     /** Valid single-letter suffixes */
@@ -36,23 +36,6 @@ export const TRANSLATION_MARKER_PARTS = {
  * Pattern for a segment ID (e.g., P1234, B45a).
  */
 export const MARKER_ID_PATTERN = `${TRANSLATION_MARKER_PARTS.markers}${TRANSLATION_MARKER_PARTS.digits}${TRANSLATION_MARKER_PARTS.suffix}?`;
-
-/**
- * English tokens that indicate archaic/Biblical register and should be flagged.
- */
-export const ARCHAIC_WORDS = [
-    'thee',
-    'thou',
-    'thine',
-    'thy',
-    'verily',
-    'shalt',
-    'hast',
-    'whence',
-    'henceforth',
-    'saith',
-    'behold',
-] as const;
 
 export const MAX_EMPTY_PARENTHESES = 3;
 export const MIN_ARABIC_LENGTH_FOR_TRUNCATION_CHECK = 50;
