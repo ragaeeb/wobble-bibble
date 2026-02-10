@@ -39,4 +39,5 @@ Use `docs/refinement-guide.md` as SOP. Each round produces:
 - `prompt.txt` (copy/paste reviewer prompt)
 - `reviews/` (peer feedback)
 
-Round artifacts live under `bug_reports/<round>/`.
+Round artifacts live under `bugs/rounds/<round>/`.
+Incoming case dumps often live under `extracted_bugs/<category>/` as JSON (`prompt`, `reasoning`, `response`).
