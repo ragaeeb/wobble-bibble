@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { parseLLMJson } from './llm-json-parser/index';
 
@@ -9,23 +10,15 @@ function shellEscape(value: string): string {
 }
 
 function dirExists(dirPath: string): boolean {
-    const result = Bun.spawnSync({
-        cmd: ['/bin/sh', '-c', `[ -d ${shellEscape(dirPath)} ]`],
-        stderr: 'ignore',
-        stdout: 'ignore',
-    });
-    return result.exitCode === 0;
+    try {
+        return fs.existsSync(dirPath);
+    } catch {
+        return false;
+    }
 }
 
 function ensureDir(dirPath: string): void {
-    const result = Bun.spawnSync({
-        cmd: ['mkdir', '-p', dirPath],
-        stderr: 'ignore',
-        stdout: 'ignore',
-    });
-    if (result.exitCode !== 0) {
-        throw new Error(`Failed to create directory: ${dirPath}`);
-    }
+    fs.mkdirSync(dirPath, { recursive: true });
 }
 
 /**
@@ -43,11 +36,16 @@ async function main() {
 
     // Get all subdirectories in the bugs folder
     const categories: string[] = [];
-    for await (const entry of new Bun.Glob('*/').scan(BUGS_DIR)) {
-        const name = entry.replace(/\/$/, '');
-        if (!name.startsWith('.')) {
-            categories.push(name);
+    try {
+        const entries = fs.readdirSync(BUGS_DIR, { withFileTypes: true });
+        for (const entry of entries) {
+            if (entry.isDirectory() && !entry.name.startsWith('.')) {
+                categories.push(entry.name);
+            }
         }
+    } catch (e) {
+        console.error('Failed to read bugs directory', e);
+        process.exit(1);
     }
 
     console.log(`Found ${categories.length} categories: ${categories.join(', ')}`);
@@ -61,8 +59,16 @@ async function main() {
         }
 
         const files: string[] = [];
-        for await (const entry of new Bun.Glob('*.json').scan(categoryDir)) {
-            files.push(entry);
+        try {
+            const entries = fs.readdirSync(categoryDir);
+            for (const file of entries) {
+                if (file.endsWith('.json')) {
+                    files.push(file);
+                }
+            }
+        } catch (e) {
+            console.error(`Failed to read category directory: ${category}`, e);
+            continue;
         }
 
         if (files.length === 0) {
