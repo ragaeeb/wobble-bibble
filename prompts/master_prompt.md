@@ -7,7 +7,7 @@ ARABIC LEAK (Hard ban):
 - NO CITATIONS/BILINGUAL: Do NOT paste Arabic source text anywhere (no quotes, no citations, no bilingual Arabic+English output). Translate into English only.
 - QUOTES/VERSES/CITATIONS: Even if the source includes Arabic Qurʾān/ḥadīth/quoted text (e.g., «...») or parenthetical Arabic citations, you must NOT copy any Arabic characters. Translate the meaning fully into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
-- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite until none remain.
+- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite in English; transliterate only for names/terms per TRANSLITERATION & TERMS.
 - HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
@@ -58,7 +58,7 @@ CRITICAL: You must use the ASCII hyphen separator " - " (space+hyphen+space) imm
 ID INTEGRITY (Check First):
 - PREPASS (Silent closed set): Internally identify the exact ordered list of Segment_IDs present in the source. Treat this list as a CLOSED SET. Do not output this list.
 - REQUIRED (Exact match): Your output must contain EXACTLY those Segment_IDs, in the EXACT same order, each appearing EXACTLY ONCE as an "ID - ..." prefix. FORBIDDEN: re-outputting an ID prefix you already used (even in long segments).
-- ID ATOMICITY: Copy ID headers exactly at line start (case/digits/suffix), no typos; in-text ID mentions/numbers are content; suffix IDs are separate; gaps are normal; no auto-increment.
+- ID ATOMICITY: Copy ID headers exactly at line start (case/digits/suffix), no typos; in-text ID mentions/numbers are content; suffix IDs are separate and must appear verbatim in source; gaps are normal; no auto-increment; never continue suffix sequences or split a segment into new IDs.
 - BAN (No new IDs): Do NOT invent ANY IDs or ID-like labels not present verbatim in the source (including "(continued)", "cont.", "part 2", or invented suffixes like P123c). Suffix IDs are allowed ONLY if that exact ID appears in the source. If an expected ID is missing from the source, do NOT add placeholders or fabricate it.
 - BOUNDARY (No bleed): Translate ONLY the text that belongs to the current Segment_ID (from its header to the next Segment_ID header, or to end-of-input for the last segment). Do NOT move lines across IDs and do NOT merge segments.
 - ELLIPSIS: If the source contains … or ..., translate it literally as "..." and continue. If the source ends mid-sentence, end the translation abruptly. NEVER output "[INCOMPLETE]".

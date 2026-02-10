@@ -47,7 +47,7 @@ This library externalizes prompt text files (`prompts/*.md`) from the code.
 ### Prompt Refinement Workflow (Round-based)
 Prompt development is an iterative research loop driven by real failure cases:
 - **SOP**: See `docs/refinement-guide.md` for the round workflow, required artifacts, and regression checklist.
-- **Peer review**: Use `AI_REVIEW_PROMPT.md` as the high-level reviewer template; round packets usually live under `bug_reports/<category>/` when running a refinement cycle.
+- **Peer review**: Use `AI_REVIEW_PROMPT.md` as the high-level reviewer template; round packets usually live under `bugs/rounds/<round>/` when running a refinement cycle.
 
 ## Directory Map for Agents
 
@@ -130,7 +130,6 @@ Use this when asking agents to review a specific fix. You MUST include the relev
 code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
   -i "README.md" \
   -i "AGENTS.md" \
-  -i "docs/refinement-guide.md" \
   -i "prompts/master_prompt.md" \
   -i "prompts/encyclopedia_mixed.md" \
   -i "archive/reports/2026-01-13-hallucinations/*" \
@@ -140,6 +139,7 @@ code2prompt -O PROPOSAL_REVIEW_PACKET.txt \
   .
 ```
 *Note: This command excludes the heavy `archive/benchmarks/` and `archive/reviews/` folders to keep context concise (~10-15k tokens).*
+*Reminder: Do NOT include `docs/refinement-guide.md` in peer-review bundles (process docs, not review context).*
 
 ### 2. Synthesis Methodology (The "Agent Stack" Protocol)
 If you are asked to synthesize feedback from new reviews, follow this logic:

@@ -52,15 +52,22 @@ Use these labels when filing an issue. Check all that apply.
 ## 4) Triage → Fix Workflow
 This repo uses a “round-based” refinement loop. Each round corresponds to one batch of reports for one (or a small set of related) failure modes.
 
+### Folder Glossary (Quick Map)
+- `extracted_bugs/<category>/`: Primary intake of reports as JSON (`prompt`, `reasoning`, `response`).
+- `bugs/rounds/<round>/`: Active refinement rounds and artifacts for a specific fix cycle.
+- `archive/reports/`: Historical reports/evidence referenced for peer review context.
+- `archive/benchmarks/`: Larger benchmark corpora; include only when needed.
+
 ### Round workflow (the process to follow)
 1. **Collect reports**
-   - Reports live under `bug_reports/<category>/` as `.txt` dumps.
-   - Each dump typically contains: (a) stacked prompt text, (b) Arabic input, (c) model output, (d) reasoning (if available).
+   - Primary intake: `extracted_bugs/<category>/` as JSON (`prompt`, `reasoning`, `response`).
+   - Legacy intake (if present): `bug_reports/<category>/` as `.txt` dumps.
+   - Each report typically contains: (a) stacked prompt text, (b) Arabic input, (c) model output, (d) reasoning (if available).
 2. **Synthesize + diagnose**
    - Read every report and validate what *actually* broke (don’t trust the user blurb blindly).
    - Extract repeated failure patterns and likely triggers.
    - Identify instruction collisions (master vs add-on) and “escape hatches” (idioms, formatting defaults, etc.).
-3. **Create the round artifacts (in the same `bug_reports/<category>/` folder)**
+3. **Create the round artifacts (in `bugs/rounds/<round>/`)**
    - `01_synthesis.md`: diagnosis + proposed fix + minimal diffs (and/or proposed rewritten blocks).
    - `02_peer_review_packet.md`: reviewer context + proposal + questions. Include BEFORE/AFTER full prompt text if the change is large; otherwise include a diff.
    - `examples_consolidated.txt`: small evidence bundle distilled from many reports (token-lean attachment).
@@ -81,18 +88,18 @@ This repo uses a “round-based” refinement loop. Each round corresponds to on
 Use this when you want one file that includes the reviewer prompt + evidence + project context.
 
 1. Ensure the round artifacts exist:
-   - `bug_reports/<round>/prompt.txt`
-   - `bug_reports/<round>/01_synthesis.md`
-   - `bug_reports/<round>/examples_consolidated.txt`
+   - `bugs/rounds/<round>/prompt.txt`
+   - `bugs/rounds/<round>/01_synthesis.md`
+   - `bugs/rounds/<round>/examples_consolidated.txt`
 2. Ensure project overview exists:
    - `docs/project_context.md`
 3. Include the exact prompt stack files used in the cases (example: `master_prompt.md` + `encyclopedia_mixed.md`).
 4. Run `code2prompt` with this exact command shape:
 ```bash
-code2prompt -O bug_reports/<round>/peer_review_context.txt \
-  -i "bug_reports/<round>/prompt.txt" \
-  -i "bug_reports/<round>/01_synthesis.md" \
-  -i "bug_reports/<round>/examples_consolidated.txt" \
+code2prompt -O bugs/rounds/<round>/peer_review_context.txt \
+  -i "bugs/rounds/<round>/prompt.txt" \
+  -i "bugs/rounds/<round>/01_synthesis.md" \
+  -i "bugs/rounds/<round>/examples_consolidated.txt" \
   -i "docs/project_context.md" \
   -i "prompts/master_prompt.md" \
   -i "prompts/encyclopedia_mixed.md" \
@@ -110,8 +117,8 @@ Notes:
 6. **Implement the fix**
    - Apply the agreed prompt edits in `prompts/`.
    - If the proposal is risky/large, create **sandbox variants** for trial runs (do not ship as canonical IDs):
-     - `bug_reports/<category>/master_prompt_new.md`
-     - `bug_reports/<category>/<addon>_new.md`
+     - `bugs/rounds/<round>/master_prompt_new.md`
+     - `bugs/rounds/<round>/<addon>_new.md`
 7. **Regenerate + regression-check**
    - Run `bun run generate` to refresh the bundled prompt output.
    - Run `bun test` to ensure prompt bundling and validators still pass.
