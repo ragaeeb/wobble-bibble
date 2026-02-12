@@ -2,6 +2,13 @@
 
 This SOP defines a disciplined loop for improving `prompts/*` using real failed/struggling runs. The goal is to fix model behavior (dithering, sanitization, hallucination, formatting drift) with minimal, testable prompt edits.
 
+## Token Budget Policy (Critical)
+- Prompt edits must be token-lean by default.
+- Prefer replacing/tightening existing lines over adding new lines.
+- Add text only when it closes an observed failure pattern from the current round evidence.
+- If two wordings are equally effective, choose the shorter one.
+- After peer review, run a final "lean pass" to remove redundant wording before shipping.
+
 ## 0) Key Premise: "Inheritance" in Web UIs
 "Inheritance" is conceptual only. Models cannot read files from this repo in a web UI.
 Always record the exact stacked prompt text you used: `master_prompt.md` pasted first + one add-on pasted below it.
@@ -116,6 +123,7 @@ Notes:
      - Updated final proposal and next steps
 6. **Implement the fix**
    - Apply the agreed prompt edits in `prompts/`.
+   - Keep the final patch token-lean (replace/compact first, add only if required by evidence).
    - If the proposal is risky/large, create **sandbox variants** for trial runs (do not ship as canonical IDs):
      - `bugs/rounds/<round>/master_prompt_new.md`
      - `bugs/rounds/<round>/<addon>_new.md`
@@ -150,4 +158,5 @@ Notes:
 - [ ] Does it fix the reported error in at least 1 real case?
 - [ ] Does it preserve Golden Rules (IDs, no Arabic output except ﷺ, no invented sources)?
 - [ ] Is it concise (token-lean) and unambiguous?
+- [ ] Is token delta minimized (replace/compress before adding new rules)?
 - [ ] Did you avoid creating new contradictions with existing prompts?
