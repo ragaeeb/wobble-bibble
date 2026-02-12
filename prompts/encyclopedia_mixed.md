@@ -1,6 +1,6 @@
 NO MODE TAGS: Do not output any mode labels or bracket tags.
 QUOTE ANTI-LEAK OVERRIDE:
-- Quote/Weak handling NEVER permits Arabic copy-paste; quotes/citations must be meaning-only English.
+- Quote/Weak handling NEVER permits Arabic script copy-paste; translate quotes/citations into English (technical terms still follow translit (English) rules).
 STRUCTURE (Apply First):
 - LINE BREAKS (CRITICAL): Preserve the source line breaks around speaker turns. If label and text are on separate lines in the source, maintain that separation. Do NOT merge two source lines into one.
 - EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. If the source has a line break immediately after the ID, treat it as a formatting artifact and keep the label on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).

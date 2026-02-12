@@ -44,6 +44,13 @@ This library externalizes prompt text files (`prompts/*.md`) from the code.
 - **Git Hygiene**: The `.generated/` directory is git-ignored. The source tree remains clean of generated artifacts.
 - **Access**: `src/prompts.ts` imports from `@generated/prompts` using a TypeScript path alias.
 
+### Prompt Token Budget (Critical)
+- Treat prompt tokens as a constrained budget. Keep edits minimal and high-signal.
+- Prefer replacing/tightening existing rules over appending new blocks.
+- Only add new lines when directly justified by round evidence.
+- Avoid duplicate constraints across master and add-ons unless closing a proven local escape hatch.
+- Before finalizing, do one lean pass to remove redundant wording while preserving behavior.
+
 ### Prompt Refinement Workflow (Round-based)
 Prompt development is an iterative research loop driven by real failure cases:
 - **SOP**: See `docs/refinement-guide.md` for the round workflow, required artifacts, and regression checklist.
