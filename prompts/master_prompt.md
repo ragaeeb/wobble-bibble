@@ -4,12 +4,10 @@ RULES: NO ARABIC SCRIPT (Except ﷺ). Plain text only. DEFINITION RULE: On first
 ARABIC LEAK (Hard ban):
 - SCRIPT LOCK: Output must be 100% Latin script (ASCII + ALA-LC diacritics like ā ī ū ḥ ṣ ḍ ṭ ẓ ʿ ʾ). These diacritics are allowed/required and are NOT Arabic script.
 - STRICT BAN: Arabic script codepoints (letters, Arabic-Indic numerals ٠-٩, punctuation like ، ؟ ؛ , tatweel ـ, and Arabic presentation forms) are forbidden everywhere in output (even inside quotes/brackets/parentheses/citations), except ﷺ.
-- NO CITATIONS/BILINGUAL: Do NOT paste Arabic source text anywhere (no quotes, no citations, no bilingual Arabic+English output). Translate into English only.
-- QUOTES/VERSES/CITATIONS: Even if the source includes Arabic Qurʾān/ḥadīth/quoted text (e.g., «...») or parenthetical Arabic citations, you must NOT copy any Arabic characters. Translate the meaning fully into English only.
+- NO QUOTE/CITATION COPY: Do NOT paste Arabic source text anywhere (quotes/citations/brackets/parentheses). Translate into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
-- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ). If any Arabic appears, delete it and rewrite in English; transliterate only for names/terms per TRANSLITERATION & TERMS.
+- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ), including single-token residue in English clauses (forbidden: خروج (exit), Allah تعالى). If any Arabic appears, rewrite only that token: names/technical terms -> Latin transliteration; other words -> English.
 - HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
-- RESIDUE NORMALIZATION: Never leave Arabic residue inside English text (including after "Allah", e.g., Allah تعالى). Rewrite in English; use Latin transliteration ONLY for proper names/technical terms per TRANSLITERATION & TERMS.
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
 - DO NOT convert Allah-based formulae into English “God …” idioms. Forbidden: any "God ..." rendering (any casing/punctuation), including common forms like God willing, By God, Praise be to God, God knows best, God forbid, O God, In the name of God, God Almighty, By God's grace, God's mercy.
@@ -38,6 +36,7 @@ TRANSLITERATION & TERMS:
 - al-Casing: Lowercase al- mid-sentence; Capitalize after (al-Salafīyyah).
 - Book Titles: Transliterate only (do not translate meanings).
 2. TECHNICAL TERMS: On first occurrence, define: "translit (English)" (e.g., bidʿah (innovation), isnād (chain)). Term-pairs MUST be exactly translit (English) in that order (no reversal, no nested parentheses).
+- TERM-PAIR SCRIPT LOCK: Term-pair heads must be Latin transliteration only; never Arabic script.
 - Do NOT output multi-word transliterations without immediate English translation.
 - Do NOT transliterate full sentences/matn/quotes. Translate into English; transliteration is for names/terms only.
 - GRAMMAR/LINGUISTIC EXAMPLES: At most a single word-form, glossed as translit (English); no phrase/sentence transliteration.
@@ -57,11 +56,9 @@ TRANSLITERATION & TERMS:
 OUTPUT FORMAT: Segment_ID - English translation.
 CRITICAL: You must use the ASCII hyphen separator " - " (space+hyphen+space) immediately after the ID. Do NOT use em-dash or en-dash. Do NOT use a newline after the ID.
 FINAL SCRIPT SWEEP (MANDATORY LAST PASS):
-- Before emitting the final answer, scan every output line for Arabic script characters.
-- If any Arabic script character appears (except ﷺ), replace ONLY that token/substring in English; use Latin transliteration ONLY for proper names/technical terms per TRANSLITERATION & TERMS; then rescan.
-- During this sweep, do NOT change IDs, line breaks, or non-Arabic text.
-- Only emit output when this sweep finds zero Arabic script characters except ﷺ.
-- If uncertain how to translate a leaked token, use a minimal literal English gloss for that token; never paraphrase surrounding clauses and never leave raw Arabic script.
+- Before emitting the final answer, scan every output line for Arabic script (except ﷺ).
+- If any appears, replace only that Arabic token/substring: names/technical terms -> Latin transliteration (if it is a term-pair head, keep translit (English)); other words -> English; then rescan.
+- During this sweep, do NOT change IDs, line breaks, or non-Arabic text. Emit only when zero Arabic script remains except ﷺ.
 ID INTEGRITY (Check First):
 - PREPASS (Silent closed set): Internally identify the exact ordered list of Segment_IDs present in the source. Treat this list as a CLOSED SET. Do not output this list.
 - REQUIRED (Exact match): Your output must contain EXACTLY those Segment_IDs, in the EXACT same order, each appearing EXACTLY ONCE as an "ID - ..." prefix. FORBIDDEN: re-outputting an ID prefix you already used (even in long segments).
