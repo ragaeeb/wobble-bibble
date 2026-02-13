@@ -5,12 +5,12 @@
     "": {
       "name": "demo",
       "dependencies": {
-        "lit": "^3.3.2",
-        "wobble-bibble": "^1.4.4",
+        "lit": "latest",
+        "wobble-bibble": "latest",
       },
       "devDependencies": {
-        "typescript": "~5.9.3",
-        "vite": "^8.0.0-beta.14",
+        "typescript": "latest",
+        "vite": "latest",
       },
     },
   },
@@ -126,6 +126,6 @@
 
     "vite": ["vite@8.0.0-beta.14", "", { "dependencies": { "@oxc-project/runtime": "0.113.0", "fdir": "^6.5.0", "lightningcss": "^1.31.1", "picomatch": "^4.0.3", "postcss": "^8.5.6", "rolldown": "1.0.0-rc.4", "tinyglobby": "^0.2.15" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "@vitejs/devtools": "^0.0.0-alpha.31", "esbuild": "^0.27.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "@vitejs/devtools", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-oLW66oi8tZcoxu6+1HFXb+5hLHco3OnEVu2Awmj5NqEo7vxaqybjBM0BXHcq+jAFhzkMGXJl8xcO5qDBczgKLg=="],
 
-    "wobble-bibble": ["wobble-bibble@1.4.4", "", {}, "sha512-muPRC1bTML6R9ySqgGyoAYWhEijZ8fuIT4ganK/zK6mhixcx3E7CHZQPYz/CX5vt5j6PRKV8cxzPtlbcOSRkiA=="],
+    "wobble-bibble": ["wobble-bibble@1.4.5", "", {}, "sha512-TCE0Vu+00wN096TjEWhNWDgepZYXaILQfXzKDkJbvDxpX5k855ta5//LwO9/UbKRMD5ri8QvVLvbpZoTngbhyQ=="],
   }
 }
