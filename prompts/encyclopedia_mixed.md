@@ -20,4 +20,4 @@ HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/A
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.
 CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmīyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
 FINAL ADD-ON OVERRIDE (APPLY LAST):
-- Zero Arabic script except ﷺ. If any remains, replace only that Arabic token/substring: names/technical terms -> Latin transliteration; other words -> English; keep translit (English) shape for term-pairs; then rescan.
+- Zero Arabic script except ﷺ. If any remains, replace the FULL Arabic span (single or multi-word): names/technical terms -> Latin transliteration; all other spans -> English (if uncertain, default to English); keep translit (English) shape for term-pairs; then rescan.

@@ -6,7 +6,7 @@ ARABIC LEAK (Hard ban):
 - STRICT BAN: Arabic script codepoints (letters, Arabic-Indic numerals ٠-٩, punctuation like ، ؟ ؛ , tatweel ـ, and Arabic presentation forms) are forbidden everywhere in output (even inside quotes/brackets/parentheses/citations), except ﷺ.
 - NO QUOTE/CITATION COPY: Do NOT paste Arabic source text anywhere (quotes/citations/brackets/parentheses). Translate into English only.
 - NO MIXED-SCRIPT: Never output a token that mixes Latin and Arabic characters (example: ʿĪد). Rewrite contaminated names/terms fully in Latin ALA-LC.
-- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ), including single-token residue in English clauses (forbidden: خروج (exit), Allah تعالى). If any Arabic appears, rewrite only that token: names/technical terms -> Latin transliteration; other words -> English.
+- ZERO ARABIC: Output must contain ZERO Arabic script characters (except ﷺ), including Arabic spans inside English clauses (single or multi-word; forbidden: فضل (bounty), continued خروج الدم). If any Arabic appears, rewrite the FULL Arabic span: names/technical terms -> Latin transliteration; all other spans -> English.
 - HONORIFICS ANTI-LEAK: Never output Arabic honorific spellouts like "صلى الله عليه وسلم" or "صلى الله عليه وآله وسلم". Always replace any Prophet salutation with ﷺ.
 WORD CHOICE (Allah vs god):
 - If the source uses الله, output Allah (exact spelling: A-l-l-a-h; no diacritics). Never "God" / "god" / "Allāh". (This is the only exception to ALA-LC diacritics.)
@@ -36,7 +36,7 @@ TRANSLITERATION & TERMS:
 - al-Casing: Lowercase al- mid-sentence; Capitalize after (al-Salafīyyah).
 - Book Titles: Transliterate only (do not translate meanings).
 2. TECHNICAL TERMS: On first occurrence, define: "translit (English)" (e.g., bidʿah (innovation), isnād (chain)). Term-pairs MUST be exactly translit (English) in that order (no reversal, no nested parentheses).
-- TERM-PAIR SCRIPT LOCK: Term-pair heads must be Latin transliteration only; never Arabic script.
+- TERM-PAIR SCRIPT LOCK: In "X (English)", X must be Latin transliteration only (no Arabic script).
 - Do NOT output multi-word transliterations without immediate English translation.
 - Do NOT transliterate full sentences/matn/quotes. Translate into English; transliteration is for names/terms only.
 - GRAMMAR/LINGUISTIC EXAMPLES: At most a single word-form, glossed as translit (English); no phrase/sentence transliteration.
@@ -57,7 +57,7 @@ OUTPUT FORMAT: Segment_ID - English translation.
 CRITICAL: You must use the ASCII hyphen separator " - " (space+hyphen+space) immediately after the ID. Do NOT use em-dash or en-dash. Do NOT use a newline after the ID.
 FINAL SCRIPT SWEEP (MANDATORY LAST PASS):
 - Before emitting the final answer, scan every output line for Arabic script (except ﷺ).
-- If any appears, replace only that Arabic token/substring: names/technical terms -> Latin transliteration (if it is a term-pair head, keep translit (English)); other words -> English; then rescan.
+- If any appears, replace the FULL Arabic span (single or multi-word): names/technical terms -> Latin transliteration (if it is a term-pair head, keep translit (English)); all other spans -> English (if uncertain, default to English); then rescan line-by-line and globally.
 - During this sweep, do NOT change IDs, line breaks, or non-Arabic text. Emit only when zero Arabic script remains except ﷺ.
 ID INTEGRITY (Check First):
 - PREPASS (Silent closed set): Internally identify the exact ordered list of Segment_IDs present in the source. Treat this list as a CLOSED SET. Do not output this list.
