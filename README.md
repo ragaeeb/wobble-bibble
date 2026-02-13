@@ -15,6 +15,8 @@
 
 TypeScript library for Islamic text translation prompts with LLM output validation and prompt stacking utilities.
 
+Live demo: [wobble-bibble.surge.sh](https://wobble-bibble.surge.sh)
+
 ## Installation
 
 ```bash

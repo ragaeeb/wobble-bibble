@@ -1,6 +1,4 @@
 NO MODE TAGS: Do not output any mode labels or bracket tags.
-QUOTE ANTI-LEAK OVERRIDE:
-- Quote/Weak handling NEVER permits Arabic script copy-paste; translate quotes/citations into English (technical terms still follow translit (English) rules).
 STRUCTURE (Apply First):
 - LINE BREAKS (CRITICAL): Preserve the source line breaks around speaker turns. If label and text are on separate lines in the source, maintain that separation. Do NOT merge two source lines into one.
 - EXCEPTION: If the speaker label is the VERY FIRST token after the "ID - " prefix, keep it on the same line. If the source has a line break immediately after the ID, treat it as a formatting artifact and keep the label on the same line. (Correct: P5455 - Questioner: Text...) (Wrong: P5455 \n Questioner: Text...).
@@ -21,3 +19,5 @@ DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣa�
 HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/Ana/Anba'ana=Informed us; An=From; Sami'tu=I heard) and keep FULL ALA-LC for Arabic-script narrator names; do not invent grading or missing links.
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.
 CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmīyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
+FINAL ADD-ON OVERRIDE (APPLY LAST):
+- Zero Arabic script except ﷺ. If any remains, replace only that Arabic token/substring: names/technical terms -> Latin transliteration; other words -> English; keep translit (English) shape for term-pairs; then rescan.
