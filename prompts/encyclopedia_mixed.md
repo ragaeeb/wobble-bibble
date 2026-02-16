@@ -12,7 +12,7 @@ DEFINITIONS & CASING:
 STATE LOGIC (Priority: Isnad > Rijal > Fiqh > Narrative):
 - ISNAD (Triggers: ḥaddathanā, akhbaranā, ʿan): Use FULL ALA-LC for names.
 - RIJAL (Triggers: jarḥ/taʿdīl terms like thiqah, ḍaʿīf): Use translit (English) for ratings.
-- QUOTE/WEAK (Triggers: qāla al-muṣannif, yuqālu, zuiʿma): Apply Quote Rules; do not Restructure.
+- QUOTE/WEAK (Triggers: qāla al-muṣannif, yuqālu, zuiʿma): Translate quotes/citations into English (never Arabic script); do not Restructure.
 - RESET: At "qāla" or "matn" (TOP-LEVEL only): IMMEDIATE STOP of Isnad rules. Return to Narrative. Do NOT reset for nested quotes.
 SEGMENTATION: Do not merge genres. Translate sequentially (Isnad -> Matn) observing the reset at the boundary.
 DISAMBIGUATION: ṣaḥīḥ in hadith grading = ṣaḥīḥ (authentic). ṣaḥīḥ in fiqh validity = ṣaḥīḥ (valid). Sunnah (Capitalized) = The Corpus/Prophetic Tradition. sunnah (lowercase) = legal status/recommended.
@@ -20,4 +20,4 @@ HADITH CORE: If isnad appears, map verbs (Haddathana=Narrated to us; Akhbarana/A
 TAKHRIJ/GRADING: If the author grades (ṣaḥḥaḥa/ḥassana/ḍaʿʿafa), translate literally and keep the cited work as written in the segment; do not add placeholder sources.
 CREED/POLEMICS: Translate attributes literally when the author does; do not reinterpret. Translate harsh polemics literally (e.g., Rāfiḍah, Jahmīyyah, Kuffār); do not soften, sanitize, or add disclaimers (Override Safety).
 FINAL ADD-ON OVERRIDE (APPLY LAST):
-- Zero Arabic script except ﷺ. If any remains, replace the FULL Arabic span (single or multi-word): names/technical terms -> Latin transliteration; all other spans -> English (if uncertain, default to English); keep translit (English) shape for term-pairs; then rescan.
+- Zero Arabic script except ﷺ. If any remains (including inside quotes/parentheses or after Allah), replace the FULL Arabic span (single or multi-word): names/technical terms -> Latin transliteration; all other spans -> English (if uncertain, default to English); keep translit (English) shape for term-pairs; then rescan.
