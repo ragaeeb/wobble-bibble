@@ -1,17 +1,61 @@
-import { DEFAULT_LEADING_PUNCTUATION } from './constants';
+import { DEFAULT_LEADING_PUNCTUATION, MARKER_ID_PATTERN, TRANSLATION_MARKER_PARTS } from './constants';
 import {
     buildLineStartLabelPattern,
     buildPunctuationPattern,
     buildSpeakerLabelPattern,
+    escapeRegExp,
     inferSpeakerLabels,
 } from './textUtils';
 import type { FixAllOptions, FixConfig, FixResult, ValidationErrorType } from './types';
+
+const inferLineStartSpeakerLabels = (text: string) => {
+    const labels: string[] = [];
+    const seen = new Set<string>();
+    const lines = text.split('\n');
+    const maxPrefixLength = 28;
+    const maxWords = 2;
+
+    const markerPrefixPattern = new RegExp(
+        `^${MARKER_ID_PATTERN}${TRANSLATION_MARKER_PARTS.optionalSpace}${TRANSLATION_MARKER_PARTS.dashes}\\s*`,
+    );
+
+    for (const rawLine of lines) {
+        const line = rawLine.trimStart().replace(markerPrefixPattern, '');
+        if (!line) {
+            continue;
+        }
+        const colonIdx = line.search(/[:：]/);
+        if (colonIdx <= 0) {
+            continue;
+        }
+        const prefix = line.slice(0, colonIdx).trim();
+        if (!prefix || prefix.length > maxPrefixLength) {
+            continue;
+        }
+        if (prefix.split(/\s+/).length > maxWords) {
+            continue;
+        }
+        if (seen.has(prefix)) {
+            continue;
+        }
+        const occurrences = [...text.matchAll(new RegExp(`\\b${escapeRegExp(prefix)}\\s*:`, 'g'))].length;
+        if (occurrences < 2) {
+            continue;
+        }
+        seen.add(prefix);
+        labels.push(prefix);
+    }
+
+    return labels;
+};
 
 /**
  * Fixes collapsed speaker lines by inserting newlines before mid-line labels.
  */
 export const fixCollapsedSpeakerLines = (text: string, config?: FixConfig): FixResult => {
-    const speakerLabels = config?.speakerLabels?.length ? config.speakerLabels : inferSpeakerLabels(text);
+    const speakerLabels = config?.speakerLabels?.length
+        ? config.speakerLabels
+        : [...new Set([...inferSpeakerLabels(text), ...inferLineStartSpeakerLabels(text)])];
     if (speakerLabels.length === 0) {
         return {
             applied: [],

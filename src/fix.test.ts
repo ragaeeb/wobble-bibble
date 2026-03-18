@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { fixAll, fixCollapsedSpeakerLines } from './fix';
+import { validateTranslationResponse } from './validation';
 
 describe('fixCollapsedSpeakerLines', () => {
     it('should insert a newline before a collapsed speaker label', () => {
@@ -57,6 +58,16 @@ describe('fixCollapsedSpeakerLines', () => {
         expect(result.text).toBe(`P1 - Mu'adhdhin: Allahu akbar. The Shaykh: Reply.\nMu'adhdhin: Again.`);
         expect(result.counts.fixCollapsedSpeakerLines).toBe(1);
     });
+
+    it('should infer mixed-case labels from line starts and fix collapsed inline labels', () => {
+        const input =
+            'P103099 - The questioner: The minor...\nThe Shaykh: No, if the minor performs hajj then it is supererogatory and it does not drop the obligation from him. The questioner: Shaykh what is the proof for that?';
+        const result = fixCollapsedSpeakerLines(input);
+        expect(result.text).toBe(
+            'P103099 - The questioner: The minor...\nThe Shaykh: No, if the minor performs hajj then it is supererogatory and it does not drop the obligation from him.\nThe questioner: Shaykh what is the proof for that?',
+        );
+        expect(result.counts.fixCollapsedSpeakerLines).toBe(1);
+    });
 });
 
 describe('fixAll', () => {
@@ -78,5 +89,20 @@ describe('fixAll', () => {
         });
         expect(result.text).toBe(input);
         expect(result.skipped).toEqual(['arabic_leak']);
+    });
+
+    it('should fix a collapsed "The questioner:" line from questioner sample text end-to-end', () => {
+        const segments = [{ id: 'P103099', text: 'نص' }];
+        const input =
+            'P103099 - The questioner: The minor in the madhhab that if he performs ḥajj before his puberty then it is supererogatory.\nThe Shaykh: No, if the minor performs ḥajj before his puberty then it is supererogatory and it does not drop the obligation from him. The questioner: Shaykh what is the proof for that many of the acts of worship if the small one performs them before his puberty it suffices him?';
+
+        const before = validateTranslationResponse(segments, input);
+        expect(before.errors.some((e) => e.type === 'collapsed_speakers')).toBe(true);
+
+        const fixed = fixAll(input, { types: ['collapsed_speakers'] });
+        expect(fixed.text).toContain('\nThe questioner: Shaykh what is the proof for that');
+
+        const after = validateTranslationResponse(segments, fixed.text);
+        expect(after.errors.some((e) => e.type === 'collapsed_speakers')).toBe(false);
     });
 });
